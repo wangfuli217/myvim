@@ -1,0 +1,138 @@
+snippet header "CMake file header" b
+##################################################
+# File: `!p snip.rv = fn`
+# Description: ${1:Cmake lists for the project}.
+# Created on `!v strftime("%Y-%m-%d")`.
+# Author: Xiaoyu Wei (xywei@giithub)
+##################################################
+$0
+endsnippet
+
+snippet set "SET( )" b
+SET(${1:VarName} "${2:StringValue}")
+$0
+endsnippet
+
+snippet proj "PROJECT()" b
+PROJECT(${1:ProjName})
+endsnippet
+
+snippet req "Requirement of Cmake version" b
+CMAKE_MINIMUM_REQUIRED(VERSION ${1:2.8.8})
+$0
+endsnippet
+
+snippet glob "Create a glob" b
+FILE(GLOB ${1:sources} ${2:${CMAKE_SOURCE_DIR}/src/*.cpp})
+$0
+endsnippet
+
+snippet exe "Add executable" b
+ADD_EXECUTABLE(${1:BinaryName} ${2:SourceFiles})
+$0
+endsnippet
+
+snippet dxe "Add executable which links to dealii" b
+ADD_EXECUTABLE(${1:BinaryName} ${2:SourceFiles})
+DEAL_II_SETUP_TARGET($1)
+$0
+endsnippet
+
+snippet catch "Add Catch lib as an interface target" b
+ADD_LIBRARY(Catch INTERFACE)
+TARGET_INCLUDE_DIRECTORIES(Catch INTERFACE ${1:catch_include_dir})
+$0
+endsnippet
+
+snippet cxe "Add executatble which links to catch" b
+ADD_EXECUTABLE(${1:TestBinaryName} ${2:TestSourceFiles})
+TARGET_LINK_LIBRARIES($1 Catch)
+$0
+endsnippet
+
+snippet test "Add tests to CTest" b
+ENABLE_TESTING()
+ADD_TEST(NAME ${1:TestName} COMMAND ${2:TestBinaryName} ${3:TestArgs})
+$0
+endsnippet
+
+snippet dealii "Find dealii" b
+FIND_PACKAGE(deal.II ${1:8.4.0} QUIET
+  HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
+  )
+IF(NOT ${deal.II_FOUND})
+  MESSAGE(FATAL_ERROR "\n"
+    "*** Could not locate a (sufficiently recent) version of deal.II. ***\n\n"
+    "You may want to either pass a flag -DDEAL_II_DIR=/path/to/deal.II to cmake\n"
+    "or set an environment variable \"DEAL_II_DIR\" that contains this path."
+    )
+ENDIF()
+DEAL_II_INITIALIZE_CACHED_VARIABLES()
+$0
+endsnippet
+
+snippet dealii-trilinos "Require dealii to be able to interface with trilinos" b
+IF(NOT DEAL_II_WITH_TRILINOS)
+  MESSAGE(FATAL_ERROR "
+    Error! The deal.II library found at ${DEAL_II_PATH} was not configured with
+      DEAL_II_WITH_TRILINOS = ON
+    One or all of these are OFF in your installation but are required for this project."
+  )
+ENDIF()
+$0
+endsnippet
+
+snippet include "Add include directories" b
+INCLUDE_DIRECTORIES(
+  ${1:${CMAKE_SOURCE_DIR}/inclue}
+)
+$0
+endsnippet
+
+snippet make "Custom make targets" b
+ADD_CUSTOM_TARGET(debug
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Switched CMAKE_BUILD_TYPE to Debug"
+)
+
+ADD_CUSTOM_TARGET(release
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Switched CMAKE_BUILD_TYPE to Release"
+)
+
+ADD_CUSTOM_TARGET(run
+  COMMAND ${1:ExecutableName} ${2:arguments}
+  COMMENT "Run with ${CMAKE_BUILD_TYPE} configuration"
+)
+
+IF("${CLEAN_UP_FILES}" STREQUAL "")
+  SET(CLEAN_UP_FILES *.log *.eps *.vtk *.gpl *.gnuplot)
+ENDIF()
+ADD_CUSTOM_TARGET(clean
+  COMMAND ${CMAKE_COMMAND} -E remove ${CLEAN_UP_FILES}
+  COMMAND ${CMAKE_COMMAND} -E remove_directory output
+  COMMENT "runclean invoked"
+)
+$0
+endsnippet
+
+##################################################
+# Syntax sugars
+##################################################
+snippet sdir "Source dir (where goes the top level CMakeLists.txt)"
+${CMAKE_SOURCE_DIR} $0
+endsnippet
+
+snippet bdir "Binary dir (the top level build dir)"
+${CMAKE_BINARY_DIR} $0
+endsnippet
+
+snippet csdir "Current source dir"
+${CMAKE_CURRENT_SOURCE_DIR} $0
+endsnippet
+
+snippet cbdir "Current binary dir"
+${CMAKE_CURRENT_BINARY_DIR} $0
+endsnippet
