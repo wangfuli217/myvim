@@ -8,16 +8,134 @@ int main(int argc, char *argv[])
 }
 endsnippet
 
-snippet realloc "realloc memory" b
-void *${3:tmp} = realloc(${1:data}, ${2:size});
-if ($3) {
-    /* realloc succeeded, assign new pointer */
-    $1 = $3;
+#------------------------------------------------------------------------------ include
+snippet inc "make include standard" b
+#include <${1:stdio}.h>
+${0}
+endsnippet
+
+snippet incl "make include local" b
+#include "${1:NAME}.h"
+${0}
+endsnippet
+
+snippet incguard "#ifndef NAME_H Include Guards" b
+#ifndef ${2:`!p snip.rv = fn_underscores(fn)`}
+#define $2
+${1}
+#endif /* $2 */
+endsnippet
+#------------------------------------------------------------------------------ struct
+snippet define "create a new macro" b
+#define ${1:NAME} ${2:CODE}
+endsnippet
+
+snippet struct "typedef a new structure" b
+typedef struct ${1:NAME}{
+    ${2:TYPE} ${3:VARNAME};
+    ${0}
+} $1;
+endsnippet
+
+snippet enum "enum name {};" b
+enum ${1:enumname} { ${2:VAL1}, ${3:VAL2}};
+$0
+endsnippet
+
+#------------------------------------------------------------------------------ condition
+snippet "if else" "make if else statement" b
+if(${1:CONDITION}){
+    ${2://BLOCK}
 } else {
-    ${0:/* handle error */}
+    ${3://BLOCK}
 }
 endsnippet
 
+snippet "if elif else" "make if ... else if ... else" b
+if(${1:CONDITION}){
+    ${2://BLOCK}
+}
+else if(${3:CONDITION}){
+    ${4://BLOCK}
+}
+else {
+    ${5://BLOCK}
+}
+endsnippet
+
+snippet switch "make switch statement" b
+switch(${1:VAR}){
+    case ${2:VAR}:
+        ${0}
+        break;
+    default:
+        break;
+}
+endsnippet
+
+
+#------------------------------------------------------------------------------ memory
+snippet malloc "build malloc command" b 
+${1:TYPE}* ${2:VARNAME} = ($1*)malloc(${3:N_MEMBERS} * sizeof($1));
+${0}
+endsnippet
+
+snippet calloc "build calloc command" b 
+${1:TYPE}* ${2:VARNAME} = ($1*)calloc(${3:N_MEMBERS}, sizeof($1));
+${0}
+endsnippet
+
+snippet realloc "build realloc command" b 
+${1:VARNAME} = (${2:TYPE}*) ($*)realloc($1, ${3:N_MEMBERS} * sizeof($2));
+${0}
+endsnippet
+
+snippet malloc1 "build malloc command for n=1" b 
+${1:TYPE}* ${2:VARNAME} = ($1*)malloc(sizeof($1));
+${0}
+endsnippet
+
+snippet calloc1 "build calloc command for n=1" b 
+${1:TYPE}* ${2:VARNAME} = ($1*)calloc(1, sizeof($1));
+${0}
+endsnippet
+
+snippet realloc1 "build realloc command for n=1" b 
+${1:VARNAME} = (${2:TYPE}*) ($*)realloc($1, sizeof($2));
+${0}
+endsnippet
+
+snippet memcpy "build memcpy command" b
+memcpy(${1:DESTINATION_PTR}, ${2:SOURCE_PTR}, ${3:SIZE});
+${0}
+endsnippet
+
+snippet memset "build memset command" b
+memset(${1:VOID_MEM_POINTER}, ${2:0}, ${3:SIZE});
+${0}
+endsnippet
+
+snippet qsort "build qsort command" b
+qsort(${1:BASE_PTR}, ${2:N_MEMBERS}, ${3:MEMBER_SIZE}, ${4:CMP_FUN});
+${0}
+endsnippet
+
+snippet qsort_r "qsort_r build command" b
+qsort_r(${1:BASE_PTR}, ${2:N_MEMBERS}, ${3:MEMBER_SIZE}, ${4:CMP_FUN}, ${5:ARG_PTR});
+${0}
+endsnippet
+
+snippet err "print an error message and die" b
+fprintf(stderr, "${1:ERROR_MESSAGE}");
+exit(${2:EXIT_FAILURE});
+${0}
+endsnippet
+
+snippet memcmp "memcmp template" w
+memcmp(${1:VOID_PTR_1}, ${2:VOID_PTR_2}, ${3:SIZE})${0}
+endsnippet
+
+#------------------------------------------------------------------------------ getopts short
 snippet getopts "getopt example structure" b
 int opt;
 int flags;
@@ -33,6 +151,79 @@ while ((opt = getopt(argc, argv, "nt:")) != -1) {
         fprintf(stderr, "Usage: %s [-t nsecs] [-n] name\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+}
+endsnippet
+
+snippet getopt_ex
+int opt;
+struct args args;
+
+while ((opt = getopt(argc,argv,":a:c:")) != -1) {
+    printf("opt =%3d (%c); optind =%d", opt, printable(opt), optind);
+    if (opt == '?' || opt == ':')
+        printf("; optopt =%3d (%c)", optopt, printable(optopt));
+    printf("\n");
+    
+    switch (opt) {
+        case 'a': args.stringmember = optarg ;break;
+        case 'c': args.numbermember = strtol(optarg, NULL, 0);break;
+        case ':': printf("Missing argument\n"); exit(EXIT_FAILURE); break;
+        case '?': printf("Unrecognized option\n"); exit(EXIT_FAILURE); break;
+        default:
+            printf("Unexpected case\n");
+    exit(EXIT_FAILURE);
+    }
+}
+endsnippet
+
+snippet readlines "Template for reading a file line by line" b
+FILE * f = fopen(${1:filename}, "r");
+size_t size = ${2:BUFFER_SIZE};
+char * line = (char *) malloc(size * sizeof(char));
+
+int x;${0}
+char * y;
+
+while (fgets(line, size, f) && !feof(f)) {
+    if (!sscanf (line, "%d %s", &x, y)) {
+        fprintf(stderr, "Could not process the following line:\n%s", line);
+        exit(EXIT_FAILURE);
+    }
+}
+endsnippet
+
+snippet socket "int fd = socket(...)"
+int ${1:fd} = socket(AF_INET, SOCK_${2:DGRAM}, 0); /* <sys/socket.h> <sys/types.h> */
+endsnippet
+
+snippet bind "bind(fd,...)"
+struct sockaddr_in addr;
+memset(&addr, 0, sizeof(struct sockaddr_in)); /* <string.h> */
+addr.sin_family = AF_INET;
+addr.sin_addr.s_addr = INADDR_ANY;
+addr.sin_port = htons(${1:2222});
+bind(${2:fd}, (struct sockaddr *) &${2:addr}, sizeof(struct sockaddr_in));
+endsnippet
+
+snippet recvfrom "recvfrom(..., sourceaddr)"
+/* socklen_t len; */
+/* struct sockaddr_in claddr; */
+/* ssize_t numBytes; */
+numBytes = recvfrom(${1:fd}, ${2:buf}, ${3:BUF_SIZE}, 0, (struct sockaddr *) &${4:claddr}, &${5:len});
+endsnippet
+
+snippet sighandler "Signal handler <signal.h>"
+struct sigaction ${1:sa};
+sigemptyset(&$1.sa_mask);
+$1.sa_flags = 0;
+$1.sa_handler = ${2:handler};
+if (sigaction(SIGINT, &$1, NULL) == -1) {
+    perror("sigaction");
+    exit(EXIT_FAILURE);
+}
+if (sigaction(SIGTERM, &$1, NULL) == -1) {
+    perror("sigaction");
+    exit(EXIT_FAILURE);
 }
 endsnippet
 
