@@ -286,7 +286,6 @@ nnoremap <C-m><C-d> :BookmarkMoveDown<CR>
 nnoremap <C-m><C-l> :BookmarkMoveToLine<CR>
 nnoremap <C-m><C-s> :BookmarkSave ./.bookmark<CR>
 nnoremap <C-m><C-r> :BookmarkLoad ./.bookmark<CR>
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " cnoremap and inoremap simulate readline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -667,6 +666,7 @@ Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
+Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 
@@ -933,6 +933,35 @@ let g:bookmark_sign = '♥'
 let g:bookmark_highlight_lines = 1
 let g:bookmark_save_per_working_dir = 1
 let g:bookmark_auto_save = 1
+let g:bookmark_no_default_key_mappings = 1
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Yilin-Yang/vim-markbar
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" only display alphabetic marks a-i and A-I
+let g:markbar_marks_to_display = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+" width of a vertical split markbar
+let g:markbar_width = 30
+
+" indentation for lines of context
+let g:markbar_context_indent_block = '  '
+
+" number of lines of context to retrieve per mark
+let g:markbar_num_lines_context = 3
+
+" ditto, but more granularly (any may be omitted)
+" let g:markbar_num_lines_context = {
+"     \ 'around_local': 3,           " for local marks, show 3 lines of context
+"     \ 'around_file': 0,            " for file marks, show no context at all
+"     \ 'peekaboo_around_local': 4,  " like above, but for the peekaboo markbar
+"     \ 'peekaboo_around_file': 2,
+" \ }
+
+" open/close markbar mappings
+nmap <Leader>m  <Plug>ToggleMarkbar
+nmap <Leader>mo <Plug>OpenMarkbar
+nmap <Leader>mc <Plug>CloseMarkbar
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " auto-pairs setting
