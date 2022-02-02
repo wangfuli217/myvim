@@ -17,8 +17,6 @@ autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
 autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
-let g:python3_host_prog = "/usr/bin/python3"
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " recently used or append
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -84,6 +82,8 @@ nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
 nnoremap <leader><F4> :CtrlPMixed<CR>
 nnoremap <leader><F6> :AV<CR>
 nnoremap <leader><F7> :MundoToggle<CR>
+nnoremap <leader><F8> :TigOpenCurrentFile<CR>
+nnoremap <leader><F9> :TigOpenProjectRootDir<CR>
 
 """" 跳转再优化
 " 把下一个查找匹配项所在的行显示在屏幕的最中间
@@ -92,10 +92,10 @@ nnoremap <silent> N Nzz
 nnoremap <silent> * *zz
 nnoremap <silent> # #zz
 nnoremap <silent> g* g*zz
-" 代码跳转后居中
-nnoremap <c-]> <c-]>zz
-nnoremap <c-o> <c-o>zz
-nnoremap <c-i> <c-i>zz
+" 代码跳转后居中 + 多选择跳转:nmap <c-]> g<c-]>
+nnoremap <c-]> g<c-]>zz
+nnoremap <c-o> g<c-o>zz
+nnoremap <c-i> g<c-i>zz
 " 执行删除操作时插入断点 Ctrl-G u (类似commit的操作)
 inoremap <silent> <c-u> <c-g>u<c-u>
 inoremap <silent> <c-w> <c-g>u<c-w>
@@ -121,10 +121,21 @@ nnoremap <silent> k gk
 " Makes gj/gk move by virtual lines when used without a count, and by physical lines when used with a count.
 " nnoremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 " nnoremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
-    
+
 """" 命令转快捷键
 " 将命令行命令:q :w映射成\q \w
-nnoremap <leader>q :q<CR>       " \q = :q
+" Quit
+inoremap <C-Q>     <esc>:q<cr>
+nnoremap <C-Q>     :q<cr>
+vnoremap <C-Q>     <esc>
+nnoremap <Leader>q :q<cr>
+nnoremap <Leader>Q :qa!<cr>
+" Save
+inoremap <C-s>     <C-O>:update<cr>
+nnoremap <C-s>     :update<cr>
+nnoremap <leader>s :update<cr>
+nnoremap <leader>w :update<cr>
+
 nnoremap <leader>w :w<CR>       " \w == :w
 nnoremap <leader>m m,           " \m == m,
 
@@ -138,11 +149,44 @@ vnoremap < <gv                  " > 用于增加缩进
 vnoremap > >gv                  " < 用于减少缩进
 vnoremap <leader>y "+           | " Linux粘贴板
 " vnoremap <leader>y "*         | " Windows粘贴板
-nnoremap <leader>v "+p          | " Linux粘贴板
-nnoremap <leader>c "+y          | " Linux粘贴板
-vnoremap <leader>c "+y          | " Linux粘贴板
+nnoremap <leader>v "+p          | " Linux粘贴板 粘贴
+inoremap <leader>v <esc>"+p     | " Linux粘贴板 粘贴
+vnoremap <leader>v "+p          | " Linux粘贴板 粘贴
+nnoremap <leader>c "+y          | " Linux粘贴板 复制
+vnoremap <leader>c "+y          | " Linux粘贴板 复制
+""" Some shortcuts for system clipboards
+noremap <leader>d "+d
+noremap <leader>D "*d
+noremap <leader>p "+p
+noremap <leader>P "*p
+noremap <leader>y "+y
+noremap <leader>Y "*y
+"" END editing keybindings
+
 " Yank from the cursor to the end of the line, to be consistent with C and D.
 nnoremap Y y$
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" remove space; remove ^M; remove tab; remove all; \sh shell file type
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" \rs                 一键去除全部尾部空白
+imap <leader>rs <esc>:let _s=@/<bar>:%s/\s\+$//e<bar>:let @/=_s<bar>:nohl<cr>
+nmap <leader>rs :let _s=@/<bar>:%s/\s\+$//e<bar>:let @/=_s<bar>:nohl<cr>
+vmap <leader>rs <esc>:let _s=@/<bar>:%s/\s\+$//e<bar>:let @/=_s<bar>:nohl<cr>
+
+" \rm                 一键去除全部 ^M 字符
+imap <leader>rm <esc>:%s/<c-v><c-m>//g<cr>
+nmap <leader>rm :%s/<c-v><c-m>//g<cr>
+vmap <leader>rm <esc>:%s/<c-v><c-m>//g<cr>
+
+" \rt                 一键替换全部 Tab 为空格
+nmap <leader>rt <esc>:retab<cr>
+
+" \ra                 一键清理当前代码文件
+nmap <leader>ra <esc>\rt<esc>\rs<esc>gg=G<esc>gg<esc>
+
+" \sh
+nmap <leader>sh <esc>:set ft=sh<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -175,6 +219,8 @@ nnoremap <silent> <C-t>7 7gt
 nnoremap <silent> <C-t>8 8gt
 nnoremap <silent> <C-t>9 9gt
 
+nnoremap <silent> <leader>n <down>
+nnoremap <silent> <leader>p <up>
 nnoremap <silent> <leader>1 1gt
 nnoremap <silent> <leader>2 2gt
 nnoremap <silent> <leader>3 3gt
@@ -226,6 +272,11 @@ nnoremap <C-a>U :bufdo :e!<CR>redraw<CR>
 nnoremap <silent> <C-w>z     <C-w>|
 nnoremap <silent> <C-w><C-z> <C-w>|
 nnoremap <silent> <C-w>Z     <C-w>_
+" shortcuts for opening new split windows
+nnoremap <silent> <leader>h :split<CR><C-w><C-w>
+nnoremap <silent> <leader>v :vsplit<CR><C-w><C-w>
+nnoremap <silent> <leader>q :q<CR>
+nnoremap <silent> <leader>Q :q!<CR>
 
 """" QuickFix
 nnoremap <silent> <C-c>c :copen<CR>
@@ -249,6 +300,15 @@ nnoremap <C-a>s :wall<CR>:mksession!     ./.session.vim<CR>
 nnoremap <C-a>r :source                  ./.session.vim<CR>
 nnoremap <C-a><C-s> :wall<CR>:mksession! ./.session.vim<CR>
 nnoremap <C-a><C-r> :source              ./.session.vim<CR>
+set sessionoptions=buffers              " Save hidden, unloaded buffers in session
+set ssop+=help                          " Save the help window(s)
+set ssop+=localoptions                  " Keep any local options or mappings
+set ssop+=resize                        " Size of the Window: 'lines' and 'columns'
+set ssop+=slash                         " Replace back with fack in session file
+set ssop+=tabpages                      " Store all tabs in session
+set ssop+=unix                          " Use Unix line endings for session file
+set ssop+=winpos                        " Position of the Vim Window
+set ssop+=winsize                       " Size of each window
 
 """" 把buffer中的文件全转成tab # :bufdo tab split 或者 :tab sball
 nnoremap <C-a>t :bufdo tab split<CR>
@@ -288,6 +348,7 @@ nnoremap <C-m><C-d> :BookmarkMoveDown<CR>
 nnoremap <C-m><C-l> :BookmarkMoveToLine<CR>
 nnoremap <C-m><C-s> :BookmarkSave ./.bookmark<CR>
 nnoremap <C-m><C-r> :BookmarkLoad ./.bookmark<CR>
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " cnoremap and inoremap simulate readline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -295,11 +356,11 @@ nnoremap <C-m><C-r> :BookmarkLoad ./.bookmark<CR>
 " Ctrl + p 和 Ctrl + n 来跳转到上一个/下一个条目
 cnoremap <c-n> <down>
 cnoremap <c-p> <up>
-cnoremap <C-a> <Home>
-cnoremap <C-e> <End>
-cnoremap <C-b> <Left>
-cnoremap <C-f> <Right>
-cnoremap <C-d> <C-f>
+cnoremap <c-a> <Home>
+cnoremap <c-e> <End>
+cnoremap <c-b> <Left>
+cnoremap <c-f> <Right>
+cnoremap <c-d> <Del>
 " %% for current buffer file name
 " :: for current buffer file path
 cnoremap %% <c-r>=expand('%')<cr>
@@ -308,11 +369,11 @@ cnoremap :: <c-r>=expand('%:p:h')<cr>/
 cnoremap w!! w !sudo tee >/dev/null %
 
 " inoremap
-inoremap <C-a> <home>
-inoremap <C-e> <end>
-inoremap <C-b> <left>
-inoremap <C-f> <right>
-inoremap <C-z> <Esc>zza
+inoremap <c-a> <home>
+inoremap <c-e> <end>
+inoremap <c-b> <left>
+inoremap <c-f> <right>
+inoremap <c-z> <Esc>zza
 
 " Insert mode navigation similar to <C-g>j and <C-g>k
 inoremap <silent> <C-g>l <right>
@@ -368,6 +429,8 @@ augroup END
 " 关闭兼容模式
 set nocompatible        " disable backwards-compatible with vi
 set shortmess=atI       " 关闭乌干达儿童提示
+set diffopt=filler,vertical " Keep files aligned, default to vsplit
+set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
@@ -448,7 +511,7 @@ set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 显示状态栏
-set laststatus=1
+set laststatus=2
 " 底部显示
 " 在底部显示当前模式
 set showmode            " Show current mode in command-line.
@@ -522,7 +585,7 @@ endif
 " 备份文件
 set backup                                  " make backup files
 set backupdir   =$HOME/.vim/files/backup/   " where to put backup files
-set backupext   =-vimbackup                 " 
+set backupext   =-vimbackup                 "
 set backupskip  =$HOME/.vim/files/backup/   " Don’t create backups when editing files in certain directories
 " 交换文件
 set directory   =$HOME/.vim/files/swap/
@@ -649,14 +712,14 @@ nnoremap <leader>f9 :set foldlevel=9<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
+" :help packages
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " https://zhuanlan.zhihu.com/p/58816186 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
-" Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
-Plug 'neoclide/coc.nvim', {'branch': 'release'} " 代码片段提示/替换引擎 :CocInstall coc-snippets
+Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
@@ -684,7 +747,7 @@ Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
 Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree
 " Plug 'bagrat/vim-buffet'               " buffer管理
 Plug 'kien/ctrlp.vim'                  " find模糊搜索 <Ctrl>+p :CtrlP 或 :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
-" <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配 
+" <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
 " <Leader>vr 全局搜索光标所在单词,并替换想要的单词
 " :Grep [arg]                       # 类似 <Leader>vv, 使用 ! 类似<Leader>vV
@@ -724,6 +787,8 @@ Plug 'vim-scripts/a.vim'               " swtich between source files and header 
 " Plug 'octol/vim-cpp-enhanced-highlight' " c++ syntax highlighting
 " Plug 'xavierd/clang_complete'          " uses clang for accurately completing C and C++ code
 
+Plug 'tpope/vim-fugitive'
+Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-ftplugin'          " Lua file type
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 call plug#end()
@@ -749,8 +814,7 @@ let g:UltiSnipsEditSplit="vertical"
 let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 " 定义自己的snippets文件放置的位置
 " g:UltiSnipsSnippetsDir
-let g:UltiSnipsNoPythonWarning = 1
-let g:UltiSnipsUsePythonVersion=3
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'jayli/vim-easycomplete'  :h easycomplete
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -764,7 +828,7 @@ let g:easycomplete_signature_enable = 1
 " https://www.5axxw.com/wiki/content/8sjzz7
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:gist_clip_command = 'xclip -selection clipboard' | " Linux
-" let g:gist_clip_command = 'putclip'                    | " cygwin
+" let g:gist_clip_command = 'putclip'                  | " cygwin
 let g:gist_detect_filetype = 1
 let g:gist_open_browser_after_post = 1
 let g:gist_show_privates = 1
@@ -978,8 +1042,15 @@ au FileType php      let b:AutoPairs = AutoPairsDefine({'<?' : '?>', '<?php': '?
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " tabline 的定制格式与状态栏一样,在开多个标签页时才生效
 set laststatus=2  "永远显示状态栏
-let g:airline_powerline_fonts = 1  " 支持 powerline 字体
-let g:airline#extensions#tabline#enabled = 1 " 显示窗口tab和buffer
+let g:airline_powerline_fonts = 1                       " 支持 powerline 字体
+let g:airline#extensions#tabline#enabled = 1            " 显示窗口tab和buffer
+let g:airline#extensions#tabline#tab_nr_type = 1        " tab number
+let g:airline#extensions#tabline#show_tab_nr = 1
+let g:airline#extensions#tabline#formatter = 'default'
+let g:airline#extensions#tabline#buffer_nr_show = 0
+let g:airline#extensions#tabline#fnametruncate = 16
+let g:airline#extensions#tabline#fnamecollapse = 2
+let g:airline#extensions#tabline#buffer_idx_mode = 1
 " let g:airline_theme='moloai'  " murmur配色不错
 
 if !exists('g:airline_symbols')
@@ -991,7 +1062,6 @@ let g:airline_right_sep = '◀'
 let g:airline_right_alt_sep = '❮'
 let g:airline_symbols.linenr = '¶'
 " let g:airline_symbols.branch = '⎇'
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-utils/vim-man setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1103,7 +1173,7 @@ let g:EasyGrepFilesToExclude =  "*.bak, *~, cscope.*, *.a, *.o, *.pyc, *.bak"
 " ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
 " | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
 " ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
-" 
+"
 " function! s:fzf_statusline()
 "   " Override statusline as you like
 "   highlight fzf1 ctermfg=161 ctermbg=251
@@ -1111,37 +1181,60 @@ let g:EasyGrepFilesToExclude =  "*.bak, *~, cscope.*, *.a, *.o, *.pyc, *.bak"
 "   highlight fzf3 ctermfg=237 ctermbg=251
 "   setlocal statusline=%#fzf1#\ >\ %#fzf2#fz%#fzf3#f
 " endfunction
-" 
+"
 " autocmd! User FzfStatusLine call <SID>fzf_statusline()
-" 
+"
 " " Mapping selecting mappings
 " nmap <leader><tab> <plug>(fzf-maps-n)
 " xmap <leader><tab> <plug>(fzf-maps-x)
 " omap <leader><tab> <plug>(fzf-maps-o)
-" 
+"
 " " Insert mode completion
 " imap <c-x><c-k> <plug>(fzf-complete-word)
 " imap <c-x><c-f> <plug>(fzf-complete-path)
 " imap <c-x><c-l> <plug>(fzf-complete-line)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-syntastic/syntastic
+" :help syntastic-commands
+" :help syntastic-checkers / syntastic-checker-options
+" :help syntastic
+" :help syntastic-aggregating-errors
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
+set statusline+=%#warningmsg#                   " Recommended settings
+set statusline+=%{SyntasticStatuslineFlag()}    " Recommended settings
+set statusline+=%*                              " Recommended settings
 
+" switch mode by config; switch mode by SyntasticToggleMode command;
+"let g:syntastic_mode_map = { 'mode': 'passive', 'active_filetypes': "[],'passive_filetypes': []  }
+let g:syntastic_mode_map = { 'mode': 'passive' } " default active; active and passive by F7
+" syntax checkers and style checkers
+let g:syntastic_quiet_messages = { "type": "style"  } " disable all style messages
+
+let g:syntastic_aggregate_errors         = 1 " Run all linters, even if first found errors.
+"总是打开Location List(相当于QuickFix)窗口,如果你发现syntastic因为与其他插件冲突而经常崩溃,将下面选项置0
 let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+"自动打开Locaton List,默认值为2,表示发现错误时不自动打开,当修正以后没有再发现错误时自动关闭,
+"设置1表示自动打开自动关闭,0表示关闭自动打开和自动关闭,3表示自动打开,但不自动关闭
+let g:syntastic_auto_loc_list = 1 " Recommended settings
+"修改Locaton List窗口高度
+let g:syntastic_loc_list_height = 5
+"打开文件时自动进行检查
+let g:syntastic_check_on_open = 1 " Recommended settings
+"自动跳转到发现的第一个错误或警告处
+let g:syntastic_auto_jump = 1
+"进行实时检查，如果觉得卡顿，将下面的选项置为1
+let g:syntastic_check_on_wq = 0   " Recommended settings
+"高亮错误
+let g:syntastic_enable_highlighting=1
 
+" g:syntastic_<filetype>_checkers 检查器配置表
 let g:syntastic_cpp_include_dirs = ['/usr/include/']
 let g:syntastic_cpp_compiler_options = "-Wall -Wextra -Werror -std=c++11 -stdlib=libstdc++"
 let g:syntastic_cpp_check_header = 1
 let g:syntastic_cpp_remove_include_errors = 1
 let g:syntastic_cpp_compiler = 'clang++'
 let g:syntastic_cpp_auto_refresh_includes = 1
-let g:Syntastic_cpp_checkers = ['gcc']
+let g:Syntastic_cpp_checkers = ['gcc'] " clang_tidy cppcheck gcc make
 
 let g:syntastic_c_include_dirs = ['/usr/include/', '/usr/include/']
 let g:syntastic_c_compiler_options = "-Wall -Wextra -Werror -std=gnu99 -pthread -lrt -lm"
@@ -1149,7 +1242,13 @@ let g:syntastic_c_check_header = 1
 let g:syntastic_c_remove_include_errors = 1
 let g:syntastic_c_compiler = 'clang'
 let g:syntastic_c_auto_refresh_includes = 1
-let g:Syntastic_c_checkers = ['gcc']
+let g:Syntastic_c_checkers = ['gcc']  " clang_tidy cppcheck gcc make
+
+let g:syntastic_sh_checkers = ['sh', 'shellcheck']
+let g:syntastic_sh_shellcheck_args = '--exclude=SC2155,SC2032,SC1090,SC2033' " Ignore declare and assign on same line."
+
+let g:syntastic_vim_checkers             = ['vint']
+let g:syntastic_enable_perl_checker = 1
 
 let g:cpp_class_scope_highlight = 1
 let g:cpp_class_decl_highlight = 1
@@ -1164,14 +1263,62 @@ let g:syntastic_warning_symbol = '!'
 let g:syntastic_enable_balloons = 1
 
 " :SyntasticCheck 手动检测错误
+" :SyntasticCheck phpcs phpmd         手动设置检测器
+" :SyntasticCheck text/language_check 运行外来类型检测器
 " :Errors         打开错误位置列表
 " :lclose         关闭位置列表; :lnext  到下一个错误; :lprevious 到上一个错误
 " :SyntasticReset 可以清除掉错误列表
+" :SyntasticInfo
 " :SyntasticToggleMode 来切换激活(在写到 buffer 时检测)和被动(即手动检测)检测错误
-
+" map <C-s>e :SyntasticCheck eslint<CR>
+" map <C-s>r :SyntasticCheck rubocop<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " simnalamburt/vim-mundo
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:mundo_width = 60
 let g:mundo_preview_height = 40
 let g:mundo_right = 1
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" tpope/vim-fugitive
+" help fugitive
+" help :Git
+" help :Gwrite
+" help :Gread
+" help :Gremove
+" help :Gmove
+" help :Gcommit
+" help :Gblame
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" :Git add %        :Gwrite              :Git add .
+" :Git checkout %   :Gread
+" :Git rm %         :Gremove / :Gdelete
+" :Git mv %         :Gmove
+" :GCommit          :Git commit -am"xxxxxx"
+" :Git == git status; - 来添加或删除文件; C 调用 :Gcommit 提交当前修改 / :Git status
+" :Gedit打开当前文件的index版本
+" :Gvdiff出现与vimdiff命令相似的表现形式来对比当前文件和当前文件的 index 版本
+" :Gblame 等价于git blame
+" :Git push xxxx master
+" fugitive shortcuts
+nnoremap <silent> <leader>gl :Glog<CR>
+nnoremap <silent> <leader>gd :Gdiff<CR>
+nnoremap <silent> <leader>gb :Gblame<CR>
+nnoremap <silent> <leader>gs :Gstatus<CR>
+nnoremap <silent> <leader>gc :Gcommit -v<CR>
+nnoremap <silent> <leader>gr :Gread<CR>
+nmap              <Leader>gg :Git<CR>gg<c-n>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" iberianpig/tig-explorer.vim
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:tig_explorer_keymap_edit_e  = 'e'
+let g:tig_explorer_keymap_edit    = '<C-o>'
+let g:tig_explorer_keymap_tabedit = '<C-t>'
+let g:tig_explorer_keymap_split   = '<C-s>'
+let g:tig_explorer_keymap_vsplit  = '<C-v>'
+
+let g:tig_explorer_keymap_commit_edit    = '<ESC>o'
+let g:tig_explorer_keymap_commit_tabedit = '<ESC>t'
+let g:tig_explorer_keymap_commit_split   = '<ESC>s'
+let g:tig_explorer_keymap_commit_vsplit  = '<ESC>v'
