@@ -1,0 +1,23 @@
+snippet test
+#include <unity.h>
+
+void setUp()
+{
+}
+
+void tearDown()
+{
+}
+
+void test_$1()
+{
+    $0
+}
+
+int main()
+{
+    UNITY_BEGIN();
+    RUN_TEST(test_$1);
+    return UNITY_END();
+}
+endsnippet

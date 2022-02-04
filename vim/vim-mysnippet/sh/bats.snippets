@@ -1,0 +1,177 @@
+#############################################################
+# General bash setup
+
+snippet @lineno "temporary debug line"
+echo "$(basename "${BASH_SOURCE[0]}"):${FUNCNAME[0]}:$LINENO: $1" # DELETEME
+endsnippet
+
+#############################################################
+# bats snippets
+
+snippet _exists "test if function exists"
+#------------------------------------------------------------
+# test ${1:function}
+
+@test '$1 function exists' {
+	run type -t $1
+	assert_success
+	assert_output 'function'
+}
+endsnippet
+
+snippet @test "basic test snippet"
+@test '$1' {
+	$0
+}
+endsnippet
+
+snippet @skip_test "skip test snippet"
+@test '$1' {
+	skip 'test not written yet'
+}
+endsnippet
+
+snippet @skip "skip line"
+skip '$1'
+endsnippet
+
+snippet @success "assert_success"
+assert_success
+endsnippet
+
+snippet @failure "assert_failure"
+assert_failure
+endsnippet
+
+snippet @null_out "assert null output"
+assert_output ''
+endsnippet
+
+#############################################################
+# EDW bats snippets
+
+snippet @basic_tests "Basic Tests for EDW Libaries"
+#############################################################
+# Basic Tests for $1
+
+@test '$1 exists' {
+	assert_file_exist "$PWD/scripts/lib/$1"
+}
+
+#------------------------------------------------------------
+@test '$1 shellcheck' {
+	run shellcheck "$PWD/scripts/lib/$1" -e SC1091
+	assert_success
+	assert_output ''
+}
+
+#------------------------------------------------------------
+@test '$1 perms' {
+	run stat --printf '%A' "$PWD/scripts/lib/$1"
+	assert_success
+	assert_output '-rwxr-xr-x'
+}
+
+#------------------------------------------------------------
+@test 'run $1 in a non-bash environment' {
+	run sh "$PWD/scripts/lib/$1"
+	assert_failure
+	assert_output '$1 is either not a bash script or is not being run in bash'
+}
+
+#------------------------------------------------------------
+@test '$1 no source' {
+	run "$PWD/scripts/lib/$1"
+	assert_failure
+	assert_output '$1 must only be sourced.'
+}
+endsnippet
+
+#############################################################
+# EDW scripts snippets
+
+snippet @utility "Beginning of EDW Libraries"
+#############################################################################
+# Basic library startup checks
+
+source utility
+
+[[ ${BASH_SOURCE[0]} == "\$0" ]] && die "$(basename "\$0") must only be sourced."
+endsnippet
+
+#############################################################
+# POD template
+
+snippet @pod_header "POD default template"
+#############################################################
+: << POD
+=head1 NAME
+
+${1:name - short description}
+
+=head1 SYNOPSIS
+
+${2:some examples}
+
+=head1 OPTIONS
+
+${3:list options}
+
+=head1 DESCRIPTION
+
+${4:describe this file}
+
+=head1 FUNCTIONS
+
+${5: list and describe the functions defined in this file}
+
+=cut
+POD
+endsnippet
+
+snippet @pod "basic pod template"
+: << POD
+=head${1:1} ${2:func name}
+
+text goes here
+
+=cut
+POD
+endsnippet
+
+snippet @func "basic pod function template"
+#############################################################
+: << POD
+=head2 ${1:func name}
+
+XXX: description, synopsis, expects and output
+
+=cut
+POD
+
+function $1() {
+	echo '...'
+}
+endsnippet
+
+#############################################################
+# Setup parsing of parameters
+
+snippet @parseparams "parse parameters section"
+#############################################################################
+
+source ParseParams
+
+# OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
+
+declare PARMS_DEF='
+${1:definitions go here}
+'
+
+function handle_params() {
+	parse_params "$PARMS_DEF" "$@"
+
+	# Specific checks for parameters
+	${2:parm handling goes here}
+}
+endsnippet

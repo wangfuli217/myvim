@@ -1,0 +1,19 @@
+snippet cmocka "cmocka test" b
+#include <stdio.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <cmocka.h>
+
+#include "${1:`!p snip.rv = fn.replace("test_", "")`}"
+
+void ${2:test_name}(void **state) {
+	${3:/*code*/}
+}
+
+int main(int argc, char *argv[]) {
+	const struct CMUnitTest unitTest[] = {
+		cmocka_unit_test($2)
+	};
+	return cmocka_run_group_tests(unitTest, NULL, NULL);
+}
+endsnippet
