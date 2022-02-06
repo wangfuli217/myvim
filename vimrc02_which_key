@@ -4,19 +4,21 @@
 " nnoremap         <F5> :update<CR>:source %<CR>
 " nnoremap <leader><F5> :update<CR>:source %<CR>
 " augroup makeprg
-    "autocmd FileType cpp   set makeprg="g++ -Wall -Wextra -std=c++11 ". expand("%") . " && ./a.out"
+"autocmd FileType cpp   set makeprg="g++ -Wall -Wextra -std=c++11 ". expand("%") . " && ./a.out"
 ""    autocmd FileType c      set makeprg="gcc\ -Wall\ -o\ %<\ %"<CR>
-    autocmd FileType lua    set makeprg="lua ".expand("%")
-    autocmd FileType python set makeprg="python ".expand("%")
-    autocmd FileType bash   set makeprg="bash ".expand("%")
-    autocmd FileType sh     set makeprg="bash ".expand("%")
-    autocmd FileType perl   set makeprg=perl\ -c\ %\ $* errorformat=%f:%l:%m
+autocmd FileType lua    set makeprg="lua ".expand("%")
+autocmd FileType python set makeprg="python ".expand("%")
+autocmd FileType bash   set makeprg="bash ".expand("%")
+autocmd FileType sh     set makeprg="bash ".expand("%")
+autocmd FileType perl   set makeprg=perl\ -c\ %\ $* errorformat=%f:%l:%m
 " augroup END
 " autocmd FileType c          set makeprg="gcc\ '%'\ -o\ '%:r'\ -std=gnu99\ -Wall"
 autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
 autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
+
+let g:which_key_map =  {}
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " recently used or append
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -27,7 +29,7 @@ vnoremap <Tab> %
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" F1-F12 快捷键
 " 代码显示
-nnoremap <F2> :set nu! nu?<CR>
+nnoremap <F2> :set nu!   nu?<CR>
 nnoremap <F3> :set list! list?<CR>
 nnoremap <F4> :set wrap! wrap?<CR>
 
@@ -85,6 +87,36 @@ nnoremap <leader><F7> :MundoToggle<CR>
 nnoremap <leader><F8> :TigOpenCurrentFile<CR>
 nnoremap <leader><F9> :TigOpenProjectRootDir<CR>
 
+let g:which_key_map['h'] = {
+            \ 'name' : '+F1-F12' ,
+            \ 'F1' :   ['help', 'vimhelp'],
+            \ 'F2' :   ['set nu!', 'toggle number'],
+            \ 'F3' :   ['set list!', 'toggle list'],
+            \ 'F4' :   ['set wrap!', 'toggle wrap'],
+            \ 'F5' :   ['Compile', 'c/cpp java'] ,
+            \ 'F6' :   [':Autoformat', 'Autoformat'],
+            \ 'F7' :   [':SyntasticToggleMode', 'SyntasticToggleMode'],
+            \ 'F8' :   ['TODO', 'TODO'],
+            \ 'F9' :   ['TODO', 'TODO'],
+            \ 'F10' :  ['TODO', 'TODO'],
+            \ 'F11' :  ['TODO', 'TODO'],
+            \ 'F12' :  ['TODO', 'TODO'],
+            \ '\F1' :  [':e $MYVIMRC', 'reread $MYVIMRC'],
+            \ '\F2' :  [':Tagbar', 'better Taglist'],
+            \ '\F3' :  [':NERDTreeToggle', 'tree'],
+            \ '\F4' :  [':CtrlPMixed', 'CtrlP'],
+            \ '\F5' :  ['Run', 'perl lua bash c/c++ vimscript'],
+            \ '\F6' :  [':AV', 'switch header/source'],
+            \ '\F7' :  [':MundoToggle','undo list'],
+            \ '\F8' :  [':TigOpenCurrentFile','Tig@CurrentFile'],
+            \ '\F9' :  [':TigOpenProjectRootDir','Tig@RootDir'],
+            \ '\F10' : ['TODO', 'TODO'],
+            \ '\F11' : ['TODO', 'TODO'],
+            \ '\F12' : ['TODO', 'TODO'],
+            \ }
+nnoremap <silent> <c-x><c-h>    :WhichKey! which_key_map.h<CR>
+nnoremap <silent> <c-x>h        :WhichKey! which_key_map.h<CR>
+
 """" 跳转再优化
 " 把下一个查找匹配项所在的行显示在屏幕的最中间
 nnoremap <silent> n nzz
@@ -93,11 +125,11 @@ nnoremap <silent> * *zz
 nnoremap <silent> # #zz
 nnoremap <silent> g* g*zz
 " 代码跳转后居中 + 多选择跳转:nmap <c-]> g<c-]>
-nnoremap <c-]> g<c-]>zz
-nnoremap <c-o> g<c-o>zz
-nnoremap <c-i> g<c-i>zz
-" 执行删除操作时插入断点 Ctrl-G u (类似commit的操作)
-inoremap <silent> <c-u> <c-g>u<c-u>
+nnoremap <silent> <c-]> g<c-]>zz
+nnoremap <silent> <c-o> g<c-o>zz
+nnoremap <silent> <c-i> g<c-i>zz
+" 执行删除<silent> 操作时插入断点 Ctrl-G u (类似commit的操作)
+inoremap <silent> <silent> <c-u> <c-g>u<c-u>
 inoremap <silent> <c-w> <c-g>u<c-w>
 inoremap <silent> , ,<c-g>u
 inoremap <silent> . .<c-g>u
@@ -187,6 +219,16 @@ nmap <leader>ra <esc>\rt<esc>\rs<esc>gg=G<esc>gg<esc>
 
 " \sh
 nmap <leader>sh <esc>:set ft=sh<CR>
+let g:which_key_map['r'] = {
+            \ 'name' : '+remove' ,
+            \ 's' :   ['<space>', 'remove space'],
+            \ 'm' :   ['^M', 'remove ^M'],
+            \ 't' :   ['Tab', 'switch Tab to space'],
+            \ 'a' :   ['all', '<space> ^M Tab'],
+            \ }
+nnoremap <silent> <c-x><c-r> :WhichKey! which_key_map.r<CR>
+nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -219,6 +261,29 @@ nnoremap <silent> <C-t>7 7gt
 nnoremap <silent> <C-t>8 8gt
 nnoremap <silent> <C-t>9 9gt
 
+let g:which_key_map['t'] = {
+            \ 'name' : '+tab' ,
+            \ 'c' :   [':tabnew', 'new tab'],
+            \ 'x' :   [':tabclose', 'close tab'],
+            \ 't' :   [':tabs', 'list tab'],
+            \ '0' :   [':tabfirst', 'first tab'],
+            \ 'n' :   ['gt', 'next tab'],
+            \ 'p' :   ['gT', 'previous tab'],
+            \ 'f' :   [':tabfirst', 'first tab'],
+            \ 'l' :   [':tablast', 'last tab'],
+            \ '1' :  ['1gt', '1s tab'],
+            \ '2' :  ['2gt', '2s tab'],
+            \ '3' :  ['3gt', '3s tab'],
+            \ '4' :  ['4gt', '4s tab'],
+            \ '5' :  ['5gt', '5s tab'],
+            \ '6' :  ['6gt', '6s tab'],
+            \ '7' :  ['7gt', '7s tab'],
+            \ '8' :  ['8gt', '8s tab'],
+            \ '9' :  ['9gt', '9s tab'],
+            \ }
+nnoremap <silent> <c-x><c-t> :WhichKey! which_key_map.t<CR>
+nnoremap <silent> <c-x>t     :WhichKey! which_key_map.t<CR>
+
 nnoremap <silent> <leader>n <down>
 nnoremap <silent> <leader>p <up>
 nnoremap <silent> <leader>1 1gt
@@ -231,6 +296,16 @@ nnoremap <silent> <leader>7 7gt
 nnoremap <silent> <leader>8 8gt
 nnoremap <silent> <leader>9 9gt
 nnoremap <silent> <leader>0 :tabs<cr>
+let g:which_key_map.1 = 'which_key_ignore'
+let g:which_key_map.2 = 'which_key_ignore'
+let g:which_key_map.3 = 'which_key_ignore'
+let g:which_key_map.4 = 'which_key_ignore'
+let g:which_key_map.5 = 'which_key_ignore'
+let g:which_key_map.6 = 'which_key_ignore'
+let g:which_key_map.7 = 'which_key_ignore'
+let g:which_key_map.8 = 'which_key_ignore'
+let g:which_key_map.9 = 'which_key_ignore'
+let g:which_key_map.0 = 'which_key_ignore'
 
 """" buffer(args) b conflict with tmux, use screen hotkey a
 nnoremap <silent> <C-a>a :ls<CR>
@@ -261,6 +336,32 @@ nnoremap <silent> <C-a>7 :b7<cr>
 nnoremap <silent> <C-a>8 :b8<cr>
 nnoremap <silent> <C-a>9 :b9<cr>
 
+let g:which_key_map['a'] = {
+            \ 'name' : '+buffer' ,
+            \ 'c' :   [':new', 'new buffer'],
+            \ 'x' :   [':bdelete', 'close buffer'],
+            \ 't' :   [':list', 'list buffer'],
+            \ '0' :   [':bfirst', 'first buffer'],
+            \ 'n' :   ['bnext', 'next buffer'],
+            \ 'p' :   ['bprev', 'previous buffer'],
+            \ 'f' :   [':bfirst', 'first buffer'],
+            \ 'l' :   [':blast', 'last buffer'],
+            \ '1' :  ['1b', '1s buffer'],
+            \ '2' :  ['2b', '2s buffer'],
+            \ '3' :  ['3b', '3s buffer'],
+            \ '4' :  ['4b', '4s buffer'],
+            \ '5' :  ['5b', '5s buffer'],
+            \ '6' :  ['6b', '6s buffer'],
+            \ '7' :  ['7b', '7s buffer'],
+            \ '8' :  ['8b', '8s buffer'],
+            \ '9' :  ['9b', '9s buffer'],
+            \ 'c-^' :  ['Ctrl+^', 'switch buffer'],
+            \ }
+nnoremap <silent> <c-x><c-a> :WhichKey! which_key_map.a<CR>
+nnoremap <silent> <c-x>a     :WhichKey! which_key_map.a<CR>
+nnoremap <silent> <c-x><c-b> :WhichKey! which_key_map.a<CR>
+nnoremap <silent> <c-x>b     :WhichKey! which_key_map.a<CR>
+
 """" reload buffer
 nnoremap <C-a>u :e!<CR>redraw<CR>
 nnoremap <C-a>U :bufdo :e!<CR>redraw<CR>
@@ -278,6 +379,25 @@ nnoremap <silent> <leader>v :vsplit<CR><C-w><C-w>
 nnoremap <silent> <leader>q :q<CR>
 nnoremap <silent> <leader>Q :q!<CR>
 
+let g:which_key_map['w'] = {
+            \ 'name' : '+windows' ,
+            \ 'w' : ['<C-W>w'     , 'other-window']          ,
+            \ 'c' : ['<C-W>c'     , 'delete-window']         ,
+            \ 's' : ['<C-W>s'     , 'split-window-below']    ,
+            \ 'v' : ['<C-W>v'     , 'split-window-right']    ,
+            \ 'h' : ['<C-W>h'     , 'window-left']           ,
+            \ 'j' : ['<C-W>j'     , 'window-below']          ,
+            \ 'l' : ['<C-W>l'     , 'window-right']          ,
+            \ 'k' : ['<C-W>k'     , 'window-up']             ,
+            \ '=' : ['<C-W>='     , 'balance-window']        ,
+            \ 'p' : ['<C-W>p'     , 'previous-window']       ,
+            \ 'x' : ['<C-W>x'     , 'switch-window']       ,
+            \ '_' : ['<C-W>_'     , 'ssplit-window-max']    ,
+            \ '|' : ['<C-W>|'     , 'vsplit-window-max']    ,
+            \ }
+nnoremap <silent> <c-x><c-w>    :WhichKey! which_key_map.w<CR>
+nnoremap <silent> <c-x>w        :WhichKey! which_key_map.w<CR>
+
 """" QuickFix
 nnoremap <silent> <C-c>c :copen<CR>
 nnoremap <silent> <C-c>x :cclose<CR>
@@ -292,6 +412,18 @@ nnoremap <silent> <C-c><C-n> :cprevious<CR>
 nnoremap <silent> <C-c><C-f> :cfirst<CR>
 nnoremap <silent> <C-c><C-l> :clast<CR>
 
+let g:which_key_map['c'] = {
+            \ 'name' : '+cwindow' ,
+            \ 'c' :   [':copen', 'open cwindow'],
+            \ 'x' :   [':cclose', 'close cwindow'],
+            \ 'n' :   ['cnext','next cwindow'],
+            \ 'p' :   ['cprevious', 'previous cwindow'],
+            \ 'f' :   [':cfirst', 'first cwindow'],
+            \ 'l' :   [':clast', 'last cwindow'],
+            \ 'c-w+p' :  ['Ctrl-w+p', 'switch window'],
+            \ }
+nnoremap <silent> <c-x><c-c> :WhichKey! which_key_map.c<CR>
+nnoremap <silent> <c-x>c     :WhichKey! which_key_map.c<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " misc session buffertotab termianl and AutoTag
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -319,6 +451,17 @@ nnoremap <C-a>T :terminal<CR>
 
 """" Tag
 nnoremap <C-a>P :!touch ./.project<CR>
+
+let g:which_key_map['x'] = {
+            \ 'name' : '+misc' ,
+            \ 's' :   ['mksession', 'make session'],
+            \ 'r' :   ['source', 'reload session'],
+            \ 't' :   ['buffer->tab','buffer to tab'],
+            \ 'T' :   ['terminal', 'open terminal'],
+            \ 'P' :   ['project', 'touch .project for ctag'],
+            \ }
+nnoremap <silent> <c-x><c-x> :WhichKey! which_key_map.x<CR>
+nnoremap <silent> <c-x>x     :WhichKey! which_key_map.x<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim mark simulate tmux windows manager
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -348,6 +491,24 @@ nnoremap <C-m><C-d> :BookmarkMoveDown<CR>
 nnoremap <C-m><C-l> :BookmarkMoveToLine<CR>
 nnoremap <C-m><C-s> :BookmarkSave ./.bookmark<CR>
 nnoremap <C-m><C-r> :BookmarkLoad ./.bookmark<CR>
+
+let g:which_key_map['m'] = {
+            \ 'name' : '+bookmark' ,
+            \ 't' :   ['BookmarkToggle', 'toggle bookmark'],
+            \ 'a' :   ['BookmarkAnnotate', 'annotate bookmark'],
+            \ 'm' :   ['BookmarkShowAll','showall bookmark'],
+            \ 'n' :   ['BookmarkNext', 'next bookmark'],
+            \ 'p' :   ['BookmarkPrev', 'previous bookmark'],
+            \ 'x' :   ['BookmarkClear', 'clear bookmark'],
+            \ 'c' :   ['BookmarkClearAll', 'clearall bookmarks'],
+            \ 'u' :   ['BookmarkMoveUp','move bookmark up'],
+            \ 'd' :   ['BookmarkMoveDown', 'move bookmark down'],
+            \ 'l' :   ['BookmarkMoveToLine', 'move bookmark to line'],
+            \ 's' :   ['BookmarkSave', 'save ./.bookmark'],
+            \ 'r' :   ['BookmarkLoad', 'load ./.bookmark'],
+            \ }
+nnoremap <silent> <c-x><c-m> :WhichKey! which_key_map.m<CR>
+nnoremap <silent> <c-x>m     :WhichKey! which_key_map.m<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " cnoremap and inoremap simulate readline
@@ -413,15 +574,15 @@ nnoremap rr :e %<cr>
 " autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
 augroup enableAutoReloadVimrc
-  autocmd!
-  autocmd BufWritePost *vimrc source ${MYVIMRC} | set foldmethod=marker
-  autocmd BufWritePost *gvimrc if has('gui_running') source source ${MYVIMRC}
+    autocmd!
+    autocmd BufWritePost *vimrc source ${MYVIMRC} | set foldmethod=marker
+    autocmd BufWritePost *gvimrc if has('gui_running') source source ${MYVIMRC}
 augroup END
 
 augroup enableAutoSaveSession
-  autocmd!
-  " autocmd VimLeave * mksession! ./session.vim
-  " autocmd VimEnter * source ./session.vim
+    autocmd!
+    " autocmd VimLeave * mksession! ./session.vim
+    " autocmd VimEnter * source ./session.vim
 augroup END
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 基本配置
@@ -560,9 +721,9 @@ set display=truncate
 set nolist
 set listchars=tab:>-,trail:-
 if has('multi_byte') && &encoding ==# 'utf-8'
-  let &listchars = 'tab:▸ ,extends:❯,precedes:❮,nbsp:±'
+    let &listchars = 'tab:▸ ,extends:❯,precedes:❮,nbsp:±'
 else
-  let &listchars = 'tab:> ,extends:>,precedes:<,nbsp:.'
+    let &listchars = 'tab:> ,extends:>,precedes:<,nbsp:.'
 endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -580,7 +741,7 @@ set noswapfile
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
 " 如果文件夹不存在，则新建文件夹
 if !isdirectory($HOME.'/.vim/files') && exists('*mkdir')
-  call mkdir($HOME.'/.vim/files')
+    call mkdir($HOME.'/.vim/files')
 endif
 " 备份文件
 set backup                                  " make backup files
@@ -633,9 +794,9 @@ set smartindent
 set expandtab       " Use spaces instead of tabs
 "" make/cmake
 augroup vimrc-make-cmake
-  autocmd!
-  autocmd FileType make setlocal noexpandtab
-  autocmd BufNewFile,BufRead CMakeLists.txt setlocal filetype=cmake
+    autocmd!
+    autocmd FileType make setlocal noexpandtab
+    autocmd BufNewFile,BufRead CMakeLists.txt setlocal filetype=cmake
 augroup END
 
 " 设置格式化时制表符占用空格数
@@ -692,12 +853,12 @@ set foldlevel=99
 nnoremap <Space> @=(foldlevel(line('.'))>0) ? "za" : "}"<CR>
 nnoremap <expr> <Space> (foldlevel(line('.'))>0) ? "za" : "}"
 function! ToggleFold()
-     if foldlevel(line('.')) > 0
-         return "za"
-     else
-         return "}"
-     endif
- endfunction
+    if foldlevel(line('.')) > 0
+        return "za"
+    else
+        return "}"
+    endif
+endfunction
 nnoremap <expr> <Space> ToggleFold()
 nnoremap <leader>f0 :set foldlevel=0<CR>
 nnoremap <leader>f1 :set foldlevel=1<CR>
@@ -741,7 +902,7 @@ Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set 
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
 
-                                       " netrw Ex/Sex/Vex
+" netrw Ex/Sex/Vex
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
 Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree
@@ -787,11 +948,26 @@ Plug 'vim-scripts/a.vim'               " swtich between source files and header 
 " Plug 'octol/vim-cpp-enhanced-highlight' " c++ syntax highlighting
 " Plug 'xavierd/clang_complete'          " uses clang for accurately completing C and C++ code
 
+Plug 'liuchengxu/vim-which-key'
+
 Plug 'tpope/vim-fugitive'
 Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-ftplugin'          " Lua file type
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 call plug#end()
+
+let g:which_key_map['p'] = {
+            \ 'name' : '+plugin' ,
+            \   'S': ['PlugSnapshot', 'snapshot'],
+            \   'U': ['PlugUpgrade', 'upgrade'],
+            \   'c': ['PlugClean', 'clean'],
+            \   'd': ['PlugDiff', 'diff'],
+            \   'i': ['PlugInstall', 'install'],
+            \   's': ['PlugStatus', 'status'],
+            \   'u': ['PlugUpdate', 'update'],
+            \ }
+nnoremap <silent> <c-x><c-p> :WhichKey! which_key_map.p<CR>
+nnoremap <silent> <c-x>p     :WhichKey! which_key_map.p<CR>
 
 " neocompletecache -> neocomplete -> deoplete/neocompletion-manager(下一代通用补全)
 " CtrlP / CommandT -> Unite.vim + vimproc -> denite.vim
@@ -898,7 +1074,7 @@ let s:vim_tags = expand('~/.cache/tags')
 let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
 if !isdirectory(s:vim_tags)
-   silent! call mkdir(s:vim_tags, 'p')
+    silent! call mkdir(s:vim_tags, 'p')
 endif
 
 " 配置 ctags 的参数
@@ -956,15 +1132,15 @@ nnoremap wm :WMToggle<cr>
 " cscope setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 if has("cscope")
-  set csprg=/usr/bin/cscope
-  set csto=1
-  set cst
-  set nocsverb
-  " add any database in current directory
-  if filereadable("cscope.out")
-      cs add cscope.out
-  endif
-  set csverb
+    set csprg=/usr/bin/cscope
+    set csto=1
+    set cst
+    set nocsverb
+    " add any database in current directory
+    if filereadable("cscope.out")
+        cs add cscope.out
+    endif
+    set csverb
 endif
 
 "cscope调用
@@ -1114,17 +1290,17 @@ let NERDTreeWinSize=25
 let NERDTreeIgnore=['\.pyc','\~$','\.swp','\.o','\.out','\.fcgi','\.cgi','\.a','\.so','\.svn','\.vscode','\.git','\.project','.\root']
 " 显示标记
 let g:NERDTreeIndicatorMapCustom = {
-    \ "Modified"  : "✹",
-    \ "Staged"    : "✚",
-    \ "Untracked" : "✭",
-    \ "Renamed"   : "➜",
-    \ "Unmerged"  : "═",
-    \ "Deleted"   : "✖",
-    \ "Dirty"     : "✗",
-    \ "Clean"     : "✔︎",
-    \ 'Ignored'   : '☒',
-    \ "Unknown"   : "?"
-    \ }
+            \ "Modified"  : "✹",
+            \ "Staged"    : "✚",
+            \ "Untracked" : "✭",
+            \ "Renamed"   : "➜",
+            \ "Unmerged"  : "═",
+            \ "Deleted"   : "✖",
+            \ "Dirty"     : "✗",
+            \ "Clean"     : "✔︎",
+            \ 'Ignored'   : '☒',
+            \ "Unknown"   : "?"
+            \ }
 " }}}
 ""修改树的显示图标
 let g:NERDTreeDirArrowExpandable = '►'
@@ -1147,9 +1323,9 @@ let g:ctrlp_working_path_mode = 'r'
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 let g:ctrlp_custom_ignore = {
-  \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
-  \ 'link': 'some_bad_symbolic_links',
-  \ }
+            \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
+            \ 'link': 'some_bad_symbolic_links',
+            \ }
 let g:ctrlp_match_window_bottom = 1
 let g:ctrlp_max_height = 15
 let g:ctrlp_match_window_reversed = 0
@@ -1309,6 +1485,25 @@ nnoremap <silent> <leader>gc :Gcommit -v<CR>
 nnoremap <silent> <leader>gr :Gread<CR>
 nmap              <Leader>gg :Git<CR>gg<c-n>
 
+let g:which_key_map.g = {
+            \ 'name' : '+fugitive',
+            \ }
+let g:which_key_map.g.B = ['Gbrowse', 'browse']
+let g:which_key_map.g.d = ['Gdiff', 'diff']
+let g:which_key_map.g.M = ['Gmerge', 'merge']
+let g:which_key_map.g.P = ['Gpush', 'push']
+let g:which_key_map.g.R = ['Grebase', 'rebase']
+let g:which_key_map.g.b = ['Gblame', 'blame']
+let g:which_key_map.g.c = ['Gcommit', 'commit']
+let g:which_key_map.g.D = ['Gdelete', 'delete']
+let g:which_key_map.g.f = ['Gfetch', 'fetch']
+let g:which_key_map.g.l = ['Glog', 'log']
+let g:which_key_map.g.m = ['Gmove', 'move']
+let g:which_key_map.g.p = ['Gpull', 'pull']
+let g:which_key_map.g.r = ['Grename', 'rename']
+let g:which_key_map.g.s = ['Gstatus', 'status']
+nnoremap <silent> <c-x><c-g> :WhichKey! which_key_map.g<CR>
+nnoremap <silent> <c-x>g     :WhichKey! which_key_map.g<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " iberianpig/tig-explorer.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1322,3 +1517,18 @@ let g:tig_explorer_keymap_commit_edit    = '<ESC>o'
 let g:tig_explorer_keymap_commit_tabedit = '<ESC>t'
 let g:tig_explorer_keymap_commit_split   = '<ESC>s'
 let g:tig_explorer_keymap_commit_vsplit  = '<ESC>v'
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" liuchengxu/vim-which-key
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" let g:which_key_map =  {}
+let g:which_key_vertical = 0           " show popup vertically
+let g:which_key_position = "botright"  " split a window at the bottom
+let g:which_key_hspace   = 5           " minimum horizontal space between columns
+let g:which_key_centered = 1           " make all keybindings centered in the middle
+nnoremap <silent> <leader>      :WhichKey      '\'<CR>
+nnoremap <silent> <localleader> :WhichKey      '\'<CR>
+vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
+vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
+
+call which_key#register('\', "g:which_key_map")
