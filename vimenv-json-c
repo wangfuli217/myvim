@@ -1,0 +1,8 @@
+augroup json-c
+    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -ljson-c -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>
+    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -ljson-c -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>
+    autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -ljson-c -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>:! ./%< <CR>
+    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -ljson-c -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>:! ./%< <CR>
+augroup END
+
+set tags+=~/.cache/tags/home-wangfuli-git-json-c-.tags
