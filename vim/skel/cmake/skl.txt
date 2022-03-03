@@ -1,0 +1,271 @@
+# 文件说明
+# ...
+
+# 项目名称和CMake版本要求 - 必选
+PROJECT()
+CMAKE_MINIMUM_REQUIRED()
+
+# 设置相关变量和选项 - 比如编译器、模块路径、编译选项等
+SET()
+OPTION()
+ADD_DEFINITIONS()
+# ...
+
+# 添加目录和代码文件
+ADD_SUBDIRECTORY()
+AUX_SOURCE_DIRECTORY()
+...
+
+# 添加外部模块
+FIND_PACKAGE()
+# ...
+
+# 生成目标文件
+INCLUDE_DIRECTORIES()
+TARGET_LINK_LIBRARIES()
+ADD_LIBRARY() / ADD_EXECUTABLE()
+# ...
+
+# 安装到指定目录 - 可选
+INSTALL()
+# ...
+
+# 添加测试文件 - 可选
+ADD_TEST()
+ENABLE_TESTING()
+# ...
+
+
+######################################## Findxxx.cmake文件框架
+# 查找头文件
+FIND_PATH()
+
+# 查找库文件
+FIND_LIBRARY()
+
+# 根据查找结果设置相关变量
+SET()
+
+# 根据查找结果输出提示信息或者终止编译
+IF ()
+    MESSAGE()
+ELSE ()
+    MESSAGE()
+ENDIF ()
+######################################## 动态库+静态库
+ADD_LIBRARY(slist_static STATIC ${SRC_LIST})
+SET_TARGET_PROPERTIES(slist_static PROPERTIES OUTPUT_NAME "slist")
+
+ADD_LIBRARY(slist_shared SHARED ${SRC_LIST})
+SET_TARGET_PROPERTIES(slist_shared PROPERTIES OUTPUT_NAME "slist")
+SET_TARGET_PROPERTIES(slist_shared PROPERTIES VERSION 1.0 SOVERSION 1)
+
+INSTALL(FILES slist.h DESTINATION ${INSTALL_PREFIX}/include)
+INSTALL(TARGETS slist_static ARCHIVE DESTINATION ${INSTALL_PREFIX}/lib)
+INSTALL(TARGETS slist_shared LIBRARY DESTINATION ${INSTALL_PREFIX}/lib)
+
+######################################## 基础选项
+PROJECT(main)
+SET(SRC_LIST main.cpp)
+SET(CMAKE_CXX_COMPILER "clang++")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -Werror -Weverything -Wno-deprecated-declarations -Wno-disabled-macro-expansion -Wno-float-equal -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-global-constructors -Wno-exit-time-destructors -Wno-missing-prototypes -Wno-padded -Wno-old-style-cast")
+SET(CMAKE_EXE_LINKER_FLAGS "-lc++ -lc++abi")
+SET(CMAKE_BUILD_TYPE Debug)
+ADD_EXECUTABLE(main ${SRC_LIST})
+
+EXECUTABLE_OUTPUT_PATH          可执行文件输出目录   set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+CMAKE_ARCHIVE_OUTPUT_DIRECTORY  设置静态库输出目录   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+CMAKE_LIBRARY_OUTPUT_DIRECTORY  编译时lib库输出目录  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+CMAKE_RUNTIME_OUTPUT_DIRECTORY  动态库输出目录      set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set
+set_property
+get_property
+######################################## 基础选项
+-DCMAKE_BUILD_TYPE=Debug -Dgtest_build_tests=ON -Dgtest_build_samples=ON -Dgmock_build_tests=ON -DENABLE_SANITIZERS=On
+-DCMAKE_BUILD_TYPE=Release -Dgtest_build_tests=ON -Dgtest_build_samples=ON -Dgmock_build_tests=ON
+
+cmake .. -DCMAKE_C_COMPILER=clang-3.6 -DCMAKE_CXX_COMPILER=clang++-3.6
+cmake .. -G Ninja && ninja
+CMAKE_CXX_FLAGS     - 
+CMAKE_C_FLAGS       - 
+CMAKE_C_COMPILER    - 用于编译c代码的程序。
+CMAKE_CXX_COMPILER  - 用于编译c++代码的程序。
+CMAKE_LINKER        - 用于链接二进制文件的程序。
+
+configure_file(ver.h.in ${PROJECT_BINARY_DIR}/ver.h)          # 进行变量的替换
+configure_file(path.h.in ${PROJECT_BINARY_DIR}/path.h @ONLY)  # 进行变量的替换
+######################################## 基础命令
+PROJECT -                   指定项目名称
+CMAKE_MINIMUM_REQUIRED -    指定CMake版本
+SET -                       显式定义变量
+MESSAGE -                   向终端输出消息
+########################################编译相关
+ADD_EXECUTABLE -            指定生成可执行文件
+ADD_SUBDIRECTORY -          添加子目录
+AUX_SOURCE_DIRECTORY -      追加源文件到变量中
+ADD_LIBRARY -               生成库文件
+TARGET_LINK_LIBRARIES -     链接共享库
+ADD_DEFINITIONS -           添加编译选项
+INCLUDE_DIRECTORIES -       添加头文件搜索路径
+########################################其他 
+cmake .. -DCMAKE_INSTALL_PREFIX=/install/location
+install_manifest.txt        包含了所有安装文件的目录地址; CMAKE_INSTALL_PREFIX 的默认值是 /usr/local/
+INSTALL -                   安装
+DESTINATION                 安装路径
+LIBRARY DESTINATION         安装路径
+RUNTIME DESTINATION         安装路径
+SET_TARGET_PROPERTIES -     设置目标文件的属性
+GET_TARGET_PROPERTY -       获取目标文件的属性
+ADD_TEST -                  添加测试
+ENABLE_TESTING -            使所有TEST生效
+OPTION -                    为选项设置开关
+########################################常用变量
+变量名                       意义
+CMAKE_SOURCE_DIR            源码根目录(CMakeList.txt所在目录)
+CMAKE_CURRENT_SOURCE_DIR    存在多个文件目录或者子项目时的当前源码根目录(最顶级的根目录)
+PROJECT_SOURCE_DIR          当前项目的根目录(应该是子项目的根目录)
+CMAKE_BINARY_DIR            你运行cmake文件的二进制临时文件所在目录
+CMAKE_CURRENT_BINARY_DIR    当前所在的二进制目录
+PROJECT_BINARY_DIR          当前项目的二进制目录
+EXECUTABLE_OUTPUT_PATH      可执行文件的输出路径
+LIBRARY_OUTPUT_PATH         库文件的输出路径
+CMAKE_INSTALL_PREFIX        安装文件的目标路径前缀
+CMAKE_MODULE_PATH           cmake模块所在的路径
+####################################### debug
+# (无) = 重要消息；
+# STATUS = 非重要消息；
+# WARNING = CMake 警告, 会继续执行；
+# AUTHOR_WARNING = CMake 警告 (dev), 会继续执行；
+# SEND_ERROR = CMake 错误, 继续执行，但是会跳过生成的步骤；
+# FATAL_ERROR = CMake 错误, 终止所有处理过程；
+message(STATUS "Setting default CMAKE_INSTALL_PREFIX path to ${CMAKE_BINARY_DIR}/install") # STATUS是指消息类型
+
+# set CACHE FORCE 是设置全局变量，并且子项目的这个全局变量都是这个值
+# STRING 是变量类型
+# "The path to use for make install" 是变量注释注释
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE STRING "The path to use for make install" FORCE)
+
+####################################### find_package
+find_package(Boost 1.46.1 REQUIRED COMPONENTS filesystem system)
+Boost-库名称。 这是用于查找模块文件FindBoost.cmake的一部分
+1.46.1 - 需要的boost库最低版本
+REQUIRED - 告诉模块这是必需的，如果找不到会报错
+COMPONENTS - 要查找的库列表。从后面的参数代表的库里找boost
+可以使用更多参数，也可以使用其他变量。
+xxx_INCLUDE_DIRS - 指向库的包含目录的变量  target_include_directories
+xxx_LIBRARY - 指向库路径的变量             target_link_libraries
+
+add_subdirectory
+
+target_link_libraries      -> gcc -llibrary     ar+ranlib/-fPIC + -shared
+add_library                -> gcc -c -o -l      /STATIC/SHARED/MODULE/ALIAS
+add_executable             -> gcc -c -o binary
+target_include_directories -> gcc -I path;      /PRIVATE/PUBLIC/INTERFACE
+####################################### 目录管理
+要在安装时创建一个目录：
+install(DIRECTORY DESTINATION ${directory})
+这些都将在配置时运行：
+file(MAKE_DIRECTORY ${directory})
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${directory})
+要在构建过程中创建，请使用自定义目标：
+在add_custom_command()命令（向生成的构建系统添加自定义构建规则）和add_custom_target()命令（其中添加了一个没有输出的目标，以便始终构建它）时，可以指定要在构建时执行的命令。通过执行命令创建一个目录${CMAKE_COMMAND} -E make_directory
+add_custom_target(mytargetname ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${directory})
+
+####################################### IMPORTED 和 INTERFACE 的使用与区别
+我们可以使用 IMPORTED 和 INTERFACE 来帮我管理
+
+针对头文件管理
+
+cmake_minimum_required(VERSION 3.15)
+
+project(demo-interface)
+
+add_library(${PROJECT_NAME} INTERFACE)
+
+target_include_directories(${PROJECT_NAME}
+    INTERFACE ${PROJECT_SOURCE_DIR}/include/)
+针对lib库管理
+
+cmake_minimum_required(VERSION 3.15)
+
+project(demo-lib)
+
+# --- demo-lib-static
+add_library(demo-lib-static STATIC IMPORTED)
+set_property(TARGET demo-lib-static
+    PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/Linux/libdemo.a)
+
+set_property(TARGET demo-lib-static
+    PROPERTY INTERFACE_INCLUDE_DIRECTORIES  ${PROJECT_SOURCE_DIR}/include/)
+
+# --- demo-lib-shared
+add_library(demo-lib-shared SHARED IMPORTED)
+set_property(TARGET demo-lib-shared
+    PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/Linux/libdemo-shared.so)
+
+set_property(TARGET demo-lib-shared
+    PROPERTY INTERFACE_INCLUDE_DIRECTORIES  ${PROJECT_SOURCE_DIR}/include/)
+
+####################################### ctest
+add_executable(test test.c)
+enable_testing()
+add_test(usage_test test)
+set_tests_properties(usage_test PROPERTIES WILL_FAIL TRUE)
+
+add_test(success_test test 0)
+set_tests_properties(success_test PROPERTIES PASS_REGULAR_EXPRESSION "SUCCESS")
+
+add_test(fail_test test 1)
+set_tests_properties(fail_test PROPERTIES WILL_FAIL TRUE)
+
+add_test(fail_test_output test 1)
+set_tests_properties(fail_test_output PROPERTIES PASS_REGULAR_EXPRESSION "FAIL")
+
+
+[增加子目录]
+add_sub_directories(<source code folder>) 增加一个档案夹到项目内。 要记住加入成为项目的子文件夹，其文件夹内需要包含 CMakeList.txt
+
+[增加编译目标]
+add_executable(TARGET_NAME SOURCES)：这个命令会生成项目目标执行文件（如 for Windows 或 MacOSX bundle）。 这个命令有两个主要参数，目标可执行文件的名称（TARGET_NAME）和可编译成目标执行文件的来源文件（SOURCES）。 SOURCES 的部分可以是单一档案，也可以是需多档案。 例子如：，在这个命令 SOURCES 是一个包含两个文件名"main.cpp main.h" 的 list。*.exeadd_executable(example main.cpp main.h)
+add_library(TARGET_NAME [STATIC | SHARED | MODULE] SOURCES)：这个命令会生成可供多个执行文件使用的 library。 目标类型包括了：
+在可执行文件编译时写入参考的静态（STATIC）库
+可执行时参考的动态或共享（SHARED） 库
+执行文件使用 dlopen 的方式进行参考的模块 （MODULE） 库。
+add_library(TARGET_NAME [STATIC | SHARED | MODULE | OBJECT| UNKNOWN] IMPORTED [GLOBAL])：有另一个方法可以增加 library 目标是利用 IMPORTED 关键词。 这个 IMPORTED 会假设另外一个项目或 framework 编译了一个 library，可以供此项目引用。 
+
+[使用静态库]
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")    # 查找库文件后缀
+SET(BUILD_SHARED_LIBS OFF)               # 关闭使用共享库
+SET(CMAKE_EXE_LINKER_FLAGS "-static")    # 连接时使用静态库
+
+[增加构建时期相关的设置]
+target_compile_definitions(TARGET_NAME INTERFACE|PUBLIC|PRIVATE DEFINITION)：这个指令会产生定义，如编译时使用 的选项产生定义。 一个常用的例子应该是：，这个命令会定义 DEBUG 符号。-Dtarget_compile_definitions(foo PUBLIC DEBUG)
+target_compile_options(TARGET_NAME INTERFACE|PUBLIC|PRIVATE OPTION)：借著设定任何编译选项来改变编译行为。 如从 onnxruntime/onnxruntime_util.cmake 摘录下来的例子：会增加编译选项 "-Wno-error=comment" 当要编译 onnxruntime_util 的时候。target_compile_options(onnxruntime_util PUBLIC "-Wno-error=comment")
+target_link_libraries(TARGET_NAME PRIVATE|PUBLIC|INTERFACE LIBRARY)：指示 linker 对名为 TARGET_NAME 的执行文件建立 LIBRARY 的链接参考。 LIBRARY 可以是一个或多个 library 的名字，绝对路径，library 名称（也就是 中的 ）或 这样的形式。 例子：。 TORCH_LIBRARIES 这个变量会在执行 TorchConfig.cmake 时给予值。lib<library_name>.so<library_name-l<library_name>target_link_libraries(example "${TORCH_LIBRARIES}")
+target_include_directories(TARGET_NAME INTERFACE|PUBLIC|PRIVATE DIR)：编译名为 TARGET_NAME 的 target 时，会增加 DIR 目录到信头文件的搜索路径中.
+
+key                             private             INTERFACE                       PUBLIC
+target_include_directories()    INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES   INCLUDE_DIRECTORIES和INTERFACE_INCLUDE_DIRECTORIES
+target_link_libraries()         LINK_LIBRARIES      INTERFACE_LINK_LIBRARIES        LINK_LIBRARIES和INTERFACE_LINK_LIBRARIES	
+target_compile_definitions()    COMPILE_DEFINITIONS INTERFACE_COMPILE_DEFINITION    COMPILE_DEFINITIONS和INTERFACE_COMPILE_DEFINITIONS
+target_compile_options()        COMPILE_OPTIONS     INTERFACE_COMPILE_OPTIONS       COMPILE_OPTIONS和INTERFACE_COMPILE_OPTIONS
+
+[脚本命令]
+CMake 语言中处理 flow control 等等相关的语法，如 if-else， for-loop， while-break， continue 等
+
+包含cmake文件
+include(path/to/cmake)
+
+OPTION(OPTION_NAME HELP_MESSAGE DEFAULT_VALUE)：建立用户选项参数，在例子中会建立一个用户参数，名为DOWNLOAD_MNIST，默认为 ON。
+message([MODE] "message to display")：
+message 可以看做是 CMake 的 print。 MODE 必须填入 CMake 提供的常数选项，比较常用的包括了 none（未给定）， STATUS， WARNING 和 FATAL_ERROR。 模式的不同将决定输出的目的地，若是 STATUS 则会输出于 ，其他则会输出于 。stdoutstderr
+execute_process(COMMAND CMD_NAME [ARGUMENTS...] [ERROR_VARIABLE VARIABLE_NAME])：
+execute_process 会在子程序内执行所给定的程序名称。 CMD_NAME 是执行程序的名称，在例子中为 python。 在CMD_NAME后的ARGUMENTS是字串阵列，作为执行程序的参数。 最后VARIABLE_NAME是当程序运行失败时，将会设为true的变量。
+
+execute_process(
+    COMMAND /bin/bash -c " echo $(whoami)@$(hostname):`date \"+%Y%m%d%H%M%S\"` "
+    OUTPUT_VARIABLE result)
+set(BUILD_HOST_INFO ${result})
+# message(FATAL_ERROR "BUILD_HOST_INFO: ${BUILD_HOST_INFO}")
+add_definitions(-DBUILD_HOST_INFO=${BUILD_HOST_INFO})
