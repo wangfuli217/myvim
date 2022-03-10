@@ -20,8 +20,9 @@ autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
 
-" :bufdo
 " :argdo
+" :bufdo
+" :tabdo
 " :windo
 
 
@@ -68,7 +69,7 @@ if filereadable(".vimenv")
     source ./.vimenv
     nnoremap <c-x><c-k> :CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>  "<c-c> quit popup
 endif
-    
+
 " +[-ljson-c] + [-O1 -fsanitize=address -fno-omit-frame-pointer]
 " nnoremap   <F5> <Esc>:w<CR>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>
 " nnoremap <leader><F5> <Esc>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>:! ./%< <CR>
@@ -83,7 +84,7 @@ augroup snippets
     autocmd Filetype lua   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/lua.snippets<CR><CR>
     autocmd Filetype vim   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/vim.snippets<CR><CR>
     autocmd Filetype cmake nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/cmake.snippets<CR><CR>
-    
+
     autocmd Filetype text  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet<CR><CR>
     autocmd Filetype c     nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/c<CR><CR>
     autocmd Filetype perl  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/perl<CR><CR>
@@ -91,7 +92,7 @@ augroup snippets
     autocmd Filetype cmake nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/cmake<CR><CR>
     autocmd Filetype lua   nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/lua<CR><CR>
     autocmd Filetype make  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/make<CR><CR>
-    
+
     autocmd Filetype c     nnoremap <c-x>k      <Esc>:Man  <C-R>=expand("<cword>")<CR><CR>
     autocmd Filetype c     nnoremap <c-x><c-k>  <Esc>:Vman <C-R>=expand("<cword>")<CR><CR>
     autocmd Filetype perl  nnoremap <c-x>k      :Perldoc<CR>
@@ -419,8 +420,33 @@ let g:which_key_map['a'] = {
             \ }
 nnoremap <silent> <c-x><c-a> :WhichKey! which_key_map.a<CR>
 nnoremap <silent> <c-x>a     :WhichKey! which_key_map.a<CR>
-nnoremap <silent> <c-x><c-b> :WhichKey! which_key_map.a<CR>
-nnoremap <silent> <c-x>b     :WhichKey! which_key_map.a<CR>
+
+let g:which_key_map['b'] = {
+            \ 'name' : '+tmux' ,
+            \ 'c' : ['new', 'new window'],
+            \ '&' : ['kill', 'kill window'],
+            \ 'w' : ['list', 'list window'],
+            \ 'n' : ['wnext', 'next window'],
+            \ 'p' : ['wprev', 'previous window'],
+            \ ',' : ['rename', 'rename window'],
+            \ 'c-s':['save', 'save session'],
+            \ 'c-r':['restore', 'restore session'],
+            \ '$' : ['rename', 'rename session'],
+            \ ')' : ['snext', 'next session'],
+            \ '(' : ['sprev', 'previous session'],
+            \ 'd' : ['detach', 'detach session'],
+            \ 'c-z':['suspend', 'suspend session'],
+            \ 'z' : ['pane<->win', 'pane<->win'],
+            \ '!' : ['pane->win', 'pane->win'],
+            \ 'vs%"|-':   ['v|split', 'split pane'],
+            \ 'HJKL←↑↓→': ['jump', 'jump pane'],
+            \ 'x':        ['kill', 'kill pane'],
+            \ 'o':        ['swap', 'swap pane'],
+            \ 's-p' :     ['log', 'toggle log'],
+            \ 'a-p' :     ['capture', 'capture screen'],
+            \ }
+nnoremap <silent> <c-x><c-b> :WhichKey! which_key_map.b<CR>
+nnoremap <silent> <c-x>b     :WhichKey! which_key_map.b<CR>
 
 """" reload buffer
 nnoremap <C-a>u :e!<CR>redraw<CR>
@@ -526,7 +552,7 @@ let g:which_key_map['x'] = {
             \ 'c-xr' : ['space', 'help [leader]rm space'],
             \ 'c-xt' : ['tab', 'help [c-t]tab'],
             \ 'c-xa' : ['buffer', 'help [c-a]buffer'],
-            \ 'c-xb' : ['buffer', 'help [c-a]buffer'],
+            \ 'c-xb' : ['tmux', 'help [c-b]tmux'],
             \ 'c-xw' : ['window', 'help [c-w]window'],
             \ 'c-xc' : ['quickfix',    'help [c-c]quickfix'],
             \ 'c-xx' : ['which', 'help [c-x]which_key_map'],
@@ -788,7 +814,9 @@ set display=lastline    " Show as much as possible of the last line.
 " vim命令自动补全: 状态行上显示补全匹配, 按了 <Tab> 后有多于一个匹配的情况
 set wildmenu                    " turn on command line completion wild style
 set wildmode=longest:list,full
-set wildignore=*.dll,*.exe,*.gif,*.jpg,*.mm ",*.png,*.snag,*.ssd,*.xmind
+set wildignore=*.dll,*.exe,*.gif,*.jpg,*.mm ",*.png,*.snag,*.ssd,*.xmind " 影响 expand() globpath()和glob()的结果,这些函数被很多插件用来在系统中执行查找
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*          " Linux/MacOSX
+" set wildignore+=*\\.git\\*,*\\.hg\\*,*\\.svn\\*  " Windows ('noshellslash')
 set esckeys       " Allow cursor keys in insert mode
 set modeline      " Respect modeline in files
 set modelines=4
@@ -958,7 +986,15 @@ nnoremap <leader>f9 :set foldlevel=9<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
 " :help packages
+" https://github.com/shiqf/dotfiles TODO Read
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Install vim-plug if it isn't already
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 " https://zhuanlan.zhihu.com/p/58816186 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
@@ -1044,6 +1080,8 @@ Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-ftplugin'          " Lua file type
 " Plug 'tbastos/vim-lua', {'for': 'lua'} " lua的高亮和缩进
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
+
+" Plug 'christoomey/vim-tmux-navigator'  "
 call plug#end()
 
 let g:which_key_map['p'] = {
@@ -1091,7 +1129,7 @@ let g:easycomplete_diagnostics_enable = 0
 let g:easycomplete_signature_enable = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 'skywind3000/vim-dict' 
+" 'skywind3000/vim-dict'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-dict
 let g:vim_dict_dict = [
@@ -1099,7 +1137,7 @@ let g:vim_dict_dict = [
   \ '~/.vim/vim-mydict',
   \ ]
 let g:vim_dict_config = {
-  \ 'html':'html,javascript,css,text', 
+  \ 'html':'html,javascript,css,text',
   \ 'markdown':'text',
   \ }
 
@@ -1578,6 +1616,8 @@ let g:NERDTreeNodeDelimiter = '+'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " kien/ctrlp.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" <c-o> - 打开被 <c-z> 标记的文件 1. t - 在新标签页中打开; 2. v - 在一个竖直分割窗口中; 3. h - 在一个水平分割窗口中; 4. r - 在当前窗口中打开.
+" <c-n> 提示符面板历史里的下一个字符串; <c-p> 提示符面板历史里的上一个字符串.
 let g:ctrlp_working_path_mode = 'r'
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
@@ -1785,6 +1825,7 @@ let g:which_key_vertical = 0           " show popup vertically
 let g:which_key_position = "botright"  " split a window at the bottom
 let g:which_key_hspace   = 5           " minimum horizontal space between columns
 let g:which_key_centered = 1           " make all keybindings centered in the middle
+let g:which_key_group_dicts = 'start'
 nnoremap <silent> <leader>      :WhichKey      '\'<CR>
 nnoremap <silent> <localleader> :WhichKey      '\'<CR>
 vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
