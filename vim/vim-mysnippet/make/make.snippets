@@ -68,3 +68,52 @@ endsnippet
 snippet subp "$(${VISUAL:TEXT}:PATTERN=REPLACEMENT)"
 $(${3:${VISUAL:VAR}}:${1:PAT}=${2:REPLACE})
 endsnippet
+
+snippet src "SRC" !b
+${1:SRC}= ${2:files}$0
+endsnippet
+
+snippet obj "OBJ" !b
+${1:OBJ}= ${${2:SRC}:${3:.cc}=${4:.o}}$0
+endsnippet
+
+snippet bin "BIN" !b
+${1:BIN}= ${2:binary}$0
+endsnippet
+
+snippet lib "library" !b
+${1:LIB}= ${2:library.a}$0
+endsnippet
+
+snippet cc "CC and CFLAGS" !b
+CC=gcc ${0:-fsanitize=address}
+CFLAGS= -Wall -Wextra -Werror -pedantic -std=c99
+$0
+endsnippet
+
+snippet cxx "CXX and CFLAGS" !b
+CXX=g++
+CXXFLAGS= -Wall -Wextra -Werror -pedantic -std=c++17
+endsnippet
+
+snippet cpp "CPPFLAGS" !b
+CPPFLAGS= ${1:-Isrc/}$0
+endsnippet
+
+snippet clean "clean rule" !b
+clean:
+	${1:${RM}} ${${2:OBJ}} ${${3:BIN}}$0
+endsnippet
+
+snippet PH ".PHONY" !b
+.PHONY: ${1:all} ${2:clean} ${3:check}$0
+endsnippet
+
+snippet rule "create a basic rule" !b
+${1:${BIN}}: ${2:${OBJ}}
+	${3:${CC}} $2 -o $1$0
+endsnippet
+
+snippet all "all rule" !b
+${1:all}: ${2:${BIN}}$0
+endsnippet
