@@ -12,3 +12,256 @@ snippet declare
 
 	target_link_libraries($2 ${$3_LIBRARIES})
 endsnippet
+
+
+##################################################
+# message
+##################################################
+snippet status "Status message" b
+message(STATUS "${1}")$0
+endsnippet
+
+snippet fatal "Fatal error message" b
+message(FATAL_ERROR "${1}")$0
+endsnippet
+
+snippet warn "Warning message" b
+    message(WARNING "${1}")$0
+endsnippet
+
+snippet message
+	message(${0})
+endsnippet
+
+snippet message_with_name
+	message("${0:#: list var name}:\${$0}")
+endsnippet
+
+snippet dump_var
+	message(STATUS "*** dump start cmake variables ***")
+	get_cmake_property(_variableNames VARIABLES)
+	set(var_dump_filepath "${CMAKE_CURRENT_BINARY_DIR}/var_dump.log")
+	file(WRITE "${var_dump_filepath}") # truncate
+	foreach(_variableName ${_variableNames})
+	  message(STATUS "${_variableName}=${${_variableName}}")
+	  file(APPEND "${var_dump_filepath}" "${_variableName}=${${_variableName}}\n")
+	endforeach()
+	message(STATUS "*** dump end ***")
+	${0}
+endsnippet
+
+##################################################
+# set/option
+##################################################
+snippet set "set()" b
+set(${1:VARIABLE} ${2:VALUE} ${3:CACHE} ${4:TYPE} ${5:DOCSTRING} ${6:FORCE} ${7:PARENT_SCOPE})$0
+endsnippet
+
+snippet option "option()" b
+option(${1:VARIABLE} ${2:DOCSTRING} ${3:INITIAL_VALUE})
+endsnippet
+
+snippet c_flags
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${0}")
+endsnippet
+
+snippet cpp_flags
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${0}")
+endsnippet
+
+snippet props
+	set_target_properties(${1:#:target}
+	  ${2:#:properties} ${3:#:compile_flags}
+	  ${0:"-O3 -Wall -pedantic"}
+endsnippet
+
+##################################################
+# find
+##################################################
+snippet find
+	find_package(${1:#:library} ${0: REQUIRED})
+	include_directories(${$1_INCLUDE_DIRS})
+	target_link_libraries(${2:#:project target} ${$1_LIBS})
+endsnippet
+
+##################################################
+# control flow
+##################################################
+snippet if "if statement" b
+if ($1)
+    $0
+endif ()
+endsnippet
+
+snippet "^[\t ]*for(each)?" "Cmake for-loop" r
+foreach (${1:loop_var} ${2:args})
+    $0
+endforeach ()
+endsnippet
+
+##################################################
+# Functions
+##################################################
+snippet function "Add a new function" b
+function(${1:function_name}${2: Argument})
+	$0
+endfunction()
+endsnippet
+
+snippet macro "Add a new macro" b
+macro(${1:name}${2: Argument})
+	$0
+endmacro()
+endsnippet
+
+
+snippet ExternalProject_Add_url
+	include(ExternalProject)
+	ExternalProject_Add(${1:#:googletest}
+	  URL ${2:#:http://googletest.googlecode.com/files/gtest-1.7.0.zip}
+	  URL_HASH SHA1=${3:#:f85f6d2481e2c6c4a18539e391aa4ea8ab0394af}
+	  SOURCE_DIR "${CMAKE_BINARY_DIR}/${4:#:gtest-src}"
+	  BINARY_DIR "${CMAKE_BINARY_DIR}/${0:#:gtest-build}"
+	  CONFIGURE_COMMAND ""
+	  BUILD_COMMAND     ""
+	  INSTALL_COMMAND   ""
+	  TEST_COMMAND      ""
+	)
+	add_dependencies(${PROJECT_NAME} $1)
+endsnippet
+
+snippet ExternalProject_Add_googletest
+abbr with googlemock
+	include(ExternalProject)
+	ExternalProject_Add(googletest
+	  DOWNLOAD_COMMAND ""
+	  SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/googletest"
+	  BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/googletest"
+	  INSTALL_COMMAND  cp -R ${CMAKE_CURRENT_BINARY_DIR}/googletest/lib/ ${CMAKE_INSTALL_PREFIX}/ &&
+	                   cp -R ${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest/include/ ${CMAKE_INSTALL_PREFIX}/ &&
+	                   cp -R ${CMAKE_CURRENT_SOURCE_DIR}/googletest/googlemock/include/ ${CMAKE_INSTALL_PREFIX}/
+	  TEST_COMMAND     ""
+	)${0}
+	add_dependencies(${PROJECT_NAME} googletest)
+endsnippet
+
+snippet ExternalProject_Add_header_only_library
+	include(ExternalProject)
+	ExternalProject_Add(${1:#:project name}
+	  GIT_REPOSITORY    ${2:#:url}
+	  GIT_TAG           master
+	  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/$1-build"
+	  CONFIGURE_COMMAND ""
+	  BUILD_COMMAND     ""
+	  INSTALL_COMMAND   ""
+	  TEST_COMMAND      ""
+	  BUILD_IN_SOURCE TRUE
+	)
+	set($1_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/$1-build/${3:include})
+	target_include_directories(${PROJECT_NAME} PRIVATE
+	  ${$1_INCLUDE_DIR}
+	)${0}
+	add_dependencies(${PROJECT_NAME} $1)
+endsnippet
+
+
+
+##################################################
+# list
+##################################################
+snippet messages_list
+	message("\${${0:#: list var name}}")
+endsnippet
+
+snippet echo_var_with_name
+	message("${0:#: list var name}:\${$0}")
+endsnippet
+
+snippet list_append_all
+	foreach(${1:item} IN LISTS ${2:#:items})
+	  list(APPEND ${3:#:new_item} "${4:#:prefix}\${$1}${0:#:suffix}")
+	endforeach()
+endsnippet
+
+snippet list_length
+	list(LENGTH ${1:#:list} ${2:#:out-var})${0}
+endsnippet
+
+snippet list_get
+	list(GET ${1:#:list} ${2:#:element index} ${3:#:[index...]} ${4:#:out-var})${0}
+endsnippet
+
+snippet list_join
+	list(JOIN ${1:#:list} ${2:#:glue} ${3:#:out-var})${0}
+endsnippet
+
+snippet list_sublist
+	list(SUBLIST ${1:#:list} ${2:#:begin} ${3:#:length} ${4:#:out-var})${0}
+endsnippet
+
+snippet list_find
+	list(FIND ${1:#:list} ${2:#:value} ${3:#:out-var})${0}
+endsnippet
+
+snippet list_append
+	list(APPEND ${1:#:list} [${2:#:element...]})${0}
+endsnippet
+
+snippet list_filter
+	list(FILTER ${1:#:list} ${2:#:INCLUDE or EXCLUDE} REGEX ${3:#:regex})${0}
+endsnippet
+
+snippet list_insert
+	list(INSERT ${1:#:list} ${2:#:index} ${3:#:[element...]})${0}
+endsnippet
+
+snippet list_remove_ietm
+	list(REMOVE_ITEM ${1:#:list} ${2:#:value...})${0}
+endsnippet
+
+snippet list_at
+	list(REMOVE_AT ${1:#:list} ${2:#:index...})${0}
+endsnippet
+
+snippet list_duplicates
+	list(REMOVE_DUPLICATES ${1:#:list})${0}
+endsnippet
+
+snippet list_transform
+	list(TRANSFORM ${1:#:list} ${2:#:ACTION} ${3:#:[...]})${0}
+endsnippet
+
+snippet list_reverse
+	list(REVERSE ${1:#:list})${0}
+endsnippet
+
+snippet list_sort
+	list(SORT ${2:#:list})${0}
+endsnippet
+
+##################################################
+# get_filename_component
+##################################################
+snippet get_filename
+	get_filename_component(${1:#:var name} ${${0:#:path}} NAME)
+endsnippet
+
+snippet get_directory
+	get_filename_component(${1:#:var name} ${${0:#:path}} DIRECTORY)
+endsnippet
+
+snippet get_ext
+	get_filename_component(${1:#:var name} ${${0:#:path}} EXT)
+endsnippet
+
+snippet get_filename_without_ext
+	get_filename_component(${1:#:var name} ${${0:#:path}} NAME_WE)
+endsnippet
+
+snippet get_absolute_path
+	get_filename_component(${1:#:var name} ${${0:#:path}} ABSOLUTE)
+endsnippet
+
+snippet get_realpath
+	get_filename_component(${1:#:var name} ${${0:#:path}} REALPATH)
+endsnippet
