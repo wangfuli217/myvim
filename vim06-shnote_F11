@@ -19,6 +19,7 @@ autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
 autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
+autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
 
@@ -300,6 +301,7 @@ nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" tab
 nnoremap <silent> <C-t>c :tabnew<cr>
+nnoremap <silent> <C-t>b :tab ba<cr>
 nnoremap <silent> <C-t>x :tabclose<cr>
 nnoremap <silent> <C-t>t :tabs<cr>
 nnoremap <silent> <C-t>0 :tabfirst<cr>
@@ -330,6 +332,7 @@ nnoremap <silent> <C-t>9 9gt
 let g:which_key_map['t'] = {
             \ 'name' : '+tab' ,
             \ 'c' :  [':tabnew', 'new tab'],
+            \ 'b' :  [':tab ba', 'buffer -> tab'],
             \ 'x' :  [':tabclose', 'close tab'],
             \ 't' :  [':tabs', 'list tab'],
             \ '0' :  [':tabfirst', 'first tab'],
@@ -375,6 +378,7 @@ let g:which_key_map.0 = 'which_key_ignore'
 
 """" buffer(args) b conflict with tmux, use screen hotkey a
 nnoremap <silent> <C-a>a :ls<CR>
+nnoremap <silent> <C-a>b :tab ba<CR>
 nnoremap <silent> <C-a>0 :bfirst<CR>
 nnoremap <silent> <C-a>c :new<CR>
 nnoremap <silent> <C-a>x :bdelete<CR>
@@ -405,6 +409,7 @@ nnoremap <silent> <C-a>9 :b9<cr>  " e#9
 let g:which_key_map['a'] = {
             \ 'name' : '+buffer' ,
             \ 'c' :   [':new', 'new buffer'],
+            \ 'b' :   [':tab ba', 'buffer -> tab'],
             \ 'x' :   [':bdelete', 'close buffer'],
             \ 't' :   [':list', 'list buffer'],
             \ '0' :   [':bfirst', 'first buffer'],
