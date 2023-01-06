@@ -5,7 +5,9 @@
 " nnoremap <leader><F5> :update<CR>:source %<CR>
 
 " [vim-dispatch] 异步执行+语法糖和命令 :term make异步调用make
-" augroup makeprg
+" makeprg 用于设置执行:make时使用那个命令行程序 --> term make
+" errorformat 可以定义一些便于识别的错误格式
+" compiler 用于指定其他的编译器插件,它也会修改编译器的输出格式
 "autocmd FileType cpp   set makeprg="g++ -Wall -Wextra -std=c++11 ". expand("%") . " && ./a.out"
 ""    autocmd FileType c      set makeprg="gcc\ -Wall\ -o\ %<\ %"<CR>
 autocmd FileType lua    set makeprg="lua ".expand("%")
@@ -17,11 +19,31 @@ autocmd FileType perl   set makeprg=perl\ -c\ %\ $* errorformat=%f:%l:%m
 " autocmd FileType c          set makeprg="gcc\ '%'\ -o\ '%:r'\ -std=gnu99\ -Wall"
 autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
-autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
+" autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
+
+autocmd Filetype sh set equalprg=shfmt\ -i\ 2
+autocmd Filetype python set equalprg=yapf
+autocmd Filetype javascript,javascript.jsx set equalprg=prettier\ --parser=babylon
+autocmd Filetype json set equalprg=prettier\ --parser=json
+autocmd Filetype css,scss,less set equalprg=prettier\ --parser=css
+autocmd Filetype yaml set equalprg=prettier\ --parser=yaml
+autocmd Filetype markdown set equalprg=tidy-markdown
+autocmd Filetype c,cpp set equalprg=clang-format\ --style=Google
+autocmd FileType cpp,java setlocal equalprg=astyle\ -A1sCSNLYpHUEk1xjcn
+autocmd Filetype html set equalprg=html-beautify\ --indent-size=2\ --no-preserve-newlines\ -
+autocmd Filetype xml set equalprg=xmllint\ --format\ -
 
 autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
+
+autocmd BufWritePost *tmux.conf !tmux source-file %
+
+" Hex read
+nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
+
+" Hex write
+nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
 
 " :argdo
 " :bufdo
@@ -51,10 +73,10 @@ augroup ccompile
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
     autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!ipython  % <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:!javac % <CR>
-    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:!lua   % <CR>
-    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:!node  % <CR>
+    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash  % <CR>
+    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:term perl % <CR>
+    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua   % <CR>
+    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
     autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -62,10 +84,10 @@ augroup crun
     autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:!javac % <CR>:java %< <CR>
-    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:!lua   % <CR>
-    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:!node  % <CR>
+    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash  % <CR>
+    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert terminal perl  % <CR>
+    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua   % <CR>
+    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -1005,7 +1027,10 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-" https://zhuanlan.zhihu.com/p/58816186 插件说明 vim-rainbow 插件
+" mkdir -p ~/.vim/pack/plugins/start 创建一个存储插件的目录
+packloadall				"加载所有插件
+silent! helptags ALL	"为所有插件加载帮助文档
+" https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
@@ -1071,7 +1096,7 @@ Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg
 " Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Plug 'skywind3000/vim-quickui'
 
-Plug 'vim-syntastic/syntastic'
+Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/mru'                    " Most Recently opened/edited files
 " Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
 " Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
@@ -1359,6 +1384,8 @@ let g:gutentags_cache_dir = s:vim_tags
 if !isdirectory(s:vim_tags)
     silent! call mkdir(s:vim_tags, 'p')
 endif
+" autocmd BufWritePost *.py silent! !ctags -R &
+" autocmd BufWritePost *.cpp *.h *.c silent! !ctags -R &
 
 " 配置 ctags 的参数
 " ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --fields=+niazS --extra=+q
@@ -1516,7 +1543,7 @@ let g:bookmark_no_default_key_mappings = 1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " only display alphabetic marks a-i and A-I
 let g:markbar_marks_to_display = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
+let g:markbar_persist_mark_names = v:false
 " width of a vertical split markbar
 let g:markbar_width = 30
 
