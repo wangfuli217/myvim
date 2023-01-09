@@ -322,36 +322,37 @@ nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" tab
-nnoremap <silent> <C-t>c :tabnew<cr>
-nnoremap <silent> <C-t>b :tab ba<cr>
-nnoremap <silent> <C-t>x :tabclose<cr>
-nnoremap <silent> <C-t>t :tabs<cr>
-nnoremap <silent> <C-t>0 :tabfirst<cr>
-nnoremap <silent> <C-t><C-c> :tabnew<cr>
-nnoremap <silent> <C-t><C-x> :tabclose<cr>
-nnoremap <silent> <C-t><C-t> :tabs<cr>
-nnoremap <silent> <C-t><C-0> :tabfirst<cr>
+nnoremap <silent> <C-s>c :tabnew<cr>
+nnoremap <silent> <C-s>b :tab ba<cr>
+nnoremap <silent> <C-s>x :tabclose<cr>
+nnoremap <silent> <C-s>s :tabs<cr>
+nnoremap <silent> <C-s>0 :tabfirst<cr>
+nnoremap <silent> <C-s>w <C-w>t<cr>
+nnoremap <silent> <C-s><C-c> :tabnew<cr>
+nnoremap <silent> <C-s><C-x> :tabclose<cr>
+nnoremap <silent> <C-s><C-s> :tabs<cr>
+nnoremap <silent> <C-s><C-0> :tabfirst<cr>
 
-nnoremap <silent> <C-t>n gt
-nnoremap <silent> <C-t>p gT
-nnoremap <silent> <C-t><C-n> gt
-nnoremap <silent> <C-t><C-p> gT
-nnoremap <silent> <C-t>f :tabfirst<cr>
-nnoremap <silent> <C-t>l :tablast<cr>
-nnoremap <silent> <C-t><C-f> :tabfirst<cr>
-nnoremap <silent> <C-t><C-l> :tablast<cr>
+nnoremap <silent> <C-s>n gt
+nnoremap <silent> <C-s>p gT
+nnoremap <silent> <C-s><C-n> gt
+nnoremap <silent> <C-s><C-p> gT
+nnoremap <silent> <C-s>f :tabfirst<cr>
+nnoremap <silent> <C-s>l :tablast<cr>
+nnoremap <silent> <C-s><C-f> :tabfirst<cr>
+nnoremap <silent> <C-s><C-l> :tablast<cr>
 
-nnoremap <silent> <C-t>1 1gt
-nnoremap <silent> <C-t>2 2gt
-nnoremap <silent> <C-t>3 3gt
-nnoremap <silent> <C-t>4 4gt
-nnoremap <silent> <C-t>5 5gt
-nnoremap <silent> <C-t>6 6gt
-nnoremap <silent> <C-t>7 7gt
-nnoremap <silent> <C-t>8 8gt
-nnoremap <silent> <C-t>9 9gt
+nnoremap <silent> <C-s>1 1gt
+nnoremap <silent> <C-s>2 2gt
+nnoremap <silent> <C-s>3 3gt
+nnoremap <silent> <C-s>4 4gt
+nnoremap <silent> <C-s>5 5gt
+nnoremap <silent> <C-s>6 6gt
+nnoremap <silent> <C-s>7 7gt
+nnoremap <silent> <C-s>8 8gt
+nnoremap <silent> <C-s>9 9gt
 
-let g:which_key_map['t'] = {
+let g:which_key_map['s'] = {
             \ 'name' : '+tab' ,
             \ 'c' :  [':tabnew', 'new tab'],
             \ 'b' :  [':tab ba', 'buffer -> tab'],
@@ -372,8 +373,8 @@ let g:which_key_map['t'] = {
             \ '8' :  ['8gt', '8s tab'],
             \ '9' :  ['9gt', '9s tab'],
             \ }
-nnoremap <silent> <c-x><c-t> :WhichKey! which_key_map.t<CR>
-nnoremap <silent> <c-x>t     :WhichKey! which_key_map.t<CR>
+nnoremap <silent> <c-x><c-s> :WhichKey! which_key_map.s<CR>
+nnoremap <silent> <c-x>s     :WhichKey! which_key_map.s<CR>
 
 nnoremap <silent> <leader>n <down>
 nnoremap <silent> <leader>p <up>
@@ -582,7 +583,7 @@ let g:which_key_map['x'] = {
             \ 'P' :   ['project', 'touch .project for ctag'],
             \ 'c-xh' : ['F1-F12', 'help [leader]F1-F12'],
             \ 'c-xr' : ['space', 'help [leader]rm space'],
-            \ 'c-xt' : ['tab', 'help [c-t]tab'],
+            \ 'c-xs' : ['tab', 'help [c-s]tab'],
             \ 'c-xa' : ['buffer', 'help [c-a]buffer'],
             \ 'c-xb' : ['tmux', 'help [c-b]tmux'],
             \ 'c-xw' : ['window', 'help [c-w]window'],
@@ -1039,6 +1040,7 @@ Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
+
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 Plug 'skywind3000/vim-dict'            " VIM 词表收集
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
