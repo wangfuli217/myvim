@@ -1,0 +1,35 @@
+git clone git://git.openwrt.org/project/firewall3.git
+git clone git://git.openwrt.org/project/firmware-utils.git
+git clone git://git.openwrt.org/project/fstools.git
+git clone git://git.openwrt.org/project/iwinfo.git
+git clone git://git.openwrt.org/project/json-c.git
+git clone git://git.openwrt.org/project/jsonpath.git
+git clone git://git.openwrt.org/project/libnl-tiny.git
+git clone git://git.openwrt.org/project/libubox.git
+git clone git://git.openwrt.org/project/luci.git
+git clone git://git.openwrt.org/project/netifd.git
+git clone git://git.openwrt.org/project/odhcp6c.git
+git clone git://git.openwrt.org/project/odhcpd.git
+git clone git://git.openwrt.org/project/openwrt.git
+git clone git://git.openwrt.org/project/procd.git
+git clone git://git.openwrt.org/project/qosify.git
+git clone git://git.openwrt.org/project/rpcd.git
+git clone git://git.openwrt.org/project/si.git
+git clone git://git.openwrt.org/project/ubox.git
+git clone git://git.openwrt.org/project/ubus.git
+git clone git://git.openwrt.org/project/uci.git
+git clone git://git.openwrt.org/project/ugps.git
+git clone git://git.openwrt.org/project/uhttpd.git
+git clone git://git.openwrt.org/project/usbmode.git
+git clone git://git.openwrt.org/project/usign.git
+
+# 对工程而言只保留需要的依赖库;对依赖库而言不保留自己的tags
+ls ~/.cache/tags/home-wangfuli-openwrt-* > .vimenv
+# set tags+=/home/wangfuli/.cache/tags/home-wangfuli-openwrt-json-c-.tags
+# set tags+=/home/wangfuli/.cache/tags/home-wangfuli-openwrt-libnl-tiny-.tags
+# set tags+=/home/wangfuli/.cache/tags/home-wangfuli-openwrt-libubox-.tags
+# set tags+=/home/wangfuli/.cache/tags/home-wangfuli-openwrt-ubus-.tags
+# set tags+=/home/wangfuli/.cache/tags/home-wangfuli-openwrt-uci-.tags
+
+# 把所有拷贝给每个库个工程
+for d in *; do cp .vimenv $d/; done
