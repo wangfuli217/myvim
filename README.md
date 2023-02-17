@@ -1,5 +1,5 @@
 [提升vim版本]
-# How to Install Vim 8.2 in Ubuntu 18.04, 16.04, 19.10
+How to Install Vim 8.2 in Ubuntu 18.04, 16.04, 19.10
 sudo add-apt-repository ppa:jonathonf/vim
 sudo apt update
 sudo apt install vim
