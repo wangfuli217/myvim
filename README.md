@@ -22,3 +22,6 @@ set tags+=~/.cache/tags/home-Administrator-openwrt-json-c-0.12-.tagsAdministrato
 
 [vim插件]
 :PlugInstall
+
+A;<ESC> 在行尾添加;
+1,20 normal . 为第一行到第20行增加;
