@@ -30,3 +30,6 @@ A;<ESC> 在行尾添加;
 [合二为一] 将查找修改合二为一; ;表示查找.表示修改
 f+ s -+-
 ;.
+
+ [gutentags] chmod -R +x ~/.vim/plugged/*
+gutentags: ctags job failed returned: 122
