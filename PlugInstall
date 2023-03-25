@@ -1,0 +1,53 @@
+#!/bin/bash
+repeat_ok ()
+{
+    while :; do
+        $@ && return;
+    done
+}
+
+repeat_ok git clone https://www.github.com/vim-scripts/vim-addon-mw-utils  # 代码片段提示/函数库
+repeat_ok git clone https://www.github.com/tomtom/tlib_vim                 # 代码片段提示/函数库
+repeat_ok git clone https://www.github.com/SirVer/ultisnips                # 代码片段提示/替换引擎
+repeat_ok git clone https://www.github.com/honza/vim-snippets              # 代码片段提示/各种各样的snippets
+repeat_ok git clone https://www.github.com/jayli/vim-easycomplete          # 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
+repeat_ok git clone https://www.github.com/skywind3000/vim-dict            # VIM 词表收集
+repeat_ok git clone https://www.github.com/mattn/webapi-vim                # Gist 代码段 API
+repeat_ok git clone https://www.github.com/mattn/vim-gist                  # Gist 代码段 命令
+repeat_ok git clone https://www.github.com/bronson/vim-trailing-whitespace # 去除文档多余的空白符 ws
+repeat_ok git clone https://www.github.com/vim-autoformat/vim-autoformat   # 代码格式化
+repeat_ok git clone https://www.github.com/rhysd/vim-clang-format          # apt install clang-format;
+repeat_ok git clone https://www.github.com/tpope/vim-commentary            # 注释 gcc {count}gc gcap
+repeat_ok git clone https://www.github.com/tpope/vim-unimpaired            # ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
+repeat_ok git clone https://www.github.com/vim-scripts/DoxygenToolkit.vim, {for: [c, cpp]}  # 注释 DoxAuthor Dox DoxBlock DoxAll
+repeat_ok git clone https://www.github.com/junegunn/vim-peekaboo           # \# Ctrl+R 显示寄存器内容
+repeat_ok git clone https://www.github.com/Yilin-Yang/vim-markbar          # `        显示mark的内容
+repeat_ok git clone https://www.github.com/kshenoy/vim-signature           # mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
+repeat_ok git clone https://www.github.com/MattesGroeger/vim-bookmarks     # bookmarks Ctrl-M
+repeat_ok git clone https://www.github.com/ludovicchabant/vim-gutentags    # 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
+repeat_ok git clone https://www.github.com/vim-scripts/taglist.vim         # 浏览tags,文件内跳转 Tlist   set tags=tags;
+repeat_ok git clone https://www.github.com/preservim/tagbar                # 浏览tags,文件内跳转 Tagbar  set tags=tags;
+repeat_ok git clone https://www.github.com/skywind3000/vim-preview         # 预览tags中的函数       F11
+repeat_ok git clone https://www.github.com/bfrg/vim-qf-preview             # 预览quickfix中的搜索   p
+repeat_ok git clone https://www.github.com/vim-scripts/a.vim               # 源文件/头文件之间跳转 :A :AS :AV :AN
+repeat_ok git clone https://www.github.com/vim-scripts/winmanager          # 文件系统管理 WMToggle/wm
+repeat_ok git clone https://www.github.com/jlanzarotta/bufexplorer         # opened buffer管理 \bs \bv \bt \be
+repeat_ok git clone https://www.github.com/preservim/nerdtree              # directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
+repeat_ok git clone https://www.github.com/kien/ctrlp.vim                  # find模糊搜索 <Ctrl>+p :CtrlP 或 :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
+repeat_ok git clone https://www.github.com/dkprice/vim-easygrep            # grep模糊查找
+repeat_ok git clone https://www.github.com/jiangmiao/auto-pairs            # 括号自动补全
+repeat_ok git clone https://www.github.com/vim-airline/vim-airline         # 状态栏
+repeat_ok git clone https://www.github.com/vim-airline/vim-airline-themes  # 状态栏主题
+repeat_ok git clone https://www.github.com/asins/vimcdoc                   # vim中文文档  help
+repeat_ok git clone https://www.github.com/vim-utils/vim-man               # vim Man Vman帮助文档
+repeat_ok git clone https://www.github.com/vim-scripts/CRefVim             # c reference manual; \cr
+repeat_ok git clone https://www.github.com/nanotee/nvim-lua-guide          # lua reference manual, :help lua.table
+repeat_ok git clone https://www.github.com/hotchpotch/perldoc-vim          # apt-get install perl-doc; K hotkey
+repeat_ok git clone https://www.github.com/bfrg/vim-cmake-help             # :CMakeHelp {arg} / :CMakeHelpPopup {arg} / :CMakeHelpOnline [{arg}]
+repeat_ok git clone https://www.github.com/vim-syntastic/syntastic         # ALE 异步语法检查引擎
+repeat_ok git clone https://www.github.com/simnalamburt/vim-mundo          # 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
+repeat_ok git clone https://www.github.com/vim-scripts/a.vim               # swtich between source files and header files
+repeat_ok git clone https://www.github.com/liuchengxu/vim-which-key        # c-xc-x hotkey help
+repeat_ok git clone https://www.github.com/tpope/vim-fugitive
+repeat_ok git clone https://www.github.com/tpope/vim-surround
+repeat_ok git clone https://www.github.com/iberianpig/tig-explorer.vim
