@@ -71,23 +71,24 @@ nnoremap <F4> :set wrap! wrap?<CR>
 augroup ccompile
     autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!ipython  % <CR>
+    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:term python  % <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:!javac % <CR>
-    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash  % <CR>
+    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash % <CR>
     autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:term perl % <CR>
-    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua   % <CR>
-    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
+    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua  % <CR>
+    autocmd Filetype javascript     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
     autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
 augroup crun
-    autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
+    autocmd Filetype c    nnoremap <leader><F5> <Esc>:w<CR>:vert term ./%< <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
+    autocmd Filetype python nnoremap <leader><F5> <Esc>:w<CR>:vert term python  % <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:!javac % <CR>:java %< <CR>
-    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash  % <CR>
-    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert terminal perl  % <CR>
-    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua   % <CR>
-    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
+    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash % <CR>
+    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert term perl % <CR>
+    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua  % <CR>
+    autocmd Filetype javascript   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -409,10 +410,12 @@ nnoremap <silent> <C-a>b :tab ba<CR>
 nnoremap <silent> <C-a>0 :bfirst<CR>
 nnoremap <silent> <C-a>c :new<CR>
 nnoremap <silent> <C-a>x :bdelete<CR>
+nnoremap <silent> <C-a>d :bdelete<CR>
 nnoremap <silent> <C-a><C-a> :ls<CR>
 nnoremap <silent> <C-a><C-0> :bfirst<CR>
 nnoremap <silent> <C-a><C-c> :new<CR>
 nnoremap <silent> <C-a><C-x> :bdelete<CR>
+nnoremap <silent> <C-a><C-d> :bdelete<CR>
 
 nnoremap <silent> <C-a>n :bnext<CR>
 nnoremap <silent> <C-a>p :bprev<CR>
@@ -438,6 +441,7 @@ let g:which_key_map['a'] = {
             \ 'c' :   [':new', 'new buffer'],
             \ 'b' :   [':tab ba', 'buffer -> tab'],
             \ 'x' :   [':bdelete', 'close buffer'],
+            \ 'd' :   [':bdelete', 'close buffer'],
             \ 't' :   [':list', 'list buffer'],
             \ '0' :   [':bfirst', 'first buffer'],
             \ 'n' :   ['bnext', 'next buffer'],
@@ -739,7 +743,7 @@ set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
-set paste               " 粘贴保持格式
+" set paste               " 粘贴保持格式
 
 " 启用鼠标
 " set mouse=a
@@ -1139,6 +1143,14 @@ let g:which_key_map['p'] = {
             \ }
 nnoremap <silent> <c-x><c-p> :WhichKey! which_key_map.p<CR>
 nnoremap <silent> <c-x>p     :WhichKey! which_key_map.p<CR>
+
+"echofunc settings
+    inoremap <c-]> <c-r>=EchoFunc()<cr>
+if !has('gui_running')
+  " when in terminal mode the ALT key is not supported
+  let g:EchoFuncKeyNext='-'
+  let g:EchoFuncKeyPrev='='
+endif
 
 " neocompletecache -> neocomplete -> deoplete/neocompletion-manager(下一代通用补全)
 " CtrlP / CommandT -> Unite.vim + vimproc -> denite.vim
