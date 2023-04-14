@@ -1113,6 +1113,7 @@ Plug 'vim-scripts/a.vim'               " swtich between source files and header 
 Plug 'liuchengxu/vim-which-key'          " c-xc-x hotkey help
 
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-surround'
 Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-ftplugin'          " Lua file type
 " Plug 'tbastos/vim-lua', {'for': 'lua'} " lua的高亮和缩进
