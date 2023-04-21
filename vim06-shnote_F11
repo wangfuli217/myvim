@@ -45,6 +45,16 @@ nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
 " Hex write
 nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
 
+nmap <leader>g* :noautocmd vimgrep -n /<C-R><C-W>/j **/*<CR>:cwin<CR>      # 搜索光标下word单词 递归目录
+nmap <leader>g# :noautocmd vimgrep -n /<C-R><C-W>/j *   <CR>:cwin<CR>      # 搜索光标下word单词 本目录
+nmap <leader>g% :noautocmd vimgrep -n /<C-R><C-W>/j %   <CR>:cwin<CR>      # 搜索光标下word单词 本文件
+nmap <leader>sf :noautocmd vimgrep -n /\<<C-R><C-W>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sd :noautocmd vimgrep -n /\<<C-R><C-W>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sr :noautocmd vimgrep -n /\<<C-R><C-W>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜索刚搜索单词
+nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
 " :argdo
 " :bufdo
 " :tabdo
@@ -217,20 +227,20 @@ nnoremap <silent> <c-]> g<c-]>zz
 nnoremap <silent> <c-o> g<c-o>zz
 nnoremap <silent> <c-i> g<c-i>zz
 " 执行删除<silent> 操作时插入断点 Ctrl-G u (类似commit的操作)
-inoremap <silent> <silent> <c-u> <c-g>u<c-u>
-inoremap <silent> <c-w> <c-g>u<c-w>
-inoremap <silent> , ,<c-g>u
-inoremap <silent> . .<c-g>u
-inoremap <silent> / /<c-g>u
-inoremap <silent> \ \<c-g>u
-inoremap <silent> ; ;<c-g>u
-inoremap <silent> : :<c-g>u
-inoremap <silent> ' '<c-g>u
-inoremap <silent> " "<c-g>u
-inoremap <silent> [ [<c-g>u
-inoremap <silent> ] ]<c-g>u
-inoremap <silent> { {<c-g>u
-inoremap <silent> } }<c-g>u
+" inoremap <silent> <silent> <c-u> <c-g>u<c-u>
+" inoremap <silent> <c-w> <c-g>u<c-w>
+" inoremap <silent> , ,<c-g>u
+" inoremap <silent> . .<c-g>u
+" inoremap <silent> / /<c-g>u
+" inoremap <silent> \ \<c-g>u
+" inoremap <silent> ; ;<c-g>u
+" inoremap <silent> : :<c-g>u
+" inoremap <silent> ' '<c-g>u
+" inoremap <silent> " "<c-g>u
+" inoremap <silent> [ [<c-g>u
+" inoremap <silent> ] ]<c-g>u
+" inoremap <silent> { {<c-g>u
+" inoremap <silent> } }<c-g>u
 " 开启折行显示选项时,按屏幕行移动
 
 " \j 与下行连接
@@ -734,7 +744,7 @@ set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
-set paste               " 粘贴保持格式
+" set paste               " 粘贴保持格式
 
 " 启用鼠标
 " set mouse=a
@@ -1374,7 +1384,7 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
-let g:gutentags_project_root = ['.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
+let g:gutentags_project_root = ['mkall.sh', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
@@ -1910,3 +1920,8 @@ vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
 vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
 
 call which_key#register('\', "g:which_key_map")
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" tpope/surround
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nmap <C-J> yss}

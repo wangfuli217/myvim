@@ -45,8 +45,18 @@ nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
 " Hex write
 nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
 
-" :argdo
-" :bufdo
+nmap <leader>g* :noautocmd vimgrep -n /<C-R><C-W>/j **/*<CR>:cwin<CR>      # 搜索光标下word单词 递归目录
+nmap <leader>g# :noautocmd vimgrep -n /<C-R><C-W>/j *   <CR>:cwin<CR>      # 搜索光标下word单词 本目录
+nmap <leader>g% :noautocmd vimgrep -n /<C-R><C-W>/j %   <CR>:cwin<CR>      # 搜索光标下word单词 本文件
+nmap <leader>sf :noautocmd vimgrep -n /\<<C-R><C-W>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sd :noautocmd vimgrep -n /\<<C-R><C-W>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sr :noautocmd vimgrep -n /\<<C-R><C-W>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜索刚搜索单词
+nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+":argdo
+":bufdo
 " :tabdo
 " :windo
 " :map <c-x>; :map <c-a>; :map <c-c>; :map <c-\>; :map \;
