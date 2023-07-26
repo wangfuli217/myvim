@@ -3,7 +3,11 @@
 
 " nnoremap         <F5> :update<CR>:source %<CR>
 " nnoremap <leader><F5> :update<CR>:source %<CR>
-" augroup makeprg
+
+" [vim-dispatch] 异步执行+语法糖和命令 :term make异步调用make
+" makeprg 用于设置执行:make时使用那个命令行程序 --> term make
+" errorformat 可以定义一些便于识别的错误格式
+" compiler 用于指定其他的编译器插件,它也会修改编译器的输出格式
 "autocmd FileType cpp   set makeprg="g++ -Wall -Wextra -std=c++11 ". expand("%") . " && ./a.out"
 ""    autocmd FileType c      set makeprg="gcc\ -Wall\ -o\ %<\ %"<CR>
 autocmd FileType lua    set makeprg="lua ".expand("%")
@@ -15,16 +19,47 @@ autocmd FileType perl   set makeprg=perl\ -c\ %\ $* errorformat=%f:%l:%m
 " autocmd FileType c          set makeprg="gcc\ '%'\ -o\ '%:r'\ -std=gnu99\ -Wall"
 autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
-autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
+" autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
+" autocmd Filetype sh set equalprg=shfmt\ -i\ 2
+autocmd Filetype python set equalprg=yapf
+autocmd Filetype javascript,javascript.jsx set equalprg=prettier\ --parser=babylon
+autocmd Filetype json set equalprg=prettier\ --parser=json
+autocmd Filetype css,scss,less set equalprg=prettier\ --parser=css
+autocmd Filetype yaml set equalprg=prettier\ --parser=yaml
+autocmd Filetype markdown set equalprg=tidy-markdown
+autocmd Filetype c,cpp set equalprg=clang-format\ --style=Google
+autocmd FileType cpp,java setlocal equalprg=astyle\ -A1sCSNLYpHUEk1xjcn
+autocmd Filetype html set equalprg=html-beautify\ --indent-size=2\ --no-preserve-newlines\ -
+autocmd Filetype xml set equalprg=xmllint\ --format\ -
+
+autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
 
+autocmd BufWritePost *tmux.conf !tmux source-file %
+
+" Hex read
+nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
+
+" Hex write
+nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
+
+nmap <leader>g* :noautocmd vimgrep -n /<C-R><C-W>/j **/*<CR>:cwin<CR>      # 搜索光标下word单词 递归目录
+nmap <leader>g# :noautocmd vimgrep -n /<C-R><C-W>/j *   <CR>:cwin<CR>      # 搜索光标下word单词 本目录
+nmap <leader>g% :noautocmd vimgrep -n /<C-R><C-W>/j %   <CR>:cwin<CR>      # 搜索光标下word单词 本文件
+nmap <leader>sf :noautocmd vimgrep -n /\<<C-R><C-W>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sd :noautocmd vimgrep -n /\<<C-R><C-W>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sr :noautocmd vimgrep -n /\<<C-R><C-W>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜索刚搜索单词
+nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
 " :argdo
 " :bufdo
 " :tabdo
 " :windo
-
+" :map <c-x>; :map <c-a>; :map <c-c>; :map <c-\>; :map \;
 
 let g:which_key_map =  {}
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -48,9 +83,10 @@ augroup ccompile
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
     autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!ipython  % <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:!javac % <CR>
-    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:!lua   % <CR>
+    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash  % <CR>
+    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:term perl % <CR>
+    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua   % <CR>
+    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
     autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -58,11 +94,28 @@ augroup crun
     autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:!javac % <CR>:java %< <CR>
-    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:!lua   % <CR>
+    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash  % <CR>
+    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert terminal perl  % <CR>
+    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua   % <CR>
+    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
 augroup END
+
+if filereadable("tags")
+    set tags=./tags;
+"   set tags+=/usr/include/tags
+else
+    set tags=./tags;,tags
+"   set tags+=/usr/include/tags
+endif
+
+if filereadable(".tags")
+    set tags=./.tags;
+"   set tags+=/usr/include/tags
+else
+    set tags=./.tags;,.tags
+"   set tags+=/usr/include/tags
+endif
 
 " redefine F1-F12 hotkey
 if filereadable(".vimenv")
@@ -103,15 +156,19 @@ augroup END
 
 " 代码格式化
 augroup format
-    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:ClangFormat<CR>:w!<CR>:!dos2unix %<CR>
-    autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:ClangFormat<CR>:w!<CR>:!dos2unix %<CR>
-    autocmd Filetype sh    nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:shfmt -l -w -i 2 -ci % <CR>:w!<CR>:!dos2unix %<CR>
+    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
+    autocmd Filetype perl  nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!perltidy -i=4 -et=4 -ndsm -st -ce -bar -nola -l=220 %<CR>:%s/\r//ga<CR>
+    autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:%s/\r//ga<CR>
+    autocmd Filetype sh    nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!shfmt -l -w -i 2 -ci %<CR>:%s/\r//ga<CR>
 augroup END
+
 nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 
 " 静态代码扫描
 augroup format
-    nnoremap <F7> :SyntasticToggleMode<CR><CR>:!clang-tidy % -fix -fix-errors -header-filter=.* -checks="readability-braces-around-statements,misc-macro-parentheses" -- -I.<CR>
+    " autocmd Filetype c     nnoremap <F7> :new | read !cppcheck   --std=c99 --enable=warning,style -v #<CR>
+    " autocmd Filetype sh    nnoremap <F7> :new | read !shellcheck #<CR>
+    autocmd Filetype perl  nnoremap <F7> :new | read !perlcritic #<CR>
 augroup END
 nnoremap <F7> :SyntasticToggleMode<CR><CR>
 
@@ -138,7 +195,7 @@ noremap <F12> :call ToggleBG()<CR>
 " 自说明帮助
 nnoremap <leader><F1> :e $MYVIMRC<CR>
 " 扩展窗口
-nnoremap <leader><F2> :Tagbar<CR>
+nnoremap <leader><F2> :TlistToggle<CR>
 nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
 nnoremap <leader><F4> :CtrlPMixed<CR>
 nnoremap <leader><F6> :AV<CR>
@@ -146,34 +203,7 @@ nnoremap <leader><F7> :MundoToggle<CR>
 nnoremap <leader><F8> :TigOpenCurrentFile<CR>
 nnoremap <leader><F9> :TigOpenProjectRootDir<CR>
 nnoremap <leader><F10> :vert terminal<CR>
-
-let g:which_key_map['h'] = {
-            \ 'name' : '+F1-F12' ,
-            \ 'F1' :   ['help', 'vimhelp'],
-            \ 'F2' :   ['set nu!', 'toggle number'],
-            \ 'F3' :   ['set list!', 'toggle list'],
-            \ 'F4' :   ['set wrap!', 'toggle wrap'],
-            \ 'F5' :   ['Compile', 'compile c/cpp java'] ,
-            \ 'F6' :   [':Autoformat', 'Autoformat'],
-            \ 'F7' :   [':SyntasticToggleMode', 'SyntasticToggleMode'],
-            \ 'F8' :   ['edit! %', 'update buffer'],
-            \ 'F9' :   ['set paste!', 'toggle paste'],
-            \ 'F10' :  ['set hlsearch!', 'toggle hlsearch'],
-            \ 'F11' :  [':PreviewTag', 'switch Tag definition'],
-            \ 'F12' :  ['ToggleBG', 'toggle background'],
-            \ '\F1' :  [':e $MYVIMRC', 'reread $MYVIMRC'],
-            \ '\F2' :  [':Tagbar', 'better Taglist'],
-            \ '\F3' :  [':NERDTreeToggle', 'NERDTreeToggle'],
-            \ '\F4' :  [':CtrlPMixed', 'CtrlP'],
-            \ '\F5' :  ['Run', 'run perl lua bash c/c++ vimscript'],
-            \ '\F6' :  [':AV', 'switch header/source'],
-            \ '\F7' :  [':MundoToggle','undo list'],
-            \ '\F8' :  [':TigOpenCurrentFile','Tig@CurrentFile'],
-            \ '\F9' :  [':TigOpenProjectRootDir','Tig@RootDir'],
-            \ '\F10' : [':vert terminal', 'vertical terminal'],
-            \ '\F11' : ['TODO', 'TODO'],
-            \ '\F12' : ['TODO', 'TODO'],
-            \ }
+nnoremap <leader><F11> <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
 nnoremap <silent> <c-x><c-h>    :WhichKey! which_key_map.h<CR>
 nnoremap <silent> <c-x>h        :WhichKey! which_key_map.h<CR>
 
@@ -189,20 +219,20 @@ nnoremap <silent> <c-]> g<c-]>zz
 nnoremap <silent> <c-o> g<c-o>zz
 nnoremap <silent> <c-i> g<c-i>zz
 " 执行删除<silent> 操作时插入断点 Ctrl-G u (类似commit的操作)
-inoremap <silent> <silent> <c-u> <c-g>u<c-u>
-inoremap <silent> <c-w> <c-g>u<c-w>
-inoremap <silent> , ,<c-g>u
-inoremap <silent> . .<c-g>u
-inoremap <silent> / /<c-g>u
-inoremap <silent> \ \<c-g>u
-inoremap <silent> ; ;<c-g>u
-inoremap <silent> : :<c-g>u
-inoremap <silent> ' '<c-g>u
-inoremap <silent> " "<c-g>u
-inoremap <silent> [ [<c-g>u
-inoremap <silent> ] ]<c-g>u
-inoremap <silent> { {<c-g>u
-inoremap <silent> } }<c-g>u
+" inoremap <silent> <silent> <c-u> <c-g>u<c-u>
+" inoremap <silent> <c-w> <c-g>u<c-w>
+" inoremap <silent> , ,<c-g>u
+" inoremap <silent> . .<c-g>u
+" inoremap <silent> / /<c-g>u
+" inoremap <silent> \ \<c-g>u
+" inoremap <silent> ; ;<c-g>u
+" inoremap <silent> : :<c-g>u
+" inoremap <silent> ' '<c-g>u
+" inoremap <silent> " "<c-g>u
+" inoremap <silent> [ [<c-g>u
+" inoremap <silent> ] ]<c-g>u
+" inoremap <silent> { {<c-g>u
+" inoremap <silent> } }<c-g>u
 " 开启折行显示选项时,按屏幕行移动
 
 " \j 与下行连接
@@ -279,14 +309,6 @@ nmap <leader>ra <esc>\rt<esc>\rs<esc>gg=G<esc>gg<esc>
 
 " \sh
 nmap <leader>sh <esc>:set ft=sh<CR>
-let g:which_key_map['r'] = {
-            \ 'name' : '+remove' ,
-            \ 's' :   ['<space>', 'remove space'],
-            \ 'm' :   ['^M', 'remove ^M'],
-            \ 't' :   ['Tab', 'switch Tab to space'],
-            \ 'a' :   ['all', '<space> ^M Tab'],
-            \ 'sh' :  ['sh', ''],
-            \ }
 nnoremap <silent> <c-x><c-r> :WhichKey! which_key_map.r<CR>
 nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 
@@ -294,56 +316,37 @@ nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" tab
-nnoremap <silent> <C-t>c :tabnew<cr>
-nnoremap <silent> <C-t>x :tabclose<cr>
-nnoremap <silent> <C-t>t :tabs<cr>
-nnoremap <silent> <C-t>0 :tabfirst<cr>
-nnoremap <silent> <C-t><C-c> :tabnew<cr>
-nnoremap <silent> <C-t><C-x> :tabclose<cr>
-nnoremap <silent> <C-t><C-t> :tabs<cr>
-nnoremap <silent> <C-t><C-0> :tabfirst<cr>
+nnoremap <silent> <C-s>c :tabnew<cr>
+nnoremap <silent> <C-s>b :tab ba<cr>
+nnoremap <silent> <C-s>x :tabclose<cr>
+nnoremap <silent> <C-s>s :tabs<cr>
+nnoremap <silent> <C-s>0 :tabfirst<cr>
+nnoremap <silent> <C-s>w <C-w>t<cr>
+nnoremap <silent> <C-s><C-c> :tabnew<cr>
+nnoremap <silent> <C-s><C-x> :tabclose<cr>
+nnoremap <silent> <C-s><C-s> :tabs<cr>
+nnoremap <silent> <C-s><C-0> :tabfirst<cr>
 
-nnoremap <silent> <C-t>n gt
-nnoremap <silent> <C-t>p gT
-nnoremap <silent> <C-t><C-n> gt
-nnoremap <silent> <C-t><C-p> gT
-nnoremap <silent> <C-t>f :tabfirst<cr>
-nnoremap <silent> <C-t>l :tablast<cr>
-nnoremap <silent> <C-t><C-f> :tabfirst<cr>
-nnoremap <silent> <C-t><C-l> :tablast<cr>
+nnoremap <silent> <C-s>n gt
+nnoremap <silent> <C-s>p gT
+nnoremap <silent> <C-s><C-n> gt
+nnoremap <silent> <C-s><C-p> gT
+nnoremap <silent> <C-s>f :tabfirst<cr>
+nnoremap <silent> <C-s>l :tablast<cr>
+nnoremap <silent> <C-s><C-f> :tabfirst<cr>
+nnoremap <silent> <C-s><C-l> :tablast<cr>
 
-nnoremap <silent> <C-t>1 1gt
-nnoremap <silent> <C-t>2 2gt
-nnoremap <silent> <C-t>3 3gt
-nnoremap <silent> <C-t>4 4gt
-nnoremap <silent> <C-t>5 5gt
-nnoremap <silent> <C-t>6 6gt
-nnoremap <silent> <C-t>7 7gt
-nnoremap <silent> <C-t>8 8gt
-nnoremap <silent> <C-t>9 9gt
-
-let g:which_key_map['t'] = {
-            \ 'name' : '+tab' ,
-            \ 'c' :  [':tabnew', 'new tab'],
-            \ 'x' :  [':tabclose', 'close tab'],
-            \ 't' :  [':tabs', 'list tab'],
-            \ '0' :  [':tabfirst', 'first tab'],
-            \ 'n' :  ['gt', 'next tab'],
-            \ 'p' :  ['gT', 'previous tab'],
-            \ 'f' :  [':tabfirst', 'first tab'],
-            \ 'l' :  [':tablast', 'last tab'],
-            \ '1' :  ['1gt', '1s tab'],
-            \ '2' :  ['2gt', '2s tab'],
-            \ '3' :  ['3gt', '3s tab'],
-            \ '4' :  ['4gt', '4s tab'],
-            \ '5' :  ['5gt', '5s tab'],
-            \ '6' :  ['6gt', '6s tab'],
-            \ '7' :  ['7gt', '7s tab'],
-            \ '8' :  ['8gt', '8s tab'],
-            \ '9' :  ['9gt', '9s tab'],
-            \ }
-nnoremap <silent> <c-x><c-t> :WhichKey! which_key_map.t<CR>
-nnoremap <silent> <c-x>t     :WhichKey! which_key_map.t<CR>
+nnoremap <silent> <C-s>1 1gt
+nnoremap <silent> <C-s>2 2gt
+nnoremap <silent> <C-s>3 3gt
+nnoremap <silent> <C-s>4 4gt
+nnoremap <silent> <C-s>5 5gt
+nnoremap <silent> <C-s>6 6gt
+nnoremap <silent> <C-s>7 7gt
+nnoremap <silent> <C-s>8 8gt
+nnoremap <silent> <C-s>9 9gt
+nnoremap <silent> <c-x><c-s> :WhichKey! which_key_map.s<CR>
+nnoremap <silent> <c-x>s     :WhichKey! which_key_map.s<CR>
 
 nnoremap <silent> <leader>n <down>
 nnoremap <silent> <leader>p <up>
@@ -370,6 +373,7 @@ let g:which_key_map.0 = 'which_key_ignore'
 
 """" buffer(args) b conflict with tmux, use screen hotkey a
 nnoremap <silent> <C-a>a :ls<CR>
+nnoremap <silent> <C-a>b :tab ba<CR>
 nnoremap <silent> <C-a>0 :bfirst<CR>
 nnoremap <silent> <C-a>c :new<CR>
 nnoremap <silent> <C-a>x :bdelete<CR>
@@ -386,65 +390,18 @@ nnoremap <silent> <C-a>f :bfirst<cr>
 nnoremap <silent> <C-a>l :blast<cr>
 nnoremap <silent> <C-a><C-f> :bfirst<cr>
 nnoremap <silent> <C-a><C-l> :blast<cr>
-
-nnoremap <silent> <C-a>1 :b1<cr>
-nnoremap <silent> <C-a>2 :b2<cr>
-nnoremap <silent> <C-a>3 :b3<cr>
-nnoremap <silent> <C-a>4 :b4<cr>
-nnoremap <silent> <C-a>5 :b5<cr>
-nnoremap <silent> <C-a>6 :b6<cr>
-nnoremap <silent> <C-a>7 :b7<cr>
-nnoremap <silent> <C-a>8 :b8<cr>
-nnoremap <silent> <C-a>9 :b9<cr>
-
-let g:which_key_map['a'] = {
-            \ 'name' : '+buffer' ,
-            \ 'c' :   [':new', 'new buffer'],
-            \ 'x' :   [':bdelete', 'close buffer'],
-            \ 't' :   [':list', 'list buffer'],
-            \ '0' :   [':bfirst', 'first buffer'],
-            \ 'n' :   ['bnext', 'next buffer'],
-            \ 'p' :   ['bprev', 'previous buffer'],
-            \ 'f' :   [':bfirst', 'first buffer'],
-            \ 'l' :   [':blast', 'last buffer'],
-            \ '1' :  ['1b', '1s buffer'],
-            \ '2' :  ['2b', '2s buffer'],
-            \ '3' :  ['3b', '3s buffer'],
-            \ '4' :  ['4b', '4s buffer'],
-            \ '5' :  ['5b', '5s buffer'],
-            \ '6' :  ['6b', '6s buffer'],
-            \ '7' :  ['7b', '7s buffer'],
-            \ '8' :  ['8b', '8s buffer'],
-            \ '9' :  ['9b', '9s buffer'],
-            \ 'c-^' :  ['Ctrl+^', 'switch buffer'],
-            \ }
+                               "c-^ e#
+nnoremap <silent> <C-a>1 :b1<cr>  " e#1
+nnoremap <silent> <C-a>2 :b2<cr>  " e#2
+nnoremap <silent> <C-a>3 :b3<cr>  " e#3
+nnoremap <silent> <C-a>4 :b4<cr>  " e#4
+nnoremap <silent> <C-a>5 :b5<cr>  " e#5
+nnoremap <silent> <C-a>6 :b6<cr>  " e#6
+nnoremap <silent> <C-a>7 :b7<cr>  " e#7
+nnoremap <silent> <C-a>8 :b8<cr>  " e#8
+nnoremap <silent> <C-a>9 :b9<cr>  " e#9
 nnoremap <silent> <c-x><c-a> :WhichKey! which_key_map.a<CR>
 nnoremap <silent> <c-x>a     :WhichKey! which_key_map.a<CR>
-
-let g:which_key_map['b'] = {
-            \ 'name' : '+tmux' ,
-            \ 'c' : ['new', 'new window'],
-            \ '&' : ['kill', 'kill window'],
-            \ 'w' : ['list', 'list window'],
-            \ 'n' : ['wnext', 'next window'],
-            \ 'p' : ['wprev', 'previous window'],
-            \ ',' : ['rename', 'rename window'],
-            \ 'c-s':['save', 'save session'],
-            \ 'c-r':['restore', 'restore session'],
-            \ '$' : ['rename', 'rename session'],
-            \ ')' : ['snext', 'next session'],
-            \ '(' : ['sprev', 'previous session'],
-            \ 'd' : ['detach', 'detach session'],
-            \ 'c-z':['suspend', 'suspend session'],
-            \ 'z' : ['pane<->win', 'pane<->win'],
-            \ '!' : ['pane->win', 'pane->win'],
-            \ 'vs%"|-':   ['v|split', 'split pane'],
-            \ 'HJKL←↑↓→': ['jump', 'jump pane'],
-            \ 'x':        ['kill', 'kill pane'],
-            \ 'o':        ['swap', 'swap pane'],
-            \ 's-p' :     ['log', 'toggle log'],
-            \ 'a-p' :     ['capture', 'capture screen'],
-            \ }
 nnoremap <silent> <c-x><c-b> :WhichKey! which_key_map.b<CR>
 nnoremap <silent> <c-x>b     :WhichKey! which_key_map.b<CR>
 
@@ -464,25 +421,6 @@ nnoremap <silent> <leader>h :split<CR><C-w><C-w>
 nnoremap <silent> <leader>v :vsplit<CR><C-w><C-w>
 nnoremap <silent> <leader>q :q<CR>
 nnoremap <silent> <leader>Q :q!<CR>
-
-let g:which_key_map['w'] = {
-            \ 'name' : '+windows' ,
-            \ 'w' : ['<C-W>w'     , 'other-window']          ,
-            \ 'c' : ['<C-W>c'     , 'delete-window']         ,
-            \ 's' : ['<C-W>s'     , 'split-window-below']    ,
-            \ 'v' : ['<C-W>v'     , 'split-window-right']    ,
-            \ 'h' : ['<C-W>h'     , 'window-left']           ,
-            \ 'j' : ['<C-W>j'     , 'window-below']          ,
-            \ 'l' : ['<C-W>l'     , 'window-right']          ,
-            \ 'k' : ['<C-W>k'     , 'window-up']             ,
-            \ '=' : ['<C-W>='     , 'balance-window']        ,
-            \ 'p' : ['<C-W>p'     , 'previous-window']       ,
-            \ 'x' : ['<C-W>x'     , 'switch-window']        ,
-            \ '_' : ['<C-W>_'     , 'ssplit-window-max']    ,
-            \ '|' : ['<C-W>|'     , 'vsplit-window-max']    ,
-            \ 'o' : [':only'      , 'only windows']         ,
-            \ 'q' : [':quit'      , 'quit current window' ] ,
-            \ }
 nnoremap <silent> <c-x><c-w>    :WhichKey! which_key_map.w<CR>
 nnoremap <silent> <c-x>w        :WhichKey! which_key_map.w<CR>
 
@@ -500,17 +438,6 @@ nnoremap <silent> <C-c><C-p> :cnext<CR>
 nnoremap <silent> <C-c><C-n> :cprevious<CR>
 nnoremap <silent> <C-c><C-f> :cfirst<CR>
 nnoremap <silent> <C-c><C-l> :clast<CR>
-
-let g:which_key_map['c'] = {
-            \ 'name' : '+cwindow' ,
-            \ 'c' :   [':copen', 'open cwindow'],
-            \ 'x' :   [':cclose', 'close cwindow'],
-            \ 'n' :   ['cnext','next cwindow'],
-            \ 'p' :   ['cprevious', 'previous cwindow'],
-            \ 'f' :   [':cfirst', 'first cwindow'],
-            \ 'l' :   [':clast', 'last cwindow'],
-            \ 'c-w+p' :  ['Ctrl-w+p', 'switch window'],
-            \ }
 nnoremap <silent> <c-x><c-c> :WhichKey! which_key_map.c<CR>
 nnoremap <silent> <c-x>c     :WhichKey! which_key_map.c<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -540,33 +467,6 @@ nnoremap <C-a>T :vert terminal<CR>
 
 """" Tag
 nnoremap <C-a>P :!touch ./.project<CR>
-
-let g:which_key_map['x'] = {
-            \ 'name' : '+misc' ,
-            \ 's' :   ['mksession', 'make session'],
-            \ 'r' :   ['source', 'reload session'],
-            \ 't' :   ['buffer->tab','buffer to tab'],
-            \ 'T' :   ['terminal', 'open terminal'],
-            \ 'P' :   ['project', 'touch .project for ctag'],
-            \ 'c-xh' : ['F1-F12', 'help [leader]F1-F12'],
-            \ 'c-xr' : ['space', 'help [leader]rm space'],
-            \ 'c-xt' : ['tab', 'help [c-t]tab'],
-            \ 'c-xa' : ['buffer', 'help [c-a]buffer'],
-            \ 'c-xb' : ['tmux', 'help [c-b]tmux'],
-            \ 'c-xw' : ['window', 'help [c-w]window'],
-            \ 'c-xc' : ['quickfix',    'help [c-c]quickfix'],
-            \ 'c-xx' : ['which', 'help [c-x]which_key_map'],
-            \ 'c-xm' : ['bookmark', 'help [c-m]bookmark'],
-            \ 'c-xp' : ['plug', 'help cmd plug'],
-            \ 'c-xd' : ['comment', 'help [leader]comment'],
-            \ 'c-xf' : ['cscope', 'help [c-\]cscope'],
-            \ 'c-xg' : ['git', 'help [leader]fugitive'],
-            \ 'c-xk'   : ['Man', 'horizontal manual'],
-            \ 'c-xc-k' : ['Vman', 'vertical manual'],
-            \ 'c-ak'   : ['snippets', 'public snippets'],
-            \ 'c-ac-k' : ['mysnippets', 'private snippets'],
-            \ '.vimenv' : ['./.vimenv', 'user redefine viml'],
-            \ }
 nnoremap <silent> <c-x><c-x> :WhichKey! which_key_map.x<CR>
 nnoremap <silent> <c-x>x     :WhichKey! which_key_map.x<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -598,22 +498,6 @@ nnoremap <C-m><C-d> :BookmarkMoveDown<CR>
 nnoremap <C-m><C-l> :BookmarkMoveToLine<CR>
 nnoremap <C-m><C-s> :BookmarkSave ./.bookmark<CR>
 nnoremap <C-m><C-r> :BookmarkLoad ./.bookmark<CR>
-
-let g:which_key_map['m'] = {
-            \ 'name' : '+bookmark' ,
-            \ 't' :   ['BookmarkToggle', 'toggle bookmark'],
-            \ 'a' :   ['BookmarkAnnotate', 'annotate bookmark'],
-            \ 'm' :   ['BookmarkShowAll','showall bookmark'],
-            \ 'n' :   ['BookmarkNext', 'next bookmark'],
-            \ 'p' :   ['BookmarkPrev', 'previous bookmark'],
-            \ 'x' :   ['BookmarkClear', 'clear bookmark'],
-            \ 'c' :   ['BookmarkClearAll', 'clearall bookmarks'],
-            \ 'u' :   ['BookmarkMoveUp','move bookmark up'],
-            \ 'd' :   ['BookmarkMoveDown', 'move bookmark down'],
-            \ 'l' :   ['BookmarkMoveToLine', 'move bookmark to line'],
-            \ 's' :   ['BookmarkSave', 'save ./.bookmark'],
-            \ 'r' :   ['BookmarkLoad', 'load ./.bookmark'],
-            \ }
 nnoremap <silent> <c-x><c-m> :WhichKey! which_key_map.m<CR>
 nnoremap <silent> <c-x>m     :WhichKey! which_key_map.m<CR>
 
@@ -634,7 +518,7 @@ cnoremap <c-d> <Del>
 cnoremap %% <c-r>=expand('%')<cr>
 cnoremap :: <c-r>=expand('%:p:h')<cr>/
 
-cnoremap w!! w !sudo tee >/dev/null %
+cnoremap w!! w !sudo tee >/dev/null %   " w! save changes even if file is read-only, provided user has appropriate permissions
 
 " inoremap
 inoremap <c-a> <home>
@@ -702,7 +586,7 @@ set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
-set paste               " 粘贴保持格式
+" set paste               " 粘贴保持格式
 
 " 启用鼠标
 " set mouse=a
@@ -732,7 +616,7 @@ set lazyredraw             " Only redraw when necessary.
 
 set splitbelow             " Open new windows below the current window.
 set splitright             " Open new windows right of the current window.
-set clipboard+=unnamed     " 与windows共享剪切板
+set clipboard+=unnamed,unnamedplus     " 复制到系统寄存器(*) 复制到系统寄存器(+)
 set history=1000           " 最大历史记录 (default is 20)
 
 " 开启语法高亮功能
@@ -995,7 +879,10 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-" https://zhuanlan.zhihu.com/p/58816186 插件说明 vim-rainbow 插件
+" mkdir -p ~/.vim/pack/plugins/start 创建一个存储插件的目录
+packloadall				"加载所有插件
+silent! helptags ALL	"为所有插件加载帮助文档
+" https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
@@ -1004,6 +891,7 @@ Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
+
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 Plug 'skywind3000/vim-dict'            " VIM 词表收集
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
@@ -1012,7 +900,9 @@ Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
 Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
 Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 
+Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
+Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释 DoxAuthor Dox DoxBlock DoxAll
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
@@ -1020,17 +910,16 @@ Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 
-Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
 
-" netrw Ex/Sex/Vex
+" netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
-Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree
-" Plug 'bagrat/vim-buffet'               " buffer管理
+Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
+" Plug 'bagrat/vim-buffet'             " buffer管理
 Plug 'kien/ctrlp.vim'                  " find模糊搜索 <Ctrl>+p :CtrlP 或 :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
@@ -1046,7 +935,7 @@ Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 Plug 'vim-airline/vim-airline'         " 状态栏
 Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
-Plug 'yianwillis/vimcdoc'              " vim中文文档  help
+Plug 'asins/vimcdoc'              " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
 Plug 'vim-scripts/CRefVim'             " c reference manual; \cr
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
@@ -1059,13 +948,13 @@ Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg
 " Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Plug 'skywind3000/vim-quickui'
 
-Plug 'vim-syntastic/syntastic'
+Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/mru'                    " Most Recently opened/edited files
 " Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
 " Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
 
 " Plug 'mbbill/undotree'                 " 可视化管理内容变更历史记录的插件
-Plug 'simnalamburt/vim-mundo'            " 可视化管理内容变更历史记录的插件 :MundoToggle
+Plug 'simnalamburt/vim-mundo'            " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 " Plug 'Konfekt/FastFold'                " 让 Vim 按需更新折叠内容,而不是一直调用
 
 Plug 'vim-scripts/a.vim'               " swtich between source files and header files
@@ -1081,7 +970,10 @@ Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 
 " Plug 'christoomey/vim-tmux-navigator'  "
+Plug 'dracula/vim', { 'as': 'dracula' }
 call plug#end()
+
+colorscheme dracula
 
 let g:which_key_map['p'] = {
             \ 'name' : '+plugin' ,
@@ -1124,7 +1016,7 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:easycomplete_tab_trigger="<c-space>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
-let g:easycomplete_diagnostics_enable = 0
+let g:easycomplete_diagnostics_enable = 1
 let g:easycomplete_signature_enable = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1236,6 +1128,41 @@ let g:which_key_map.d.gv = ['{Visual}gc',  '{Visual}gc highlighted lines']
 let g:which_key_map.d.gr = ['[count]gcc',  ':[range]Commentary']
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 'tpope/vim-unimpaired'
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:which_key_map['u'] = {
+            \ 'name' : '+unimpaired' ,
+            \ 'a' :   ['[]a', 'previous/next'],
+            \ 'A' :   ['[]A', 'first/last'],
+            \ 'b' :   ['[]b', 'bprevious/bnext'],
+            \ 'B' :   ['[]B', 'bfirst/blast'],
+            \ 'l' :   ['[]l', 'lprevious/lnext'],
+            \ 'L' :   ['[]L', 'lfirst/llast'],
+            \ 'q' :   ['[]q', 'cprevious/cnext'],
+            \ 'Q' :   ['[]Q', 'cfirst/clast'],
+            \ 't' :   ['[]t', 'tabprevious/tabnext'],
+            \ 'T' :   ['[]T', 'tabfirst/tablast'],
+            \ 'f' :   ['[]f', 'f prev/next in dir'],
+            \ 'n' :   ['[]n', 'SCM conflict prev/next'],
+            \ 'Space' : [ '[]<Space>', 'n<Space> line prev/next'],
+            \ 'yob'   : [ 'ob', 'background'],
+            \ 'yoc'   : [ 'oc', 'cursorline'],
+            \ 'yod'   : [ 'od', 'diff'],
+            \ 'yoh'   : [ 'oh', 'hlsearch'],
+            \ 'yoi'   : [ 'oi', 'ignorecase'],
+            \ 'yol'   : [ 'ol', 'list'],
+            \ 'yon'   : [ 'on', 'number'],
+            \ 'yor'   : [ 'or', 'relativenumber'],
+            \ 'you'   : [ 'ou', 'cursorcolumn'],
+            \ 'yov'   : [ 'ov', 'virtualedit'],
+            \ 'yow'   : [ 'ow', 'wrap'],
+            \ 'yox'   : [ 'ox', 'cursorline/cursorcolumn' ],
+            \ 'yoz'   : [ 'oz', 'spell'],
+            \ }
+nnoremap <silent> <c-x><c-u> :WhichKey! which_key_map.u<CR>
+nnoremap <silent> <c-x>u     :WhichKey! which_key_map.u<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'vim-scripts/DoxygenToolkit.vim'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:load_doxygen_syntax              = 1
@@ -1299,25 +1226,27 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
-let g:gutentags_project_root = ['.root', '.svn', '.git', '.project']
+" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+" let g:gutentags_project_root = ['.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 " 所生成的数据文件的名称
-let g:gutentags_ctags_tagfile = '.tags'
+" let g:gutentags_ctags_tagfile = '.tags'
 
 " 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
-let s:vim_tags = expand('~/.cache/tags')
-let g:gutentags_cache_dir = s:vim_tags
+" let s:vim_tags = expand('~/.cache/tags')
+" let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
-if !isdirectory(s:vim_tags)
-    silent! call mkdir(s:vim_tags, 'p')
-endif
+" if !isdirectory(s:vim_tags)
+"     silent! call mkdir(s:vim_tags, 'p')
+" endif
+" autocmd BufWritePost *.py silent! !ctags -R &
+" autocmd BufWritePost *.cpp *.h *.c silent! !ctags -R &
 
 " 配置 ctags 的参数
 " ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --fields=+niazS --extra=+q
-let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q', '--exclude=.git', '--exclude=build']
-let g:gutentags_ctags_extra_args += ['--c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI']
-let g:gutentags_ctags_extra_args += ['--c-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI']
+" let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q', '--exclude=.git', '--exclude=build']
+" let g:gutentags_ctags_extra_args += ['--c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI']
+" let g:gutentags_ctags_extra_args += ['--c-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI']
 " 参数详解
 " c  类(classes)
 " d  宏定义(macro definitions)
@@ -1349,7 +1278,7 @@ let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗�
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
-autocmd FileType h,cpp,cc,c set tags+=/usr/include/tags
+" autocmd FileType h,cpp,cc,c set tags+=/usr/include/tags
 
 " Taglist -> Tagbar(更完善的类支持)
 " exuberant-ctags -> universal-ctags (Home · Universal Ctags)
@@ -1359,6 +1288,7 @@ let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" bfrg/vim-qf-preview setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:qfpreview = {'height': '40', 'offset': '10', 'sign': {'text': '>>', 'texthl': 'Search'}}
 
@@ -1468,7 +1398,7 @@ let g:bookmark_no_default_key_mappings = 1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " only display alphabetic marks a-i and A-I
 let g:markbar_marks_to_display = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
+let g:markbar_persist_mark_names = v:false
 " width of a vertical split markbar
 let g:markbar_width = 30
 
@@ -1578,8 +1508,9 @@ let g:NERDToggleCheckAllLines = 1
 
 "NERDTree 配置:tree快捷键显示当前目录树
 nnoremap tree :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
+nnoremap tags :TlistToggle<CR>
 let NERDTreeWinSize=25
-" autocmd vimenter * NERDTree                      " 自动开启Nerdtree
+" autocmd VimEnter * NERDTree                      " 自动开启Nerdtree
 " let g:nerdtree_tabs_open_on_console_startup = 1  " 打开vim后自动开启目录树
 " 忽略一下文件显示
 let NERDTreeIgnore=['\.pyc','\~$','\.swp','\.o','\.out','\.fcgi','\.cgi','\.a','\.so','\.svn','\.vscode','\.git','\.project','.\root']
@@ -1596,7 +1527,6 @@ let g:NERDTreeIndicatorMapCustom = {
             \ 'Ignored'   : '☒',
             \ "Unknown"   : "?"
             \ }
-" }}}
 ""修改树的显示图标
 let g:NERDTreeDirArrowExpandable = '►'
 let g:NERDTreeDirArrowCollapsible = '▼'
@@ -1782,6 +1712,8 @@ nnoremap <silent> <leader>gc :Gcommit -v<CR>
 nnoremap <silent> <leader>gr :Gread<CR>
 nmap              <Leader>gg :Git<CR>gg<c-n>
 
+nnoremap <silent> <leader>gt :TigOpenCurrentFile<CR>
+nnoremap <silent> <leader>gT :TigOpenProjectRootDir<CR>
 let g:which_key_map.g = {
             \ 'name' : '+fugitive',
             \ }
@@ -1799,6 +1731,8 @@ let g:which_key_map.g.m = ['Gmove', 'move']
 let g:which_key_map.g.p = ['Gpull', 'pull']
 let g:which_key_map.g.r = ['Grename', 'rename']
 let g:which_key_map.g.s = ['Gstatus', 'status']
+let g:which_key_map.g.t = ['TigOpenCurrentFile', 'TigOpenCurrentFile']
+let g:which_key_map.g.T = ['TigOpenProjectRootDir', 'TigOpenProjectRootDir']
 nnoremap <silent> <c-x><c-g> :WhichKey! which_key_map.g<CR>
 nnoremap <silent> <c-x>g     :WhichKey! which_key_map.g<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1830,3 +1764,181 @@ vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
 vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
 
 call which_key#register('\', "g:which_key_map")
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" tpope/surround
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" nmap <C-J> yss}
+
+let g:which_key_map['h'] = {
+            \ 'name' : '+F1-F12' ,
+            \ 'F1' :   ['help', 'vimhelp'],
+            \ 'F2' :   ['set nu!', 'toggle number'],
+            \ 'F3' :   ['set list!', 'toggle list'],
+            \ 'F4' :   ['set wrap!', 'toggle wrap'],
+            \ 'F5' :   ['Compile', 'compile c/cpp java'] ,
+            \ 'F6' :   [':Autoformat', 'Autoformat'],
+            \ 'F7' :   [':SyntasticToggleMode', 'SyntasticToggleMode'],
+            \ 'F8' :   ['edit! %', 'update buffer'],
+            \ 'F9' :   ['set paste!', 'toggle paste'],
+            \ 'F10' :  ['set hlsearch!', 'toggle hlsearch'],
+            \ 'F11' :  [':PreviewTag', 'switch Tag definition'],
+            \ 'F12' :  ['ToggleBG', 'toggle background'],
+            \ '\F1' :  [':e $MYVIMRC', 'reread $MYVIMRC'],
+            \ '\F2' :  [':Tagbar', 'better Taglist'],
+            \ '\F3' :  [':NERDTreeToggle', 'NERDTreeToggle'],
+            \ '\F4' :  [':CtrlPMixed', 'CtrlP'],
+            \ '\F5' :  ['Run', 'run perl lua bash c/c++ vimscript'],
+            \ '\F6' :  [':AV', 'switch header/source'],
+            \ '\F7' :  [':MundoToggle','undo list'],
+            \ '\F8' :  [':TigOpenCurrentFile','Tig@CurrentFile'],
+            \ '\F9' :  [':TigOpenProjectRootDir','Tig@RootDir'],
+            \ '\F10' : [':vert terminal', 'vertical terminal'],
+            \ '\F11' : [':shnote', 'ctags ft=sh add=tags'],
+            \ '\F12' : ['TODO', 'TODO'],
+            \ }
+
+let g:which_key_map['m'] = {
+            \ 'name' : '+bookmark' ,
+            \ 't' :   ['BookmarkToggle', 'toggle bookmark'],
+            \ 'a' :   ['BookmarkAnnotate', 'annotate bookmark'],
+            \ 'm' :   ['BookmarkShowAll','showall bookmark'],
+            \ 'n' :   ['BookmarkNext', 'next bookmark'],
+            \ 'p' :   ['BookmarkPrev', 'previous bookmark'],
+            \ 'x' :   ['BookmarkClear', 'clear bookmark'],
+            \ 'c' :   ['BookmarkClearAll', 'clearall bookmarks'],
+            \ 'u' :   ['BookmarkMoveUp','move bookmark up'],
+            \ 'd' :   ['BookmarkMoveDown', 'move bookmark down'],
+            \ 'l' :   ['BookmarkMoveToLine', 'move bookmark to line'],
+            \ 's' :   ['BookmarkSave', 'save ./.bookmark'],
+            \ 'r' :   ['BookmarkLoad', 'load ./.bookmark'],
+            \ }
+let g:which_key_map['r'] = {
+            \ 'name' : '+remove' ,
+            \ 's' :   ['<space>', 'remove space'],
+            \ 'm' :   ['^M', 'remove ^M'],
+            \ 't' :   ['Tab', 'switch Tab to space'],
+            \ 'a' :   ['all', '<space> ^M Tab'],
+            \ 'sh' :  ['sh', ''],
+            \ }
+let g:which_key_map['s'] = {
+            \ 'name' : '+tab' ,
+            \ 'c' :  [':tabnew', 'new tab'],
+            \ 'b' :  [':tab ba', 'buffer -> tab'],
+            \ 'x' :  [':tabclose', 'close tab'],
+            \ 't' :  [':tabs', 'list tab'],
+            \ '0' :  [':tabfirst', 'first tab'],
+            \ 'n' :  ['gt', 'next tab'],
+            \ 'p' :  ['gT', 'previous tab'],
+            \ 'f' :  [':tabfirst', 'first tab'],
+            \ 'l' :  [':tablast', 'last tab'],
+            \ '1' :  ['1gt', '1s tab'],
+            \ '2' :  ['2gt', '2s tab'],
+            \ '3' :  ['3gt', '3s tab'],
+            \ '4' :  ['4gt', '4s tab'],
+            \ '5' :  ['5gt', '5s tab'],
+            \ '6' :  ['6gt', '6s tab'],
+            \ '7' :  ['7gt', '7s tab'],
+            \ '8' :  ['8gt', '8s tab'],
+            \ '9' :  ['9gt', '9s tab'],
+            \ }
+let g:which_key_map['b'] = {
+            \ 'name' : '+tmux' ,
+            \ 'c' : ['new', 'new window'],
+            \ '&' : ['kill', 'kill window'],
+            \ 'w' : ['list', 'list window'],
+            \ 'n' : ['wnext', 'next window'],
+            \ 'p' : ['wprev', 'previous window'],
+            \ ',' : ['rename', 'rename window'],
+            \ 'c-s':['save', 'save session'],
+            \ 'c-r':['restore', 'restore session'],
+            \ '$' : ['rename', 'rename session'],
+            \ ')' : ['snext', 'next session'],
+            \ '(' : ['sprev', 'previous session'],
+            \ 'd' : ['detach', 'detach session'],
+            \ 'c-z':['suspend', 'suspend session'],
+            \ 'z' : ['pane<->win', 'pane<->win'],
+            \ '!' : ['pane->win', 'pane->win'],
+            \ 'vs%"|-':   ['v|split', 'split pane'],
+            \ 'HJKL←↑↓→': ['jump', 'jump pane'],
+            \ 'x':        ['kill', 'kill pane'],
+            \ 'o':        ['swap', 'swap pane'],
+            \ 's-p' :     ['log', 'toggle log'],
+            \ 'a-p' :     ['capture', 'capture screen'],
+            \ }
+let g:which_key_map['w'] = {
+            \ 'name' : '+windows' ,
+            \ 'w' : ['<C-W>w'     , 'other-window']          ,
+            \ 'c' : ['<C-W>c'     , 'delete-window']         ,
+            \ 's' : ['<C-W>s'     , 'split-window-below']    ,
+            \ 'v' : ['<C-W>v'     , 'split-window-right']    ,
+            \ 'h' : ['<C-W>h'     , 'window-left']           ,
+            \ 'j' : ['<C-W>j'     , 'window-below']          ,
+            \ 'l' : ['<C-W>l'     , 'window-right']          ,
+            \ 'k' : ['<C-W>k'     , 'window-up']             ,
+            \ '=' : ['<C-W>='     , 'balance-window']        ,
+            \ 'p' : ['<C-W>p'     , 'previous-window']       ,
+            \ 'x' : ['<C-W>x'     , 'switch-window']        ,
+            \ '_' : ['<C-W>_'     , 'ssplit-window-max']    ,
+            \ '|' : ['<C-W>|'     , 'vsplit-window-max']    ,
+            \ 'o' : [':only'      , 'only windows']         ,
+            \ 'q' : [':quit'      , 'quit current window' ] ,
+            \ }
+let g:which_key_map['x'] = {
+            \ 'name' : '+misc' ,
+            \ 's' :   ['mksession', 'make session'],
+            \ 'r' :   ['source', 'reload session'],
+            \ 't' :   ['buffer->tab','buffer to tab'],
+            \ 'T' :   ['terminal', 'open terminal'],
+            \ 'P' :   ['project', 'touch .project for ctag'],
+            \ 'c-xh' : ['F1-F12', 'help [leader]F1-F12'],
+            \ 'c-xr' : ['space', 'help [leader]rm space'],
+            \ 'c-xs' : ['tab', 'help [c-s]tab'],
+            \ 'c-xa' : ['buffer', 'help [c-a]buffer'],
+            \ 'c-xb' : ['tmux', 'help [c-b]tmux'],
+            \ 'c-xw' : ['window', 'help [c-w]window'],
+            \ 'c-xc' : ['quickfix',    'help [c-c]quickfix'],
+            \ 'c-xx' : ['which', 'help [c-x]which_key_map'],
+            \ 'c-xm' : ['bookmark', 'help [c-m]bookmark'],
+            \ 'c-xp' : ['plug', 'help cmd plug'],
+            \ 'c-xd' : ['comment', 'help [leader]comment'],
+            \ 'c-xf' : ['cscope', 'help [c-\]cscope'],
+            \ 'c-xg' : ['git', 'help [leader]fugitive'],
+            \ 'c-xk'   : ['Man', 'horizontal manual'],
+            \ 'c-xc-k' : ['Vman', 'vertical manual'],
+            \ 'c-ak'   : ['snippets', 'public snippets'],
+            \ 'c-ac-k' : ['mysnippets', 'private snippets'],
+            \ '.vimenv' : ['./.vimenv', 'user redefine viml'],
+            \ }
+let g:which_key_map['c'] = {
+            \ 'name' : '+cwindow' ,
+            \ 'c' :   [':copen', 'open cwindow'],
+            \ 'x' :   [':cclose', 'close cwindow'],
+            \ 'n' :   ['cnext','next cwindow'],
+            \ 'p' :   ['cprevious', 'previous cwindow'],
+            \ 'f' :   [':cfirst', 'first cwindow'],
+            \ 'l' :   [':clast', 'last cwindow'],
+            \ 'c-w+p' :  ['Ctrl-w+p', 'switch window'],
+            \ }
+let g:which_key_map['a'] = {
+            \ 'name' : '+buffer' ,
+            \ 'c' :   [':new', 'new buffer'],
+            \ 'b' :   [':tab ba', 'buffer -> tab'],
+            \ 'x' :   [':bdelete', 'close buffer'],
+            \ 't' :   [':list', 'list buffer'],
+            \ '0' :   [':bfirst', 'first buffer'],
+            \ 'n' :   ['bnext', 'next buffer'],
+            \ 'p' :   ['bprev', 'previous buffer'],
+            \ 'f' :   [':bfirst', 'first buffer'],
+            \ 'l' :   [':blast', 'last buffer'],
+            \ '1' :  ['1b', '1s buffer'],
+            \ '2' :  ['2b', '2s buffer'],
+            \ '3' :  ['3b', '3s buffer'],
+            \ '4' :  ['4b', '4s buffer'],
+            \ '5' :  ['5b', '5s buffer'],
+            \ '6' :  ['6b', '6s buffer'],
+            \ '7' :  ['7b', '7s buffer'],
+            \ '8' :  ['8b', '8s buffer'],
+            \ '9' :  ['9b', '9s buffer'],
+            \ 'c-^' :  ['Ctrl+^', 'switch buffer'],
+            \ }

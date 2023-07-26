@@ -21,7 +21,7 @@ autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
 " autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
-autocmd Filetype sh set equalprg=shfmt\ -i\ 2
+" autocmd Filetype sh set equalprg=shfmt\ -i\ 2
 autocmd Filetype python set equalprg=yapf
 autocmd Filetype javascript,javascript.jsx set equalprg=prettier\ --parser=babylon
 autocmd Filetype json set equalprg=prettier\ --parser=json
@@ -55,8 +55,8 @@ nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜
 nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
 nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
 nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
-":argdo
-":bufdo
+" :argdo
+" :bufdo
 " :tabdo
 " :windo
 " :map <c-x>; :map <c-a>; :map <c-c>; :map <c-\>; :map \;
@@ -100,6 +100,22 @@ augroup crun
     autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
 augroup END
+
+if filereadable("tags")
+    set tags=./tags;
+"   set tags+=/usr/include/tags
+else
+    set tags=./tags;,tags
+"   set tags+=/usr/include/tags
+endif
+
+if filereadable(".tags")
+    set tags=./.tags;
+"   set tags+=/usr/include/tags
+else
+    set tags=./.tags;,.tags
+"   set tags+=/usr/include/tags
+endif
 
 " redefine F1-F12 hotkey
 if filereadable(".vimenv")
@@ -150,9 +166,9 @@ nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 
 " 静态代码扫描
 augroup format
-    autocmd Filetype c     nnoremap <F7> :!cppcheck --std=c99 --enable=warning,style -v %<CR>
-    autocmd Filetype sh    nnoremap <F7> :!shellcheck %<CR>
-    autocmd Filetype perl  nnoremap <F7> :!perlcritic %<CR>
+    " autocmd Filetype c     nnoremap <F7> :new | read !cppcheck   --std=c99 --enable=warning,style -v #<CR>
+    " autocmd Filetype sh    nnoremap <F7> :new | read !shellcheck #<CR>
+    autocmd Filetype perl  nnoremap <F7> :new | read !perlcritic #<CR>
 augroup END
 nnoremap <F7> :SyntasticToggleMode<CR><CR>
 
@@ -179,7 +195,7 @@ noremap <F12> :call ToggleBG()<CR>
 " 自说明帮助
 nnoremap <leader><F1> :e $MYVIMRC<CR>
 " 扩展窗口
-nnoremap <leader><F2> :Tagbar<CR>
+nnoremap <leader><F2> :TlistToggle<CR>
 nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
 nnoremap <leader><F4> :CtrlPMixed<CR>
 nnoremap <leader><F6> :AV<CR>
@@ -228,49 +244,6 @@ nnoremap <silent> k gk
 " nnoremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 " nnoremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
 
-"""" 命令转快捷键
-" 将命令行命令:q :w映射成\q \w
-" Quit
-inoremap <C-Q>     <esc>:q<cr>
-nnoremap <C-Q>     :q<cr>
-vnoremap <C-Q>     <esc>
-nnoremap <Leader>q :q<cr>
-nnoremap <Leader>Q :qa!<cr>
-" Save
-inoremap <C-s>     <C-O>:update<cr>
-nnoremap <C-s>     :update<cr>
-nnoremap <leader>s :update<cr>
-nnoremap <leader>w :update<cr>
-
-nnoremap <leader>w :w<CR>       " \w == :w
-nnoremap <leader>m m,           " \m == m,
-
-" Repeat last substitution, including flags, with &.
-nnoremap & :&&<CR>
-xnoremap & :&&<CR>
-
-" 编辑copy paste
-nnoremap <leader>sa ggVG"       " select All
-vnoremap < <gv                  " > 用于增加缩进
-vnoremap > >gv                  " < 用于减少缩进
-vnoremap <leader>y "+           | " Linux粘贴板
-" vnoremap <leader>y "*         | " Windows粘贴板
-nnoremap <leader>v "+p          | " Linux粘贴板 粘贴
-inoremap <leader>v <esc>"+p     | " Linux粘贴板 粘贴
-vnoremap <leader>v "+p          | " Linux粘贴板 粘贴
-nnoremap <leader>c "+y          | " Linux粘贴板 复制
-vnoremap <leader>c "+y          | " Linux粘贴板 复制
-""" Some shortcuts for system clipboards
-noremap <leader>d "+d
-noremap <leader>D "*d
-noremap <leader>p "+p
-noremap <leader>P "*p
-noremap <leader>y "+y
-noremap <leader>Y "*y
-"" END editing keybindings
-
-" Yank from the cursor to the end of the line, to be consistent with C and D.
-nnoremap Y y$
 """" 命令转快捷键
 " 将命令行命令:q :w映射成\q \w
 " Quit
@@ -940,7 +913,6 @@ Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
-Plug 'bfrg/vim-qf-preview'             " 预览quickfix中的搜索   p
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
 
 " netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
@@ -1313,7 +1285,6 @@ let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" bfrg/vim-qf-preview setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:qfpreview = {'height': '40', 'offset': '10', 'sign': {'text': '>>', 'texthl': 'Search'}}
 
@@ -1533,6 +1504,7 @@ let g:NERDToggleCheckAllLines = 1
 
 "NERDTree 配置:tree快捷键显示当前目录树
 nnoremap tree :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
+nnoremap tags :TlistToggle<CR>
 let NERDTreeWinSize=25
 " autocmd VimEnter * NERDTree                      " 自动开启Nerdtree
 " let g:nerdtree_tabs_open_on_console_startup = 1  " 打开vim后自动开启目录树
@@ -1792,7 +1764,7 @@ call which_key#register('\', "g:which_key_map")
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " tpope/surround
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nmap <C-J> yss}
+" nmap <C-J> yss}
 
 let g:which_key_map['h'] = {
             \ 'name' : '+F1-F12' ,

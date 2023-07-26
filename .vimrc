@@ -3,7 +3,11 @@
 
 " nnoremap         <F5> :update<CR>:source %<CR>
 " nnoremap <leader><F5> :update<CR>:source %<CR>
-" augroup makeprg
+
+" [vim-dispatch] 异步执行+语法糖和命令 :term make异步调用make
+" makeprg 用于设置执行:make时使用那个命令行程序 --> term make
+" errorformat 可以定义一些便于识别的错误格式
+" compiler 用于指定其他的编译器插件,它也会修改编译器的输出格式
 "autocmd FileType cpp   set makeprg="g++ -Wall -Wextra -std=c++11 ". expand("%") . " && ./a.out"
 ""    autocmd FileType c      set makeprg="gcc\ -Wall\ -o\ %<\ %"<CR>
 autocmd FileType lua    set makeprg="lua ".expand("%")
@@ -15,16 +19,48 @@ autocmd FileType perl   set makeprg=perl\ -c\ %\ $* errorformat=%f:%l:%m
 " autocmd FileType c          set makeprg="gcc\ '%'\ -o\ '%:r'\ -std=gnu99\ -Wall"
 autocmd FileType python     set makeprg=echo\ OK
 autocmd FileType c          set makeprg=gcc\ -g\ -Wall\ -Wno-sign-compare\ %
-autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
+" autocmd FileType cpp        set makeprg=g++\ -g\ -Wall\ -Wno-sign-compare\ %
 
+autocmd Filetype sh set equalprg=shfmt\ -i\ 2
+autocmd Filetype python set equalprg=yapf
+autocmd Filetype javascript,javascript.jsx set equalprg=prettier\ --parser=babylon
+autocmd Filetype json set equalprg=prettier\ --parser=json
+autocmd Filetype css,scss,less set equalprg=prettier\ --parser=css
+autocmd Filetype yaml set equalprg=prettier\ --parser=yaml
+autocmd Filetype markdown set equalprg=tidy-markdown
+autocmd Filetype c,cpp set equalprg=clang-format\ --style=Google
+autocmd FileType cpp,java setlocal equalprg=astyle\ -A1sCSNLYpHUEk1xjcn
+autocmd Filetype html set equalprg=html-beautify\ --indent-size=2\ --no-preserve-newlines\ -
+autocmd Filetype xml set equalprg=xmllint\ --format\ -
+
+autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
+
+autocmd BufWritePost *tmux.conf !tmux source-file %
+
+" Hex read
+nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
+
+" Hex write
+nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
+
+nmap <leader>g* :noautocmd vimgrep -n /<C-R><C-W>/j **/*<CR>:cwin<CR>      # 搜索光标下word单词 递归目录
+nmap <leader>g# :noautocmd vimgrep -n /<C-R><C-W>/j *   <CR>:cwin<CR>      # 搜索光标下word单词 本目录
+nmap <leader>g% :noautocmd vimgrep -n /<C-R><C-W>/j %   <CR>:cwin<CR>      # 搜索光标下word单词 本文件
+nmap <leader>sf :noautocmd vimgrep -n /\<<C-R><C-W>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sd :noautocmd vimgrep -n /\<<C-R><C-W>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sr :noautocmd vimgrep -n /\<<C-R><C-W>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜索刚搜索单词
+nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
+nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
+nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
 
 " :argdo
 " :bufdo
 " :tabdo
 " :windo
-
+" :map <c-x>; :map <c-a>; :map <c-c>; :map <c-\>; :map \;
 
 let g:which_key_map =  {}
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -46,11 +82,12 @@ nnoremap <F4> :set wrap! wrap?<CR>
 augroup ccompile
     autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!ipython  % <CR>
+    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!python  % <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:!javac % <CR>
-    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:!lua   % <CR>
+    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash  % <CR>
+    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:term perl % <CR>
+    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua   % <CR>
+    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
     autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -58,9 +95,10 @@ augroup crun
     autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:!javac % <CR>:java %< <CR>
-    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:!bash  % <CR>
-    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:!perl  % <CR>
-    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:!lua   % <CR>
+    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash  % <CR>
+    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert terminal perl  % <CR>
+    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua   % <CR>
+    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
 augroup END
 
@@ -103,15 +141,26 @@ augroup END
 
 " 代码格式化
 augroup format
-    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:ClangFormat<CR>:w!<CR>:!dos2unix %<CR>
-    autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:ClangFormat<CR>:w!<CR>:!dos2unix %<CR>
-    autocmd Filetype sh    nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:shfmt -l -w -i 2 -ci % <CR>:w!<CR>:!dos2unix %<CR>
+    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
+    autocmd Filetype perl  nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!perltidy -i=4 -et=4 -ndsm -st -ce -bar -nola -l=220 %<CR>:%s/\r//ga<CR>
+    autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:%s/\r//ga<CR>
+    autocmd Filetype sh    nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!shfmt -l -w -i 2 -ci %<CR>:%s/\r//ga<CR>
+    autocmd Filetype c     nnoremap twfl :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
+    autocmd Filetype perl  nnoremap twfl :FixWhitespace<CR>:!dos2unix %<CR>:!perltidy -i=4 -et=4 -ndsm -st -ce -bar -nola -l=220 %<CR>:%s/\r//ga<CR>
+    autocmd Filetype cpp   nnoremap twfl :FixWhitespace<CR>:!dos2unix %<CR>:%s/\r//ga<CR>
+    autocmd Filetype sh    nnoremap twfl :FixWhitespace<CR>:!dos2unix %<CR>:!shfmt -l -w -i 2 -ci %<CR>:%s/\r//ga<CR>
 augroup END
+
 nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 
 " 静态代码扫描
 augroup format
-    nnoremap <F7> :SyntasticToggleMode<CR><CR>:!clang-tidy % -fix -fix-errors -header-filter=.* -checks="readability-braces-around-statements,misc-macro-parentheses" -- -I.<CR>
+    " autocmd Filetype c     nnoremap <F7> <ESC>:new|read !cppcheck   --std=c99 --enable=warning,style -v #<CR>
+    " autocmd Filetype sh    nnoremap <F7> <ESC>:new|read !shellcheck #<CR>
+    " autocmd Filetype perl  nnoremap <F7> <ESC>:new|read !perlcritic #<CR>
+    autocmd Filetype c     nnoremap <F7> :!cppcheck   --std=c99 --enable=warning,style -v %<CR>
+    autocmd Filetype sh    nnoremap <F7> :!shellcheck %<CR>
+    autocmd Filetype perl  nnoremap <F7> :!perlcritic %<CR>
 augroup END
 nnoremap <F7> :SyntasticToggleMode<CR><CR>
 
@@ -146,6 +195,7 @@ nnoremap <leader><F7> :MundoToggle<CR>
 nnoremap <leader><F8> :TigOpenCurrentFile<CR>
 nnoremap <leader><F9> :TigOpenProjectRootDir<CR>
 nnoremap <leader><F10> :vert terminal<CR>
+nnoremap <leader><F11> <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
 
 let g:which_key_map['h'] = {
             \ 'name' : '+F1-F12' ,
@@ -171,7 +221,7 @@ let g:which_key_map['h'] = {
             \ '\F8' :  [':TigOpenCurrentFile','Tig@CurrentFile'],
             \ '\F9' :  [':TigOpenProjectRootDir','Tig@RootDir'],
             \ '\F10' : [':vert terminal', 'vertical terminal'],
-            \ '\F11' : ['TODO', 'TODO'],
+            \ '\F11' : [':shnote', 'ctags ft=sh add=tags'],
             \ '\F12' : ['TODO', 'TODO'],
             \ }
 nnoremap <silent> <c-x><c-h>    :WhichKey! which_key_map.h<CR>
@@ -294,37 +344,40 @@ nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" tab
-nnoremap <silent> <C-t>c :tabnew<cr>
-nnoremap <silent> <C-t>x :tabclose<cr>
-nnoremap <silent> <C-t>t :tabs<cr>
-nnoremap <silent> <C-t>0 :tabfirst<cr>
-nnoremap <silent> <C-t><C-c> :tabnew<cr>
-nnoremap <silent> <C-t><C-x> :tabclose<cr>
-nnoremap <silent> <C-t><C-t> :tabs<cr>
-nnoremap <silent> <C-t><C-0> :tabfirst<cr>
+nnoremap <silent> <C-s>c :tabnew<cr>
+nnoremap <silent> <C-s>b :tab ba<cr>
+nnoremap <silent> <C-s>x :tabclose<cr>
+nnoremap <silent> <C-s>s :tabs<cr>
+nnoremap <silent> <C-s>0 :tabfirst<cr>
+nnoremap <silent> <C-s>w <C-w>t<cr>
+nnoremap <silent> <C-s><C-c> :tabnew<cr>
+nnoremap <silent> <C-s><C-x> :tabclose<cr>
+nnoremap <silent> <C-s><C-s> :tabs<cr>
+nnoremap <silent> <C-s><C-0> :tabfirst<cr>
 
-nnoremap <silent> <C-t>n gt
-nnoremap <silent> <C-t>p gT
-nnoremap <silent> <C-t><C-n> gt
-nnoremap <silent> <C-t><C-p> gT
-nnoremap <silent> <C-t>f :tabfirst<cr>
-nnoremap <silent> <C-t>l :tablast<cr>
-nnoremap <silent> <C-t><C-f> :tabfirst<cr>
-nnoremap <silent> <C-t><C-l> :tablast<cr>
+nnoremap <silent> <C-s>n gt
+nnoremap <silent> <C-s>p gT
+nnoremap <silent> <C-s><C-n> gt
+nnoremap <silent> <C-s><C-p> gT
+nnoremap <silent> <C-s>f :tabfirst<cr>
+nnoremap <silent> <C-s>l :tablast<cr>
+nnoremap <silent> <C-s><C-f> :tabfirst<cr>
+nnoremap <silent> <C-s><C-l> :tablast<cr>
 
-nnoremap <silent> <C-t>1 1gt
-nnoremap <silent> <C-t>2 2gt
-nnoremap <silent> <C-t>3 3gt
-nnoremap <silent> <C-t>4 4gt
-nnoremap <silent> <C-t>5 5gt
-nnoremap <silent> <C-t>6 6gt
-nnoremap <silent> <C-t>7 7gt
-nnoremap <silent> <C-t>8 8gt
-nnoremap <silent> <C-t>9 9gt
+nnoremap <silent> <C-s>1 1gt
+nnoremap <silent> <C-s>2 2gt
+nnoremap <silent> <C-s>3 3gt
+nnoremap <silent> <C-s>4 4gt
+nnoremap <silent> <C-s>5 5gt
+nnoremap <silent> <C-s>6 6gt
+nnoremap <silent> <C-s>7 7gt
+nnoremap <silent> <C-s>8 8gt
+nnoremap <silent> <C-s>9 9gt
 
-let g:which_key_map['t'] = {
+let g:which_key_map['s'] = {
             \ 'name' : '+tab' ,
             \ 'c' :  [':tabnew', 'new tab'],
+            \ 'b' :  [':tab ba', 'buffer -> tab'],
             \ 'x' :  [':tabclose', 'close tab'],
             \ 't' :  [':tabs', 'list tab'],
             \ '0' :  [':tabfirst', 'first tab'],
@@ -342,8 +395,8 @@ let g:which_key_map['t'] = {
             \ '8' :  ['8gt', '8s tab'],
             \ '9' :  ['9gt', '9s tab'],
             \ }
-nnoremap <silent> <c-x><c-t> :WhichKey! which_key_map.t<CR>
-nnoremap <silent> <c-x>t     :WhichKey! which_key_map.t<CR>
+nnoremap <silent> <c-x><c-s> :WhichKey! which_key_map.s<CR>
+nnoremap <silent> <c-x>s     :WhichKey! which_key_map.s<CR>
 
 nnoremap <silent> <leader>n <down>
 nnoremap <silent> <leader>p <up>
@@ -370,6 +423,7 @@ let g:which_key_map.0 = 'which_key_ignore'
 
 """" buffer(args) b conflict with tmux, use screen hotkey a
 nnoremap <silent> <C-a>a :ls<CR>
+nnoremap <silent> <C-a>b :tab ba<CR>
 nnoremap <silent> <C-a>0 :bfirst<CR>
 nnoremap <silent> <C-a>c :new<CR>
 nnoremap <silent> <C-a>x :bdelete<CR>
@@ -386,20 +440,21 @@ nnoremap <silent> <C-a>f :bfirst<cr>
 nnoremap <silent> <C-a>l :blast<cr>
 nnoremap <silent> <C-a><C-f> :bfirst<cr>
 nnoremap <silent> <C-a><C-l> :blast<cr>
-
-nnoremap <silent> <C-a>1 :b1<cr>
-nnoremap <silent> <C-a>2 :b2<cr>
-nnoremap <silent> <C-a>3 :b3<cr>
-nnoremap <silent> <C-a>4 :b4<cr>
-nnoremap <silent> <C-a>5 :b5<cr>
-nnoremap <silent> <C-a>6 :b6<cr>
-nnoremap <silent> <C-a>7 :b7<cr>
-nnoremap <silent> <C-a>8 :b8<cr>
-nnoremap <silent> <C-a>9 :b9<cr>
+                               "c-^ e#
+nnoremap <silent> <C-a>1 :b1<cr>  " e#1
+nnoremap <silent> <C-a>2 :b2<cr>  " e#2
+nnoremap <silent> <C-a>3 :b3<cr>  " e#3
+nnoremap <silent> <C-a>4 :b4<cr>  " e#4
+nnoremap <silent> <C-a>5 :b5<cr>  " e#5
+nnoremap <silent> <C-a>6 :b6<cr>  " e#6
+nnoremap <silent> <C-a>7 :b7<cr>  " e#7
+nnoremap <silent> <C-a>8 :b8<cr>  " e#8
+nnoremap <silent> <C-a>9 :b9<cr>  " e#9
 
 let g:which_key_map['a'] = {
             \ 'name' : '+buffer' ,
             \ 'c' :   [':new', 'new buffer'],
+            \ 'b' :   [':tab ba', 'buffer -> tab'],
             \ 'x' :   [':bdelete', 'close buffer'],
             \ 't' :   [':list', 'list buffer'],
             \ '0' :   [':bfirst', 'first buffer'],
@@ -550,7 +605,7 @@ let g:which_key_map['x'] = {
             \ 'P' :   ['project', 'touch .project for ctag'],
             \ 'c-xh' : ['F1-F12', 'help [leader]F1-F12'],
             \ 'c-xr' : ['space', 'help [leader]rm space'],
-            \ 'c-xt' : ['tab', 'help [c-t]tab'],
+            \ 'c-xs' : ['tab', 'help [c-s]tab'],
             \ 'c-xa' : ['buffer', 'help [c-a]buffer'],
             \ 'c-xb' : ['tmux', 'help [c-b]tmux'],
             \ 'c-xw' : ['window', 'help [c-w]window'],
@@ -634,7 +689,7 @@ cnoremap <c-d> <Del>
 cnoremap %% <c-r>=expand('%')<cr>
 cnoremap :: <c-r>=expand('%:p:h')<cr>/
 
-cnoremap w!! w !sudo tee >/dev/null %
+cnoremap w!! w !sudo tee >/dev/null %   " w! save changes even if file is read-only, provided user has appropriate permissions
 
 " inoremap
 inoremap <c-a> <home>
@@ -702,7 +757,7 @@ set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
-set paste               " 粘贴保持格式
+"set paste              " 粘贴保持格式
 
 " 启用鼠标
 " set mouse=a
@@ -732,7 +787,7 @@ set lazyredraw             " Only redraw when necessary.
 
 set splitbelow             " Open new windows below the current window.
 set splitright             " Open new windows right of the current window.
-set clipboard+=unnamed     " 与windows共享剪切板
+set clipboard+=unnamed,unnamedplus     " 复制到系统寄存器(*) 复制到系统寄存器(+)
 set history=1000           " 最大历史记录 (default is 20)
 
 " 开启语法高亮功能
@@ -995,7 +1050,10 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-" https://zhuanlan.zhihu.com/p/58816186 插件说明 vim-rainbow 插件
+" mkdir -p ~/.vim/pack/plugins/start 创建一个存储插件的目录
+packloadall				"加载所有插件
+silent! helptags ALL	"为所有插件加载帮助文档
+" https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
@@ -1004,6 +1062,7 @@ Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
+
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 Plug 'skywind3000/vim-dict'            " VIM 词表收集
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
@@ -1012,7 +1071,9 @@ Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
 Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
 Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 
+Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
+Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释 DoxAuthor Dox DoxBlock DoxAll
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
@@ -1026,11 +1087,11 @@ Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set 
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
 
-" netrw Ex/Sex/Vex
+" netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
-Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree
-" Plug 'bagrat/vim-buffet'               " buffer管理
+Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
+" Plug 'bagrat/vim-buffet'             " buffer管理
 Plug 'kien/ctrlp.vim'                  " find模糊搜索 <Ctrl>+p :CtrlP 或 :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
@@ -1046,7 +1107,7 @@ Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 Plug 'vim-airline/vim-airline'         " 状态栏
 Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
-Plug 'yianwillis/vimcdoc'              " vim中文文档  help
+Plug 'asins/vimcdoc'              " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
 Plug 'vim-scripts/CRefVim'             " c reference manual; \cr
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
@@ -1059,13 +1120,13 @@ Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg
 " Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Plug 'skywind3000/vim-quickui'
 
-Plug 'vim-syntastic/syntastic'
+Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/mru'                    " Most Recently opened/edited files
 " Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
 " Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
 
 " Plug 'mbbill/undotree'                 " 可视化管理内容变更历史记录的插件
-Plug 'simnalamburt/vim-mundo'            " 可视化管理内容变更历史记录的插件 :MundoToggle
+Plug 'simnalamburt/vim-mundo'            " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 " Plug 'Konfekt/FastFold'                " 让 Vim 按需更新折叠内容,而不是一直调用
 
 Plug 'vim-scripts/a.vim'               " swtich between source files and header files
@@ -1081,7 +1142,10 @@ Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 
 " Plug 'christoomey/vim-tmux-navigator'  "
+Plug 'dracula/vim', { 'as': 'dracula' }
 call plug#end()
+
+colorscheme dracula
 
 let g:which_key_map['p'] = {
             \ 'name' : '+plugin' ,
@@ -1124,7 +1188,7 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:easycomplete_tab_trigger="<c-space>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
-let g:easycomplete_diagnostics_enable = 0
+let g:easycomplete_diagnostics_enable = 1
 let g:easycomplete_signature_enable = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1216,6 +1280,8 @@ autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
 
+autocmd BufEnter * lcd %:p:h
+
 " 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
 " gcc: 注释或反注释
 " gcap: 注释一段
@@ -1234,6 +1300,41 @@ let g:which_key_map.d.gc = ['gcc{motion}', 'gcc{motion} motion moves over lines'
 let g:which_key_map.d.gm = ['[count]gcc',  '[count]gcc [count] lines']
 let g:which_key_map.d.gv = ['{Visual}gc',  '{Visual}gc highlighted lines']
 let g:which_key_map.d.gr = ['[count]gcc',  ':[range]Commentary']
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 'tpope/vim-unimpaired'
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:which_key_map['u'] = {
+            \ 'name' : '+unimpaired' ,
+            \ 'a' :   ['[]a', 'previous/next'],
+            \ 'A' :   ['[]A', 'first/last'],
+            \ 'b' :   ['[]b', 'bprevious/bnext'],
+            \ 'B' :   ['[]B', 'bfirst/blast'],
+            \ 'l' :   ['[]l', 'lprevious/lnext'],
+            \ 'L' :   ['[]L', 'lfirst/llast'],
+            \ 'q' :   ['[]q', 'cprevious/cnext'],
+            \ 'Q' :   ['[]Q', 'cfirst/clast'],
+            \ 't' :   ['[]t', 'tabprevious/tabnext'],
+            \ 'T' :   ['[]T', 'tabfirst/tablast'],
+            \ 'f' :   ['[]f', 'f prev/next in dir'],
+            \ 'n' :   ['[]n', 'SCM conflict prev/next'],
+            \ 'Space' : [ '[]<Space>', 'n<Space> line prev/next'],
+            \ 'yob'   : [ 'ob', 'background'],
+            \ 'yoc'   : [ 'oc', 'cursorline'],
+            \ 'yod'   : [ 'od', 'diff'],
+            \ 'yoh'   : [ 'oh', 'hlsearch'],
+            \ 'yoi'   : [ 'oi', 'ignorecase'],
+            \ 'yol'   : [ 'ol', 'list'],
+            \ 'yon'   : [ 'on', 'number'],
+            \ 'yor'   : [ 'or', 'relativenumber'],
+            \ 'you'   : [ 'ou', 'cursorcolumn'],
+            \ 'yov'   : [ 'ov', 'virtualedit'],
+            \ 'yow'   : [ 'ow', 'wrap'],
+            \ 'yox'   : [ 'ox', 'cursorline/cursorcolumn' ],
+            \ 'yoz'   : [ 'oz', 'spell'],
+            \ }
+nnoremap <silent> <c-x><c-u> :WhichKey! which_key_map.u<CR>
+nnoremap <silent> <c-x>u     :WhichKey! which_key_map.u<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'vim-scripts/DoxygenToolkit.vim'
@@ -1299,8 +1400,8 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
-let g:gutentags_project_root = ['.root', '.svn', '.git', '.project']
+" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+let g:gutentags_project_root = ['mkall.sh', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
@@ -1312,6 +1413,8 @@ let g:gutentags_cache_dir = s:vim_tags
 if !isdirectory(s:vim_tags)
     silent! call mkdir(s:vim_tags, 'p')
 endif
+" autocmd BufWritePost *.py silent! !ctags -R &
+" autocmd BufWritePost *.cpp *.h *.c silent! !ctags -R &
 
 " 配置 ctags 的参数
 " ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --fields=+niazS --extra=+q
@@ -1341,6 +1444,165 @@ let g:gutentags_ctags_extra_args += ['--c-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI']
 " set tags+=~/.vim/x86_64-linux-gnu-systags
 " let g:ycm_semantic_triggers.c = ['->', '.', ' ', '(', '[', '&',']']
 
+if filereadable("tags")
+    set tags+=./tags
+"  set tags+=/usr/include/tags
+else
+    set tags+=./tags,tags
+"   set tags+=/usr/include/tags
+endif
+
+if filereadable(".tags")
+    set tags+=./.tags
+"  set tags+=/usr/include/tags
+else
+    set tags+=./.tags,.tags
+"   set tags+=/usr/include/tags
+endif
+
+let g:gutentags_ctags_exclude = [
+\ '802.1x',
+\ 'accel-pptp',
+\ 'alsa-lib-1.0.27.2',
+\ 'alsa-utils-1.0.27.2',
+\ 'arptable-0.0.3',
+\ 'bigpond',
+\ 'bndstrg',
+\ 'bndstrg_plus',
+\ 'bonnie++',
+\ 'bridge-utils',
+\ 'btnled',
+\ 'btnwifi',
+\ 'bt-utils',
+\ 'busybox',
+\ 'checkapp',
+\ 'checkconnstatus',
+\ 'checkreset',
+\ 'comgt-0.32',
+\ 'cpemanage',
+\ 'cpu',
+\ 'createwificonf',
+\ 'ctorrent-dnh3.2',
+\ 'curl',
+\ 'curl-7.40.0',
+\ 'curl_Install',
+\ 'cyassl-3.3.0',
+\ 'dbg_tool',
+\ 'dhcp-4.2.5-P1',
+\ 'dhcp6',
+\ 'dhcpforwarder',
+\ 'dhrystone',
+\ 'disktype-9',
+\ 'dnsmasq-2.40',
+\ 'dropbear-0.52',
+\ 'ebtables-v2.0.9-2',
+\ 'ecmh',
+\ 'ethtool',
+\ 'expat',
+\ 'gdbserver',
+\ 'helloworld',
+\ 'hostapd-2.2',
+\ 'hso-1.6',
+\ 'i2c-tools-3.1.1',
+\ 'igmpproxy',
+\ 'inadyn',
+\ 'iperf-2.0.5',
+\ 'iproute2-2.6.24-rc7',
+\ 'iproute2-2.6.38',
+\ 'iptables',
+\ 'iptables-1.4.0rc1',
+\ 'iptables-1.4.10',
+\ 'ixia_endpoint',
+\ 'ixia_endpoint_730sp1',
+\ 'json-c_install',
+\ 'l2tpv3tun-0.2',
+\ 'led2mcu',
+\ 'led2mcu_old',
+\ 'lighttpd-1.4.20',
+\ 'lighttpd-1.4.50',
+\ 'lighttpd_Install',
+\ 'linux-igd',
+\ 'lldt',
+\ 'lsusb',
+\ 'Makefile',
+\ 'MANDeamonTriband',
+\ 'ManListener',
+\ 'matrixssl-1.8.3',
+\ 'mDNSResponder-107.6',
+\ 'minidlna-1.0.24',
+\ 'miniupnpd-1.6',
+\ 'mkdosfs-2.11',
+\ 'mkimage',
+\ 'MocaApi-1.0.0',
+\ 'MocaApi-1.0.7',
+\ 'mosquitto',
+\ 'mosquitto-1.4.14',
+\ 'mosquitto-1.4.14.tgz',
+\ 'mosquitto_install',
+\ 'mpstat-0.1.1',
+\ 'mt-daapd-0.2.4.2',
+\ 'mtd-utils',
+\ 'mtd-utils-1.5.0',
+\ 'mtd_write',
+\ 'mtkiappd',
+\ 'net-snmp-5.5.pre2',
+\ 'ntfs-3g',
+\ 'ntfsprogs',
+\ 'ntpclient',
+\ 'openl2tp-1.6',
+\ 'openssl-0.9.8e',
+\ 'openssl-1.0.1f',
+\ 'openswan-2.6.38',
+\ 'p910nd-0.91',
+\ 'pciutils-3.0.0',
+\ 'phddns-2.0.6.32828',
+\ 'ppp-2.4.1',
+\ 'ppp-2.4.2',
+\ 'ppp-2.4.7',
+\ 'pptp-client',
+\ 'procps-3.2.8',
+\ 'product-manager',
+\ 'producttest-tool',
+\ 'producttools',
+\ 'proftpd',
+\ 'public-install-dir',
+\ 'radvd-1.0',
+\ 'ralinkiappd',
+\ 'README',
+\ 'rls',
+\ 'RoamApp',
+\ 'rp-l2tp-0.4',
+\ 'rp-pppoe-3.8',
+\ 'rt2880_app',
+\ 'samba-3.0.2',
+\ 'samba-4.0.24',
+\ 'sdparm-1.02',
+\ 'setversion.sh',
+\ 'sigma_dut',
+\ 'sigma_dut_v9.0.0',
+\ 'snmpd',
+\ 'snort-2.8.5.2',
+\ 'sqlite3',
+\ 'strace',
+\ 'strace.orig',
+\ 'stupid-ftpd',
+\ 'sys_public',
+\ 'taskset',
+\ 'tcpdump',
+\ 'testcurl',
+\ 'timereboot',
+\ 'timertasket',
+\ 'usb_modeswitch-0.9.5',
+\ 'uvc_stream',
+\ 'versign',
+\ 'watchdog-5.6',
+\ 'wide-dhcpv6',
+\ 'wireless_tools',
+\ 'wpa_supplicant-2.0',
+\ 'wsc_upnp',
+\ 'zebra-0.95a_ripd'
+\]
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1349,7 +1611,7 @@ let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗�
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
-autocmd FileType h,cpp,cc,c set tags+=/usr/include/tags
+" autocmd FileType h,cpp,cc,c set tags+=/usr/include/tags
 
 " Taglist -> Tagbar(更完善的类支持)
 " exuberant-ctags -> universal-ctags (Home · Universal Ctags)
@@ -1359,6 +1621,7 @@ let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" bfrg/vim-qf-preview setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:qfpreview = {'height': '40', 'offset': '10', 'sign': {'text': '>>', 'texthl': 'Search'}}
 
@@ -1468,7 +1731,7 @@ let g:bookmark_no_default_key_mappings = 1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " only display alphabetic marks a-i and A-I
 let g:markbar_marks_to_display = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
+let g:markbar_persist_mark_names = v:false
 " width of a vertical split markbar
 let g:markbar_width = 30
 
@@ -1579,7 +1842,7 @@ let g:NERDToggleCheckAllLines = 1
 "NERDTree 配置:tree快捷键显示当前目录树
 nnoremap tree :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
 let NERDTreeWinSize=25
-" autocmd vimenter * NERDTree                      " 自动开启Nerdtree
+" autocmd VimEnter * NERDTree                      " 自动开启Nerdtree
 " let g:nerdtree_tabs_open_on_console_startup = 1  " 打开vim后自动开启目录树
 " 忽略一下文件显示
 let NERDTreeIgnore=['\.pyc','\~$','\.swp','\.o','\.out','\.fcgi','\.cgi','\.a','\.so','\.svn','\.vscode','\.git','\.project','.\root']
@@ -1596,7 +1859,6 @@ let g:NERDTreeIndicatorMapCustom = {
             \ 'Ignored'   : '☒',
             \ "Unknown"   : "?"
             \ }
-" }}}
 ""修改树的显示图标
 let g:NERDTreeDirArrowExpandable = '►'
 let g:NERDTreeDirArrowCollapsible = '▼'
@@ -1629,6 +1891,8 @@ let g:ctrlp_match_window_reversed = 0
 let g:ctrlp_mruf_max = 500
 let g:ctrlp_follow_symlinks = 1
 let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:10,results:20'
+let g:ctrlp_user_command = 'find -L %s -type f'        " MacOSX/Linux
+" let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " dkprice/vim-easygrep
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1782,6 +2046,8 @@ nnoremap <silent> <leader>gc :Gcommit -v<CR>
 nnoremap <silent> <leader>gr :Gread<CR>
 nmap              <Leader>gg :Git<CR>gg<c-n>
 
+nnoremap <silent> <leader>gt :TigOpenCurrentFile<CR>
+nnoremap <silent> <leader>gT :TigOpenProjectRootDir<CR>
 let g:which_key_map.g = {
             \ 'name' : '+fugitive',
             \ }
@@ -1799,6 +2065,8 @@ let g:which_key_map.g.m = ['Gmove', 'move']
 let g:which_key_map.g.p = ['Gpull', 'pull']
 let g:which_key_map.g.r = ['Grename', 'rename']
 let g:which_key_map.g.s = ['Gstatus', 'status']
+let g:which_key_map.g.t = ['TigOpenCurrentFile', 'TigOpenCurrentFile']
+let g:which_key_map.g.T = ['TigOpenProjectRootDir', 'TigOpenProjectRootDir']
 nnoremap <silent> <c-x><c-g> :WhichKey! which_key_map.g<CR>
 nnoremap <silent> <c-x>g     :WhichKey! which_key_map.g<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1830,3 +2098,8 @@ vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
 vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
 
 call which_key#register('\', "g:which_key_map")
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" tpope/surround
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nmap <C-J> yss}

@@ -28,7 +28,6 @@ repeat_ok git clone https://www.github.com/ludovicchabant/vim-gutentags    # 管
 repeat_ok git clone https://www.github.com/vim-scripts/taglist.vim         # 浏览tags,文件内跳转 Tlist   set tags=tags;
 repeat_ok git clone https://www.github.com/preservim/tagbar                # 浏览tags,文件内跳转 Tagbar  set tags=tags;
 repeat_ok git clone https://www.github.com/skywind3000/vim-preview         # 预览tags中的函数       F11
-repeat_ok git clone https://www.github.com/bfrg/vim-qf-preview             # 预览quickfix中的搜索   p
 repeat_ok git clone https://www.github.com/vim-scripts/a.vim               # 源文件/头文件之间跳转 :A :AS :AV :AN
 repeat_ok git clone https://www.github.com/vim-scripts/winmanager          # 文件系统管理 WMToggle/wm
 repeat_ok git clone https://www.github.com/jlanzarotta/bufexplorer         # opened buffer管理 \bs \bv \bt \be

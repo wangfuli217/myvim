@@ -1063,7 +1063,6 @@ Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
-Plug 'bfrg/vim-qf-preview'             " 预览quickfix中的搜索   p
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
 
 " netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
@@ -1444,7 +1443,6 @@ let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" bfrg/vim-qf-preview setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:qfpreview = {'height': '40', 'offset': '10', 'sign': {'text': '>>', 'texthl': 'Search'}}
 
