@@ -1,0 +1,888 @@
+<html style><!--
+ Page saved with SingleFile 
+ url: https://vim.reversed.top/ 
+ saved date: Sat Jul 29 2023 11:59:42 GMT+0800 (中国标准时间)
+--><meta charset=utf-8>
+<title>Big Pile of Vim-like</title>
+<style data-id=immersive-translate-input-injected-css>body{background-color:#f8f8f8}h1{text-align:center;margin-top:15px;padding-left:310px;margin-bottom:10px}a{color:#a02020;text-decoration:none}a:hover{color:#ff0000}h1 a{color:#000}h1 a:hover{color:#666}.buttons{float:right;margin-right:10px;width:300px}.button{display:inline-block;float:right;margin-bottom:10px;margin-left:12px;font-weight:bold;font-family:sans-serif}.button a{color:#333}.button a:hover{color:#666}.types{text-align:center;margin-top:20px}.type{margin:0px 20px;padding:5px 10px;display:inline-block;background-color:#eee;font-size:1.1em;border:1px solid transparent}.type a{color:#222}.type a:hover{color:#666}.currentType{border:1px solid #222}.categoryLinks{text-align:center}.categoryLink{margin:5px;padding:5px 10px;display:inline-block;background-color:#eee;font-weight:bold;border:1px solid transparent}.categoryLink a{color:#222}.categoryLink a:hover{color:#666}.islands{text-align:left;font-size:1.1em;display:flex;flex-flow:row wrap;margin-left:10px}.island{border-radius:5px 5px 5px 5px;border:1px solid #999;padding:15px;margin:10px;width:250px;background-color:#fcfcfc}.label{color:white;background-color:#404040;padding:3px 5px;margin-right:3px;border-radius:4px;font-family:sans-serif;font-weight:bold;font-size:0.8em}.island{overflow-wrap:break-word}.category{color:#222;border-bottom:2px solid #222;padding:5px 5px 5px 8px;margin-top:5px;font-weight:bold;font-size:1.2em}.category:target{animation-name:highlight-category;animation-duration:2s}@keyframes highlight-category{from{background-color:#ff4}to{background-color:transparent}}.name{font-weight:bold;margin-bottom:5px}.name a{color:#000}.name a:hover{color:#666}.descr{font-size:0.8em}.typeDescr{margin-top:20px;margin-bottom:15px;margin-left:auto;margin-right:auto;text-align:center;width:600px;color:#333;font-family:sans-serif;font-size:100%;font-weight:bold}@keyframes immersiveTranslateShadowRolling{0%{box-shadow:0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}12%{box-shadow:100px 0 var(--loading-color),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}25%{box-shadow:110px 0 var(--loading-color),100px 0 var(--loading-color),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}36%{box-shadow:120px 0 var(--loading-color),110px 0 var(--loading-color),100px 0 var(--loading-color),0px 0 rgba(255,255,255,0)}50%{box-shadow:130px 0 var(--loading-color),120px 0 var(--loading-color),110px 0 var(--loading-color),100px 0 var(--loading-color)}62%{box-shadow:200px 0 rgba(255,255,255,0),130px 0 var(--loading-color),120px 0 var(--loading-color),110px 0 var(--loading-color)}75%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),130px 0 var(--loading-color),120px 0 var(--loading-color)}87%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),130px 0 var(--loading-color)}100%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0)}}</style><link type=image/x-icon rel="shortcut icon" href=data:,><style>.sf-hidden{display:none!important}</style><link rel=canonical href=https://vim.reversed.top/><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style></head>
+<body>
+ <div class=buttons>
+ <div class=button>
+ <a href=https://vim.reversed.top/about>about</a>
+ </div>
+ <div class=button>
+ <a href=https://github.com/xaizek/vim-like-pile>contribute</a>
+ </div>
+ <div class=button>
+ <a href=https://vim.reversed.top/changes>changes</a>
+ </div>
+ <div class=button>
+ <a href=#search>search</a>
+ <form id=search action=/search class=sf-hidden>
+ 
+ 
+ </form>
+ </div>
+ </div>
+ <h1><a href=https://vim.reversed.top/>Big Pile of Vim-like</a></h1>
+ <div class=types>
+ <span class="type currentType">
+ <a href=https://vim.reversed.top/apps>Applications</a></span>
+ <span class=type>
+ <a href=https://vim.reversed.top/plugs>Plugins</a></span>
+ <span class=type>
+ <a href=https://vim.reversed.top/confs>Configurable</a></span>
+ </div>
+ <div class=typeDescr>
+ Items of this type are applications that are intentionally created to be Vim-like in some respect (possibly disabled by default). Less Vim-like applications are in "Configurable" section. </div>
+ <div>
+ <div class=categoryLinks>
+ <div class=categoryLink>
+ <a href=#debuggers>
+ Debuggers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#e-mail-related>
+ E-mail related </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#editors>
+ Editors </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#file-managers>
+ File Managers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#graphical-browsers>
+ Graphical Browsers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#hex-editors>
+ Hex Editors </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#ides-word-processors-editors-with-vi-modes>
+ IDEs, Word Processors, Editors with Vi-modes </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#music-players>
+ Music Players </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#pdf-viewers>
+ PDF Viewers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#terminal-multiplexers>
+ Terminal Multiplexers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#terminal-selectors>
+ Terminal Selectors </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#text-browsers>
+ Text Browsers </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#todo-and-notes>
+ TODO and Notes </a>
+ </div>
+ <div class=categoryLink>
+ <a href=#other>
+ Other </a>
+ </div>
+ </div>
+<div class=category id=debuggers>
+ Debuggers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/cgdb>cgdb</a>
+ </div>
+ <div class=descr><p>Console front-end to the GNU debugger.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vimpdb>vimpdb</a>
+ </div>
+ <div class=descr><p>An integration of the python debugger <code>pdb</code> and vim.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=e-mail-related>
+ E-mail related</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/aerc>aerc</a>
+ </div>
+ <div class=descr><p>Highly efficient and extensible terminal email client.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/meli>meli</a>
+ </div>
+ <div class=descr><p>Experimental terminal mail client aiming for configurability and extensibility with sane defaults.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/mutt>Mutt</a>
+ </div>
+ <div class=descr><p>Mutt is a small but very powerful text-based mail client for Unix operating systems.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/neomutt>NeoMutt</a>
+ </div>
+ <div class=descr><p>A fork of <a href=https://vim.reversed.top/item/mutt>mutt</a>, intendted to reignite the development.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/notmuch>notmuch</a>
+ </div>
+ <div class=descr><p>E-mail indexer/framework, which provides plugin for Vim.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/sup>sup</a>
+ </div>
+ <div class=descr><p>A console-based e-mail client for people with a lot of e-mail.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/wyrd>wyrd</a>
+ </div>
+ <div class=descr><p>A text-based front-end to <a href=https://dianne.skoll.ca/projects/remind/>remind</a>, a sophisticated calendar and alarm program.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=editors>
+ Editors</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/amp>Amp</a>
+ </div>
+ <div class=descr><p>A complete text editor for your terminal.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/elvis>elvis</a>
+ </div>
+ <div class=descr><p>A free Vi clone for Unix and other operating systems.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/ex-vi>ex-vi</a>
+ </div>
+ <div class=descr><p>The traditional vi editor, ported to modern Unix systems.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/kakoune>Kakoune</a>
+ </div>
+ <div class=descr><p>Interactive only editor inspired by Vim.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/moe>moe</a>
+ </div>
+ <div class=descr><p>A command line based editor inspired by vi/vim. Written in Nim.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/neovim>neovim</a>
+ </div>
+ <div class=descr><p>Fork of Vim.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/nvi>nvi</a>
+ </div>
+ <div class=descr><p>Vi reimplementation.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/nvi-js>nvi</a>
+ </div>
+ <div class=descr><p>Very opinionated Node.JS VI clone.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/onivim2>Onivim 2</a>
+ </div>
+ <div class=descr><p>Sublime/VSCode-like editor internally backed by Vim's code.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pyvim>pyvim</a>
+ </div>
+ <div class=descr><p>Pure Python Vim clone.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/rim>rim</a>
+ </div>
+ <div class=descr><p>Aspiring Vim-like text editor.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/spacemacs>spacemacs</a>
+ </div>
+ <div class=descr><p>An Emacs-based editor that draws heavily from Vim keybindings.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vile>vile</a>
+ </div>
+ <div class=descr><p>Vi clone with multiple buffers and similar features from Emacs added.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vim>Vim</a>
+ </div>
+ <div class=descr><p>The ubiquitous text editor.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vis>vis</a>
+ </div>
+ <div class=descr><p>A Vim-like editor based on Plan 9's structural regular expressions.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vy>vy</a>
+ </div>
+ <div class=descr><p>A Vim-like modal editor in python made from scratch.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/winvi>WinVi</a>
+ </div>
+ <div class=descr><p>Vim-like text and hex editor, which also tries to be Notepad compatible.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/xvi>xvi</a>
+ </div>
+ <div class=descr><p>The smallest full-function Vi text editor clone.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/yzis>Yzis</a>
+ </div>
+ <div class=descr><p>A Vi/Vim engine that can be integrated in graphical applications.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=file-managers>
+ File Managers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/jvifm>jvifm</a>
+ </div>
+ <div class=descr><p>An attempt to implement graphical Vim-like file manager in Java.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/lf>lf</a>
+ </div>
+ <div class=descr><p>Terminal file manager, which is a clone of <a href=https://vim.reversed.top/item/ranger>ranger</a>.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/ranger>ranger</a>
+ </div>
+ <div class=descr><p>A console file manager with Vi key bindings, includes application association guessing tool.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vide>Vide</a>
+ </div>
+ <div class=descr><p>A graphical predecessor of <a href=https://vim.reversed.top/item/vifm>vifm</a>.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vifm>vifm</a>
+ </div>
+ <div class=descr><p>File manager with Vim-like keybindings/modes/options/commands/configuration, which also borrows some useful ideas from mutt.</p>
+</div>
+ </div>
+</div>
+<div class=category id=graphical-browsers>
+ Graphical Browsers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/cream-browser>Cream-Browser</a>
+ </div>
+ <div class=descr><p>A Vim-like lightweight Web browser with <a href=https://vim.reversed.top/item/vimperator>Vimperator</a> interface.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/dwb>dwb</a>
+ </div>
+ <div class=descr><p>Quite nicely done Vim-like browser, modulo some issues with memory.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/jumanji>jumanji</a>
+ </div>
+ <div class=descr><p>The idea behind jumanji is a Web browser that provides a minimalistic and space saving interface as well as an easy usage that mainly focuses on keyboard interaction like <a href=https://vim.reversed.top/item/vimperator>Vimperator</a> does.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/luakit>luakit</a>
+ </div>
+ <div class=descr><p>Fast, small, WebKit based browser framework extensible by Lua.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/next>next</a>
+ </div>
+ <div class=descr><p>A keyboard-oriented, extensible web-browser designed for power users.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/qutebrowser>qutebrowser</a>
+ </div>
+ <div class=descr><p>Qutebrowser is a keyboard-focused browser with a minimal GUI.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/uzbl>Uzbl</a>
+ </div>
+ <div class=descr><p>Web interface tools which adhere to the unix philosophy.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vieb>Vieb</a>
+ </div>
+ <div class=descr><p>Vim Inspired Electron Browser - Vim bindings for the web by design.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vimb>vimb</a>
+ </div>
+ <div class=descr><p>Vim-like browser based on the WebKit engine and the GTK toolkit.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vimprobable>Vimprobable</a>
+ </div>
+ <div class=descr><p>A lean stand-alone web browser optimised for full keyboard control (inspired by <a href=https://vim.reversed.top/item/vimperator>Vimperator</a>).</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/wyeb>wyeb</a>
+ </div>
+ <div class=descr><p>A vim-like webkit2gtk web browser.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/xombrero>xombrero</a>
+ </div>
+ <div class=descr><p>A minimalist's Web browser, which strives to be Vim-like for heavy keyboard users while maintaining traditional Web browser behavior.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=hex-editors>
+ Hex Editors</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/bvi>bvi</a>
+ </div>
+ <div class=descr><p>A display-oriented editor for binary files (hex editor).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/bvi-plus>bvi plus</a>
+ </div>
+ <div class=descr><p>Fork of <a href=https://vim.reversed.top/item/bvi>bvi</a> hex editor with more features.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/hed>hed</a>
+ </div>
+ <div class=descr><p>HED is a wannabe-powerful visual hexadecimal editor with focus on fast editing of very large files.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/hedit>HEdit</a>
+ </div>
+ <div class=descr><p>A Vim-like terminal-based hex editor scriptable with JS.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/hexer>hexer</a>
+ </div>
+ <div class=descr><p>A multi-buffer editor for viewing and manipulating binary files.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/hx>hx</a>
+ </div>
+ <div class=descr><p>Hex editor for the terminal using plain C99 + POSIX libs.</p>
+</div>
+ </div>
+</div>
+<div class=category id=ides-word-processors-editors-with-vi-modes>
+ IDEs, Word Processors, Editors with Vi-modes</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/abiword>AbiWord</a>
+ </div>
+ <div class=descr><p>AbiWord is a free word processing program similar to Microsoft Word. It is suitable for a wide variety of word processing tasks.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/editra>Editra</a>
+ </div>
+ <div class=descr><p>Editra is a multi-platform text editor with an implementation that focuses on creating an easy to use interface and features that aid in code development.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/gnome-builder>GNOME Builder</a>
+ </div>
+ <div class=descr><p>A toolsmith for GNOME-based applications.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/kate>Kate</a>
+ </div>
+ <div class=descr><p>The KDE Advanced Text Editor (Kate).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/komodo-edit>Komodo Edit</a>
+ </div>
+ <div class=descr><p>Komodo Edit is a free text editor for dynamic programming languages.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/monodevelop>MonoDevelop</a>
+ </div>
+ <div class=descr><p>Cross platform IDE for C#, F# and more.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pida>PIDA</a>
+ </div>
+ <div class=descr><p>An IDE that allows integration of Vim/Emacs as editor.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/slickedit>SlickEdit</a>
+ </div>
+ <div class=descr><p>A true cross-platform, multi-language code editor, with support for over 60 languages on 9 platforms.</p>
+</div>
+ </div>
+</div>
+<div class=category id=music-players>
+ Music Players</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/cmus>cmus</a>
+ </div>
+ <div class=descr><p>Not so minimalistic terminal player.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/herrie>herrie</a>
+ </div>
+ <div class=descr><p>Minimalistic player with curses interface.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pms>pms</a>
+ </div>
+ <div class=descr><p>Probably the most Vim-like music player (MPD client).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/siren>Siren</a>
+ </div>
+ <div class=descr><p>A text-based audio player for Unix-like operating systems, inspired by cmus.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vimpc>vimpc</a>
+ </div>
+ <div class=descr><p>Client for mpd with Vim-like key bindings.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vimus>vimus</a>
+ </div>
+ <div class=descr><p>Terminal MPD client with Vim-like key bindings.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vitunes>vitunes</a>
+ </div>
+ <div class=descr><p>Console playlist/music database manager with Vim-like bindings.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=pdf-viewers>
+ PDF Viewers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/apvlv>apvlv</a>
+ </div>
+ <div class=descr><p>A PDF/DJVU/UMD/TXT viewer under Linux/WIN32, which tries to behave like Vim.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/zathura>zathura</a>
+ </div>
+ <div class=descr><p>A document viewer with plugin system.</p>
+</div>
+ </div>
+</div>
+<div class=category id=terminal-multiplexers>
+ Terminal Multiplexers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/gnu-screen>GNU Screen</a>
+ </div>
+ <div class=descr><p>This terminal multiplexer can be configured to use some Vim-like keys, it also has command-line mode.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/tmux>tmux</a>
+ </div>
+ <div class=descr><p>This terminal multiplexer can be configured to use some Vim-like keys, it also has command-line mode.</p>
+</div>
+ </div>
+</div>
+<div class=category id=terminal-selectors>
+ Terminal Selectors</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pipedial>pipedial</a>
+ </div>
+ <div class=descr><p>One more tool for selecting something in console.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/sentaku>sentaku</a>
+ </div>
+ <div class=descr><p>Utility to make selection window with shell command.</p>
+</div>
+ </div>
+</div>
+<div class=category id=text-browsers>
+ Text Browsers</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/lynx>lynx</a>
+ </div>
+ <div class=descr><p>Text Web browser.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/netrik>Netrik</a>
+ </div>
+ <div class=descr><p>A simplistic text mode (character cell display) Web browser, similar to w3m or Lynx.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/w3m>w3m</a>
+ </div>
+ <div class=descr><p>w3m is a text-based Web browser as well as a pager like more or <a href=https://vim.reversed.top/item/less>less</a>.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+<div class=category id=todo-and-notes>
+ TODO and Notes</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/taskell>Taskell</a>
+ </div>
+ <div class=descr><p>Command-line Kanban board/task manager with support for Trello boards and GitHub projects.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/tudu>TuDu</a>
+ </div>
+ <div class=descr><p>Vim-like TODO manager.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vit>VIT</a>
+ </div>
+ <div class=descr><p>Visual Interactive Taskwarrior full-screen terminal interface.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vnote>VNote</a>
+ </div>
+ <div class=descr><p>A Vim-inspired note-taking application, which can also be used as Markdown editor.</p>
+</div>
+ </div>
+</div>
+<div class=category id=other>
+ Other</div>
+<div class=islands>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/aptitude>aptitude</a>
+ </div>
+ <div class=descr><p>ncurses interface for APT on Debian-derived Linux distros.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/athame>athame</a>
+ </div>
+ <div class=descr><p>Full vim for your shell (<a href=https://vim.reversed.top/item/bash>bash</a>, <a href=https://vim.reversed.top/item/zsh>zsh</a>, gdb, python, etc).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/blender>Blender</a>
+ </div>
+ <div class=descr><p>Blender is the free and open source 3D creation suite.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/bombadillo>Bombadillo</a>
+ </div>
+ <div class=descr><p>A non-web browser, designed for a growing list of protocols operating outside of the web.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/cointop>cointop</a>
+ </div>
+ <div class=descr><p>A fast and lightweight interactive terminal based UI application for tracking and monitoring cryptocurrency coin stats in real-time.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/gnu-readline>GNU ReadLine</a>
+ </div>
+ <div class=descr><p>The library provides a set of functions for use by applications that allow users to edit command lines as they are typed in.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/kommand>Kommand</a>
+ </div>
+ <div class=descr><p>AutoHotKey script, which provides cross-application Vim-like hot key solution.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/less>less</a>
+ </div>
+ <div class=descr><p>Its controls are Vim-like.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/ncdu>ncdu</a>
+ </div>
+ <div class=descr><p>Disk usage browser.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/newsbeuter>newsbeuter</a>
+ </div>
+ <div class=descr><p>The <a href=https://vim.reversed.top/item/mutt>Mutt</a> of RSS feed readers.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/newsboat>Newsboat</a>
+ </div>
+ <div class=descr><p>An RSS/Atom feed reader for the text console (a fork of <a href=https://vim.reversed.top/item/newsbeuter>newsbeuter</a>).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pineapple-tracker>pineapple-tracker</a>
+ </div>
+ <div class=descr><p>A console-based sequencer with a vi-style UI.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/pyradio>PyRadio</a>
+ </div>
+ <div class=descr><p>A console based Internet radio player that uses players as back-end.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/rx>rx</a>
+ </div>
+ <div class=descr><p>Modern and minimalist pixel editor.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/sc>sc</a>
+ </div>
+ <div class=descr><p>Terminal spreadsheet editor.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/sc-im>sc-im</a>
+ </div>
+ <div class=descr><p>Improved version of <a href=https://vim.reversed.top/item/sc>sc</a>.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/scli>scli</a>
+ </div>
+ <div class=descr><p>A simple terminal user interface for signal messenger (using signal-cli).</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/snipline>Snipline</a>
+ </div>
+ <div class=descr><p>A developer tool for organizing shell commands.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/stig>stig</a>
+ </div>
+ <div class=descr><p>TUI and CLI for the BitTorrent client Transmission.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/termite>Termite</a>
+ </div>
+ <div class=descr><p>A keyboard-centric terminal.</p>
+</div>
+ <span class=label>discontinued</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/termshark>Termshark</a>
+ </div>
+ <div class=descr><p>A terminal UI for tshark, inspired by Wireshark.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/tig>tig</a>
+ </div>
+ <div class=descr><p>Text-mode interface for <a href=https://vim.reversed.top/item/git>git</a>.</p>
+</div>
+ </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vchatter>vchatter</a>
+ </div>
+ <div class=descr><p>Vim-like jabber client.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vim-anywhere>vim-anywhere</a>
+ </div>
+ <div class=descr><p>Spawn a vim buffer from any text input in the operating system.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vipaint>ViPaint</a>
+ </div>
+ <div class=descr><p>A modal, Vim-like painting program.</p>
+</div>
+ <span class=label>unmaintained</span> </div>
+ <div class=island>
+ <div class=name>
+ <a href=https://vim.reversed.top/item/vlrtt>vlrtt</a>
+ </div>
+ <div class=descr><p>Vim-like real-time tactics game.</p>
+</div>
+ <span class=label>abandoned</span> </div>
+</div>
+ </div>

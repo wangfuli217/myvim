@@ -1,0 +1,285 @@
+<!DOCTYPE html> <html lang=en style><!--
+ Page saved with SingleFile 
+ url: https://www.integralist.co.uk/posts/tools/ 
+ saved date: Tue Jul 25 2023 11:52:29 GMT+0800 (中国标准时间)
+--><meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<meta name=description content="I don’t know who needs to hear this but: I love my developer tools.
+Core Package Manager: Homebrew Terminal: Warp Code Editor: Neovim NOTES:
+I was using a multiplexer (tmux) for years but colour issues forced me to switch to Zellij. I then switched from Alacritty and Zellij to using Warp as my terminal (helping to consolidate the number of tools I needed to install and configure) as Warp provided a lot of what I was using Zellij for.">
+<meta property=og:title content="Developer Tools ⋆ Mark McDonnell">
+<meta property=og:description content="I don’t know who needs to hear this but: I love my developer tools.
+Core Package Manager: Homebrew Terminal: Warp Code Editor: Neovim NOTES:
+I was using a multiplexer (tmux) for years but colour issues forced me to switch to Zellij. I then switched from Alacritty and Zellij to using Warp as my terminal (helping to consolidate the number of tools I needed to install and configure) as Warp provided a lot of what I was using Zellij for.">
+<meta property=og:url content=https://www.integralist.co.uk/posts/tools/>
+<meta property=og:site_name content=integralist>
+<meta property=og:type content=article><meta property=article:section content=Posts><meta property=article:tag content=shell><meta property=article:tag content=terminal><meta property=article:tag content=vim><meta property=article:published_time content=2022-03-09T09:49:24Z><meta property=article:modified_time content=2022-03-09T09:49:24Z>
+<meta name=generator content="Hugo 0.115.3">
+<title>Developer Tools ⋆ Mark McDonnell</title>
+<link rel=canonical href=https://www.integralist.co.uk/posts/tools/>
+<style data-id=immersive-translate-input-injected-css>/*!
+ * Theme Name: Minimo
+ * Author: Munif Tanjim
+ */html{line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}footer,nav{display:block}hr{-webkit-box-sizing:content-box;box-sizing:content-box;overflow:visible}a{background-color:transparent;-webkit-text-decoration-skip:objects}b,strong{font-weight:bolder}svg:not(:root){overflow:hidden}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}body{font-size:18px;line-height:1.5;word-wrap:break-word}.title,h2{font-weight:700;line-height:1.2;margin:0 0 .625em}.entry-content h2{margin-top:1.5em}.entry-content h2:first-child,.entry-content h3:first-child,.entry-content h4:first-child,.entry-content h5:first-child,.entry-content h6:first-child{margin-top:0}h1{font-size:1.66667em}h2{font-size:1.55556em}.entry-title{margin-bottom:0}p{margin:0 0 1.5em}em,i{font-style:italic}code{font-family:Ubuntu Mono,Consolas,Monaco,Andale Mono,monospace}.meta span{font-size:.88889em}.entry .meta span{font-style:italic}html{-webkit-box-sizing:border-box;box-sizing:border-box}*,:after,:before{-webkit-box-sizing:inherit;box-sizing:inherit}blockquote{quotes:""""}blockquote:after,blockquote:before,q:after,q:before{content:""}blockquote p:last-child,q p:last-child{margin-bottom:0}blockquote{font-style:italic;margin:0 0 1.35em;padding-left:1.25em;border-left:.2em solid #bdbdbd;font-size:1.11111em}hr{height:1px;margin-bottom:1.5em;border:0;background-color:#bdbdbd}ul{padding:0;margin:0 0 1.5em 2em}ul{list-style:disc}.comments-container #disqus_thread:before,.entry+.list-container:before,.entry-header:after,.entry-nav-links:before,.footer:before,.prev-entry~.next-entry:before,.site-header:after{content:"";display:block;border-bottom:.11111em solid #ffcd00;width:4em}.entry-header:after,.site-header:after{margin-top:2em;margin-bottom:2.5em}.comments-container #disqus_thread:before,.entry+.list-container:before,.entry-nav-links:before,.footer:before,.prev-entry~.next-entry:before{margin-top:2.5em;margin-bottom:2em}.comments-container,.entry,.entry-header,.entry-nav,.entry-nav-links,.footer,.footer-container,.header-container,.main,.site,.site-header{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-flow:column nowrap;flex-flow:column nowrap;-webkit-box-align:center;-ms-flex-align:center;align-items:center;width:100%}.entry-content,.entry-footer,.entry-header,.entry-nav-links,.footer,.site-header{width:100%;max-width:800px}.header-container{padding:0 1.5em;margin-top:2em}.entry-header,.site-header{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.entry-info{margin-top:1.5em}.page .site-header:after,.page .site-info{display:none}.main{padding:0 1.5em}.entry-footer{margin-top:1.5em}.entry-nav-links{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.footer-container{padding:0 1.5em}.footer{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.footer>div{width:100%;margin-top:1em}.footer>div:first-child{margin-top:0}.icon{display:inline-block;height:1em;width:1em;stroke:currentColor;fill:none;position:relative;top:.1111111111111111em}a{-webkit-transition:color .2s ease-in-out,border .2s ease-in-out;transition:color .2s ease-in-out,border .2s ease-in-out;text-decoration:none}a,a:visited{color:#212121}a:focus{outline:thin dotted #212121;outline-offset:2px}a:active,a:hover{outline:0}a:active,a:focus,a:hover{color:#37474f}.entry-content a:active,.entry-content a:focus,.entry-content a:hover{border-bottom-color:#ffcd00}.main-menu a:hover,.social-menu a:hover{color:#263238}.entry-content a{border-bottom:.11111em dashed #bdbdbd}.footer a{font-style:italic}.main-menu{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-flow:row wrap;flex-flow:row wrap;list-style:none;padding:0;margin:0}.main-menu li{font-size:1em;text-transform:uppercase;margin-right:.666666666em}.main-menu li:last-of-type{margin-right:0}.social ul{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-flow:row wrap;flex-flow:row wrap;list-style:none;padding:0;margin:0}.social li{margin-right:.5555555555555556em}.social li:last-child{margin-right:0}.entry-nav-links:before{border-bottom-color:#bdbdbd}.entry-nav-links>div a{font-style:italic}.entry-nav-links>div span{display:block;font-style:normal;font-size:.88889em}.prev-entry~.next-entry:before{border-bottom-color:#bdbdbd;width:2em;margin:1em 0}.entry .meta{margin-top:.6em}.entry .meta span{margin-right:.8333333333333334em}.entry .meta .icon{margin-right:.2222222222222222em}.entry-content>:last-child,.entry-content>:last-child>:last-child{margin-bottom:0}.entry-footer div{margin-top:.3333333333333333em}.entry-footer div:first-child{margin-top:1em}.entry-footer .category-icon,.entry-footer .tag-icon{margin-right:.4444444444444444em}.screen-reader{width:1px;height:1px;overflow:hidden;position:absolute;white-space:nowrap;clip:rect(1px,1px,1px,1px);-webkit-clip-path:polygon(0 0,0 0,0 0,0 0);clip-path:polygon(0 0,0 0,0 0,0 0)}h2{border-bottom:1px solid #666}.title,body,h2{font-family:Charter,Georgia,serif}code{font-size:.8em}.night{background:#263238}.night .title,.night h2,.night a,.night a:visited{color:#DDD}body.night,.night .main-menu a:hover,.night .social-menu a:hover,.night a:active,.night a:focus,.night a:hover{color:#ccc}.night p>code,.night li strong{color:#c59e00}em{color:#C97747;font-weight:bold}blockquote code{font-style:normal}.advert{position:relative;width:100%}.advert-post{top:0px}.advert-post a{border-bottom:0;margin-bottom:1.5rem}.advert a{display:block;font-size:1.5rem;padding:1rem 2rem 2.5rem;position:relative;top:12px;text-align:center}.box{position:relative;display:block;margin:auto;max-width:800px}.box__inner:before,.box__inner:after{content:"";position:absolute;display:block;height:12px;width:100%;background:#cb5a5e;background:repeating-linear-gradient(-45deg,red,red 12px,transparent 10px,transparent 23px);-webkit-backface-visibility:hidden;backface-visibility:hidden;border-bottom:0}.box__inner:before{top:0}.box__inner:after{bottom:0}@keyframes immersiveTranslateShadowRolling{0%{box-shadow:0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}12%{box-shadow:100px 0 var(--loading-color),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}25%{box-shadow:110px 0 var(--loading-color),100px 0 var(--loading-color),0px 0 rgba(255,255,255,0),0px 0 rgba(255,255,255,0)}36%{box-shadow:120px 0 var(--loading-color),110px 0 var(--loading-color),100px 0 var(--loading-color),0px 0 rgba(255,255,255,0)}50%{box-shadow:130px 0 var(--loading-color),120px 0 var(--loading-color),110px 0 var(--loading-color),100px 0 var(--loading-color)}62%{box-shadow:200px 0 rgba(255,255,255,0),130px 0 var(--loading-color),120px 0 var(--loading-color),110px 0 var(--loading-color)}75%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),130px 0 var(--loading-color),120px 0 var(--loading-color)}87%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),130px 0 var(--loading-color)}100%{box-shadow:200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0),200px 0 rgba(255,255,255,0)}}</style><link rel=icon href=data:image/vnd.microsoft.icon;base64,AAABAAIAEBAAAAEAIADnAAAAJgAAACAgAAABACAAFwIAAA0BAACJUE5HDQoaCgAAAA1JSERSAAAAEAAAABAIBgAAAB/z/2EAAACuSURBVDiNrZPLEcIgEEDfctYyYgN0kFIySRPhbJrQsZR0QANJGeaOBzYjw4yjAd+NhcdndxEygucEdEALXDS8ADPwEMuWrheVEAvBMwLXfNMMJ5ZpdyQ5+Qb0X+Sdu1gGAKPyeEAG6NVB9M3PA3LK2RATVkpniNkupTW8S1VCYypkIFZhqfBXQ+ywUub6MmpvuwLZiWX7WyujgV9u4sQyBB8Hks9m37nR8MqH7/wCfk006E2+8rcAAAAASUVORK5CYIKJUE5HDQoaCgAAAA1JSERSAAAAIAAAACAIBgAAAHN6evQAAAHeSURBVFiFxdcxbhNBGMXx34wUKTRIOAUXgAtkpYT0qWioXBCUgiZIUeAwURooSIFMYxo3NKSPguRcgFyAIm4d4cIUM2scE9sEe73/xmt5NO/tN56Z9wUzGHYJxeh5HQ+wiR08RSMP7eEHznGJfijcTM5xF+EfhBvYRRMvsDbLNAbo4Au+hUJvlpG/DEyI7+EdtqaZncEQ33EcCp+nmZhWgTWcYF8q+yL08QlvQ+HX5I9xTLT8fIhTHCxBXJ7jAB/z3CMtcgXK0uQ3P8WrJQjfRQuvQ2FQakZurctJheLy3CfjmnGs9HvSmlfNftZKlc8PDXzF9goMwAWeh0Kv/BPuSlttVWxlTTGfcE333+eLENAcdq2HYdcj/DT/hFs2AzyO0tm+anFZczNKF0td7ETpVquLJ9GfK7UONuL8MdUSpTBRF9dRSjJ1cRWlGFUX51HKcIMaxAe4jFJi6dRgoIN+zOm1LWW4VTFEOxRuym14JgXIVXGRNVMgydH5WFqOqulLSbk3CiQlw673UoCskg+h8Kb8ErNwyZEUHKuilTVGmqNQmpdigMOKTLRwOJ6IWW1jcpRf8BbzWrOXUmu2Pc3sDBZqzZbRnLZxdu/mdIaR8fb8mRRkNvLQa1z5j/b8NxyVqtD+A7sAAAAAAElFTkSuQmCC><style>.sf-hidden{display:none!important}</style><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style></head>
+<body class="night page">
+ <div class=site>
+ <header id=header class=header-container>
+ <div class=site-header>
+ <nav id=navmenu aria-label="Main Menu">
+ <ul class=main-menu>
+ 
+ <li>
+ <a href=https://www.integralist.co.uk/>Home</a>
+ </li>
+ 
+ <li>
+ <a href=https://www.integralist.co.uk/about>About </a>
+ </li>
+ 
+ <li>
+ <a href=https://www.integralist.co.uk/posts>Posts</a>
+ </li>
+ 
+ <li>
+ <a href=https://www.integralist.co.uk/search>Search </a>
+ </li>
+ 
+ <li>
+ <a href=https://www.integralist.co.uk/resume>Resume </a>
+ </li>
+ 
+ <li>
+ <a href=#theme>Day Mode</a>
+ </li>
+ 
+ </ul>
+</nav>
+ <div class="site-info sf-hidden">
+ 
+ 
+ 
+ 
+ </div>
+ </div>
+ </header>
+<main class=main>
+ <article lang=en class=entry>
+ <header class=entry-header>
+ <div class=entry-info>
+ <h1 class="entry-title title">Developer Tools</h1>
+ 
+ </div>
+ 
+<div class=meta>
+ <span class=posted-on>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <rect x=3 y=4 width=18 height=18 rx=2 ry=2></rect>
+ <line x1=16 y1=2 x2=16 y2=6></line>
+ <line x1=8 y1=2 x2=8 y2=6></line>
+ <line x1=3 y1=10 x2=21 y2=10></line>
+ 
+</svg>
+ <span class=screen-reader>Posted on </span>
+ <time class=date datetime=2022-03-09T09:49:24Z>2022-03-09</time>
+ </span>
+ 
+ <span class=byline>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <path d=M21,21V20c0-2.76-4-5-9-5s-9,2.24-9,5v1></path>
+ <path d=M16,6.37A4,4,0,1,1,12.63,3,4,4,0,0,1,16,6.37Z></path>
+ 
+</svg>
+ <span class=screen-reader> by </span>
+ Mark McDonnell
+ </span>
+ 
+ 
+ <span class=reading-time>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <circle cx=12 cy=12 r=10></circle>
+ <polyline points="12 6 12 12 15 15"></polyline> 
+ 
+</svg>
+ 2 mins read
+ </span>
+ 
+</div>
+</header>
+ <div class=entry-content>
+ <p>I don’t know who needs to hear this but:
+<strong>I love my developer tools</strong>.</p>
+<h2 id=core>Core</h2>
+<ul>
+<li><strong>Package Manager</strong>: <a href=https://brew.sh/>Homebrew</a></li>
+<li><strong>Terminal</strong>: <a href=https://www.warp.dev/>Warp</a></li>
+<li><strong>Code Editor</strong>: <a href=https://neovim.io/>Neovim</a></li>
+</ul>
+<p><strong>NOTES:</strong><br>
+I was using a multiplexer (<a href=https://github.com/tmux/tmux/wiki>tmux</a>) for years but colour issues forced me to switch to <a href=https://zellij.dev/>Zellij</a>. I then switched from <a href=https://alacritty.org/>Alacritty</a> and Zellij to using Warp as my terminal (helping to consolidate the number of tools I needed to install and configure) as Warp provided a lot of what I was using Zellij for. My switch to Warp also meant I could drop support for <a href=https://github.com/junegunn/fzf/blob/master/README.md>FZF</a> as Warp provided fuzzy searching my history, while <code>fd</code> (see below) allowed me to easily locate files.</p>
+<h2 id=supplementary>Supplementary</h2>
+<ul>
+<li><strong>Code Statistics</strong>: <a href=https://github.com/XAMPPRocky/tokei/blob/master/README.md>Tokei</a></li>
+<li><strong>DNS Client</strong>: <a href=https://github.com/ogham/dog/blob/master/README.md>Dog</a></li>
+<li><strong>Directory Lister</strong>: <a href=https://en.wikipedia.org/wiki/Tree_(command)>Tree</a></li>
+<li><strong>Directory Navigator</strong>: <a href=https://github.com/Canop/broot/blob/master/README.md>Broot</a></li>
+<li><strong>Directory Switcher</strong>: <a href=https://github.com/ajeetdsouza/zoxide/blob/main/README.md>Zoxide</a></li>
+<li><strong>Disk Usage</strong>: <a href=https://github.com/muesli/duf/blob/master/README.md>Duf</a></li>
+<li><strong>Feed Reader</strong>: <a href=https://github.com/veeso/tuifeed/blob/main/README.md>Tuifeed</a></li>
+<li><strong>File Content Display</strong>: <a href=https://github.com/sharkdp/bat/blob/master/README.md>Bat</a></li>
+<li><strong>File Finder</strong>: <a href=https://github.com/sharkdp/fd/blob/master/README.md>Fd</a></li>
+<li><strong>File Lister</strong>: <a href=https://github.com/ogham/exa/blob/master/README.md>Exa</a></li>
+<li><strong>File Removal</strong>: <a href=https://github.com/nivekuil/rip/blob/master/README.org>Rip</a></li>
+<li><strong>File Space Usage</strong>: <a href=https://github.com/bootandy/dust/blob/master/README.md>Dust</a></li>
+<li><strong>Network Reachability</strong>: <a href=https://github.com/orf/gping/blob/master/readme.md>Gping</a></li>
+<li><strong>Network Utilisation</strong>: <a href=https://github.com/imsnif/bandwhich/blob/main/README.md>Bandwhich</a></li>
+<li><strong>Process Status</strong>: <a href=https://github.com/dalance/procs/blob/master/README.md>Procs</a></li>
+<li><strong>Process/System Monitor</strong>: <a href=https://github.com/htop-dev/htop/#readme>Htop</a> †</li>
+<li><strong>Shell</strong>: <a href=https://www.zsh.org/>Zsh</a></li>
+<li><strong>Shell Autocomplete</strong>: <a href=https://fig.io/>Fig</a></li>
+<li><strong>Shell Prompt</strong>: <a href=https://starship.rs/>Starship</a></li>
+</ul>
+<blockquote>
+<p>† I had switched to <a href=https://github.com/ClementTsang/bottom/blob/master/README.md>Bottom</a> but <code>htop</code> is just so much more flexible and configurable, and although the graphs in <code>btm</code> are nice I just don’t <em>need</em> them.</p>
+</blockquote>
+<h2 id=browser>Browser</h2>
+<p>Controversial, but I had started to move away from <a href=https://www.mozilla.org/en-GB/firefox/new/>Firefox</a> with a whole suite of security/privacy minded tools to <a href=https://www.apple.com/uk/safari/>Apple’s Safari</a> browser.</p>
+<p>I <em>was</em> using Safari’s <a href="https://twitter.com/integralist/status/1514526555275501569?s=20&amp;t=BJu3WlWq6dhoeAarJf91ig">“Tab Group”</a> feature, which I <em>really</em> liked along with the following extensions…</p>
+<ul>
+<li>AdBlock One</li>
+<li>Dark Reader for Safari</li>
+<li>SimplyJSON for Safari</li>
+<li>Super Agent for Safari (Cookie Consent Automation)</li>
+</ul>
+<p>…but ultimately the Tab Groups feature ended up being super buggy and duplicating bookmarks and groups etc and I couldn’t get the issue resolved, so I ended up back with Google Chrome.</p>
+</div>
+ <hr>
+<p><b>But before we wrap up...</b> time (once again) for some self-promotion 🙊</p>
+<div class="advert advert-post">
+ <section class=box>
+ <div class=box__inner>
+ <a target=_blank href=https://www.apress.com/gp/book/9781484202517>Want to understand how to <i><b>REALLY</b></i> use <b><u>Vim</u></b>? Then get started here with my book<br>"<b>Pro Vim</b>"!</a>
+ </div>
+ </section>
+</div>
+ 
+<footer class=entry-footer>
+ 
+ 
+ 
+ 
+<div class=categories>
+ <span class=category-icon>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <path d=M22,19a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V5A2,2,0,0,1,4,3H9l2,3h9a2,2,0,0,1,2,2Z></path>
+ 
+</svg>
+ </span>
+ <span class=screen-reader>Categories: </span><a class=category href=https://www.integralist.co.uk/categories/tools>tools</a>, <a class=category href=https://www.integralist.co.uk/categories/guide>guide</a></div>
+ 
+ 
+ 
+ 
+ 
+<div class=tags>
+ <span class=tag-icon>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <path d=M20.59,13.41l-7.17,7.17a2,2,0,0,1-2.83,0L2,12V2H12l8.59,8.59A2,2,0,0,1,20.59,13.41Z></path>
+ <line x1=7 y1=7 x2=7 y2=7></line>
+ 
+</svg>
+ </span>
+ <span class=screen-reader>Tags: </span><a class=tag href=https://www.integralist.co.uk/tags/shell>shell</a>, <a class=tag href=https://www.integralist.co.uk/tags/terminal>terminal</a>, <a class=tag href=https://www.integralist.co.uk/tags/vim>vim</a></div>
+ 
+ 
+</footer>
+ </article>
+ 
+ 
+<nav class=entry-nav>
+ <div class=entry-nav-links><div class=prev-entry>
+ <a href=https://www.integralist.co.uk/posts/go-style-guide/>
+ <span aria-hidden=true><svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <line x1=20 y1=12 x2=4 y2=12></line>
+ <polyline points="10 18 4 12 10 6"></polyline>
+ 
+</svg>
+ Previous</span>
+ <span class=screen-reader>Previous post: </span>Go Style Guide</a>
+ </div><div class=next-entry>
+ <a href=https://www.integralist.co.uk/posts/vim-themes/>
+ <span class=screen-reader>Next post: </span>Fix broken Vim Themes<span aria-hidden=true>Next <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <line x1=4 y1=12 x2=20 y2=12></line>
+ <polyline points="14 6 20 12 14 18"></polyline>
+ 
+</svg>
+</span>
+ </a>
+ </div></div>
+</nav>
+ 
+ 
+ <div class=comments-container>
+ 
+</div>
+ 
+</main>
+ <footer id=footer class=footer-container>
+ <div class=footer>
+ <div class=social>
+ <nav aria-label="Social Menu">
+ <ul class=social-menu><li>
+ <a href=https://github.com/integralist target=_blank rel=noopener>
+ <span class=screen-reader>Open Github account in new tab</span>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+ 
+</svg>
+ </a>
+ <li>
+ <a href=https://instagram.com/integralist target=_blank rel=noopener>
+ <span class=screen-reader>Open Instagram account in new tab</span>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <rect x=2 y=2 width=20 height=20 rx=5 ry=5></rect>
+ <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+ <line x1=17.5 y1=6.5 x2=17.5 y2=6.5></line>
+ 
+</svg>
+ </a>
+ <li>
+ <a href=https://twitter.com/integralist target=_blank rel=noopener>
+ <span class=screen-reader>Open Twitter account in new tab</span>
+ <svg class=icon viewBox="0 0 24 24" stroke-linecap=round stroke-linejoin=round stroke-width=2 aria-hidden=true>
+ 
+ <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+ 
+</svg>
+ </a>
+ </ul>
+ </nav>
+</div>
+ <div class=copyright>
+ <p>
+ 
+ 
+ 
+ 
+ © 2017-2023 integralist</p>
+ </div>
+ </div>
+ </footer>
+ </div>
+ 
+ 
+ 
+ 
+ 
+ 
