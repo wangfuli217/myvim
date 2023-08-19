@@ -1,3 +1,4 @@
+set nocompatible        " disable backwards-compatible with vi
 
 " https://vimjc.com/vim-commands-and-vim-mapping-conf.html 常用Vim命令及实用Vim按键映射配置
 
@@ -33,7 +34,7 @@ autocmd FileType cpp,java setlocal equalprg=astyle\ -A1sCSNLYpHUEk1xjcn
 autocmd Filetype html set equalprg=html-beautify\ --indent-size=2\ --no-preserve-newlines\ -
 autocmd Filetype xml set equalprg=xmllint\ --format\ -
 
-autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
+" autocmd BufEnter * lcd %:p:h   " change to directory of current file automatically
 nnoremap <c-x><c-o> <c-o><CR>  " termial in windows
 nnoremap <c-x><c-i> <c-i><CR>  " termial in windows
 
@@ -45,16 +46,16 @@ nmap <Leader>hr :%!xxd<CR> :set filetype=xxd<CR>
 " Hex write
 nmap <Leader>hw :%!xxd -r<CR> :set binary<CR> :set filetype=<CR>
 
-nmap <leader>g* :noautocmd vimgrep -n /<C-R><C-W>/j **/*<CR>:cwin<CR>      # 搜索光标下word单词 递归目录
-nmap <leader>g# :noautocmd vimgrep -n /<C-R><C-W>/j *   <CR>:cwin<CR>      # 搜索光标下word单词 本目录
-nmap <leader>g% :noautocmd vimgrep -n /<C-R><C-W>/j %   <CR>:cwin<CR>      # 搜索光标下word单词 本文件
-nmap <leader>sf :noautocmd vimgrep -n /\<<C-R><C-W>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
-nmap <leader>sd :noautocmd vimgrep -n /\<<C-R><C-W>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
-nmap <leader>sr :noautocmd vimgrep -n /\<<C-R><C-W>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
-nmap <leader>ss :noautocmd vimgrep -n /<C-r>//j **/*<CR>:cwin<CR>          # 搜索刚搜索单词
-nmap <leader>sF :noautocmd vimgrep -n /\<<C-R><C-A>\>/j %   <CR>:cwin<CR>  # 搜索光标下word单词 递归目录
-nmap <leader>sD :noautocmd vimgrep -n /\<<C-R><C-A>\>/j *   <CR>:cwin<CR>  # 搜索光标下word单词 本目录
-nmap <leader>sR :noautocmd vimgrep -n /\<<C-R><C-A>\>/j **/*<CR>:cwin<CR>  # 搜索光标下word单词 本文件
+nnoremap grep   :AsyncRun! grep -R -n <cword> . <CR><CR>
+nnoremap rgrep  :AsyncRun! grep -R -n <cword> . <CR><CR>
+nnoremap fgrep  :AsyncRun! grep -n <cword> %    <CR><CR>
+nnoremap man    :AsyncRun! man -S 3:2:1 <cword> <CR><CR>
+nnoremap sh     :%AsyncRun -raw bash        <CR><CR>
+nnoremap sh1    :.AsyncRun -raw bash        <CR><CR>
+vnoremap shv    :'<,'> AsyncRun -raw bash   <CR><CR>
+nnoremap pl     :%AsyncRun -raw perl        <CR><CR>
+nnoremap pl1    :.AsyncRun -raw perl        <CR><CR>
+vnoremap plv    :'<,'> AsyncRun -raw perl   <CR><CR>
 
 " :argdo
 " :bufdo
@@ -68,6 +69,12 @@ let g:which_key_map =  {}
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 nnoremap <Tab> %
 vnoremap <Tab> %
+" nnoremap <Tab> >>                  " 普通模式下 Tab 键行首缩进文本
+" nnoremap <S-Tab> <<                " 普通模式下 Shift + Tab 键行首反向缩进文本
+" vnoremap <Tab> >gv                 " 可视化模式下 Tab 键行首缩进文本
+" vnoremap <S-Tab> <gv               " 可视化模式下 Shift + Tab 键行首反向缩进文本
+" inoremap <Tab> <C-i>
+" inoremap <S-Tab> <C-d>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " F1-F12 显示方式 和 <Leader>F1-F12 插件窗口  快捷键 F5编译/执行 <Leader>F5执行
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -75,31 +82,45 @@ vnoremap <Tab> %
 " 代码显示
 nnoremap <F2> :set nu!   nu?<CR>
 nnoremap <F3> :set list! list?<CR>
-nnoremap <F4> :set wrap! wrap?<CR>
+nnoremap <F4> :set relativenumber! relativenumber?<CR>
 
 " :set makeprg=gcc\ -Wall\ -omain\ main.c
 " :make -> :compiler! helloworld -> compiler/helloworld.vim
 augroup ccompile
-    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:!python  % <CR>
-    autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:!javac % <CR>
-    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:term bash  % <CR>
-    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:term perl % <CR>
-    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:term lua   % <CR>
-    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:term node  % <CR>
-    autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source % <CR>
+    autocmd!
+"    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
+"    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:AsyncRun python     "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:AsyncRun javac      "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw bash  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw perl  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw lua   "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw node  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source %<CR>
 augroup END
 
+augroup make_c
+    autocmd!
+    autocmd FileType c   set makeprg=gcc\ -o\ %<\ %
+    autocmd FileType cpp set makeprg=g++\ -o\ %<\ %
+augroup end
+
+autocmd FocusLost * :wa  | " 离开Vim编辑器时,自动保存文件
+
 augroup crun
-    autocmd Filetype c    nnoremap <leader><F5> <Esc>:!gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
-    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:!g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>:! ./%< <CR>
-    autocmd Filetype java nnoremap <leader><F5> <ESC>:!javac % <CR>:java %< <CR>
-    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:vert term bash  % <CR>
-    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:vert terminal perl  % <CR>
-    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:vert term lua   % <CR>
-    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:vert term node  % <CR>
-    autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source % <CR>
+    autocmd!
+"    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
+"    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
+    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
+    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
+    autocmd Filetype java nnoremap <leader><F5> <ESC>:AsyncRun javac %; java %< <CR>
+    autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right bash  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right perl  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right lua   "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right node  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source %<CR>
 augroup END
 
 " redefine F1-F12 hotkey
@@ -112,35 +133,37 @@ endif
 " nnoremap   <F5> <Esc>:w<CR>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>
 " nnoremap <leader><F5> <Esc>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>:! ./%< <CR>
 
-augroup snippets
-    autocmd Filetype text  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/_.snippets<CR><CR>
-    autocmd Filetype c     nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/c.snippets<CR><CR>
-    autocmd Filetype cpp   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/cpp.snippets<CR><CR>
-    autocmd Filetype java  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/java.snippets<CR><CR>
-    autocmd Filetype sh    nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/sh.snippets<CR><CR>
-    autocmd Filetype perl  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/perl.snippets<CR><CR>
-    autocmd Filetype lua   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/lua.snippets<CR><CR>
-    autocmd Filetype vim   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/vim.snippets<CR><CR>
-    autocmd Filetype cmake nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/cmake.snippets<CR><CR>
+" augroup snippets
+"     autocmd!
+"     autocmd Filetype text  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/_.snippets<CR><CR>
+"     autocmd Filetype c     nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/c.snippets<CR><CR>
+"     autocmd Filetype cpp   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/cpp.snippets<CR><CR>
+"     autocmd Filetype java  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/java.snippets<CR><CR>
+"     autocmd Filetype sh    nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/sh.snippets<CR><CR>
+"     autocmd Filetype perl  nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/perl.snippets<CR><CR>
+"     autocmd Filetype lua   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/lua.snippets<CR><CR>
+"     autocmd Filetype vim   nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/vim.snippets<CR><CR>
+"     autocmd Filetype cmake nnoremap <c-a>k <Esc>:vs ~/.vim/plugged/vim-snippets/snippets/cmake.snippets<CR><CR>
 
-    autocmd Filetype text  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet<CR><CR>
-    autocmd Filetype c     nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/c<CR><CR>
-    autocmd Filetype perl  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/perl<CR><CR>
-    autocmd Filetype sh    nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/sh<CR><CR>
-    autocmd Filetype cmake nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/cmake<CR><CR>
-    autocmd Filetype lua   nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/lua<CR><CR>
-    autocmd Filetype make  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/make<CR><CR>
+"     autocmd Filetype text  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet<CR><CR>
+"     autocmd Filetype c     nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/c<CR><CR>
+"     autocmd Filetype perl  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/perl<CR><CR>
+"     autocmd Filetype sh    nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/sh<CR><CR>
+"     autocmd Filetype cmake nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/cmake<CR><CR>
+"     autocmd Filetype lua   nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/lua<CR><CR>
+"     autocmd Filetype make  nnoremap <c-a><c-k> <Esc>:vs ~/.vim/vim-mysnippet/make<CR><CR>
 
-    autocmd Filetype c     nnoremap <c-x>k      <Esc>:Man  <C-R>=expand("<cword>")<CR><CR>
-    autocmd Filetype c     nnoremap <c-x><c-k>  <Esc>:Vman <C-R>=expand("<cword>")<CR><CR>
-    autocmd Filetype perl  nnoremap <c-x>k      :Perldoc<CR>
-    autocmd Filetype perl  nnoremap <c-x><c-k>  :Perldoc<CR>
-    autocmd Filetype cmake nnoremap <c-x>k      <Esc>:CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>
-    autocmd Filetype cmake nnoremap <c-x><c-k>  <Esc>:CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>
-augroup END
+"     autocmd Filetype c     nnoremap <c-x>k      <Esc>:Man  <C-R>=expand("<cword>")<CR><CR>
+"     autocmd Filetype c     nnoremap <c-x><c-k>  <Esc>:Vman <C-R>=expand("<cword>")<CR><CR>
+"     autocmd Filetype perl  nnoremap <c-x>k      :Perldoc<CR>
+"     autocmd Filetype perl  nnoremap <c-x><c-k>  :Perldoc<CR>
+"     autocmd Filetype cmake nnoremap <c-x>k      <Esc>:CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>
+"     autocmd Filetype cmake nnoremap <c-x><c-k>  <Esc>:CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>
+" augroup END
 
 " 代码格式化
 augroup format
+    autocmd!
     autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
     autocmd Filetype perl  nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!perltidy -i=4 -et=4 -ndsm -st -ce -bar -nola -l=220 %<CR>:%s/\r//ga<CR>
     autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:%s/\r//ga<CR>
@@ -155,20 +178,33 @@ nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 
 " 静态代码扫描
 augroup format
-    " autocmd Filetype c     nnoremap <F7> <ESC>:new|read !cppcheck   --std=c99 --enable=warning,style -v #<CR>
-    " autocmd Filetype sh    nnoremap <F7> <ESC>:new|read !shellcheck #<CR>
-    " autocmd Filetype perl  nnoremap <F7> <ESC>:new|read !perlcritic #<CR>
-    autocmd Filetype c     nnoremap <F7> :!cppcheck   --std=c99 --enable=warning,style -v %<CR>
-    autocmd Filetype sh    nnoremap <F7> :!shellcheck %<CR>
-    autocmd Filetype perl  nnoremap <F7> :!perlcritic %<CR>
+    autocmd!
+    autocmd Filetype c     nnoremap <F7> :AsyncRun cppcheck   --std=c99 --enable=warning,style -v %<CR>
+    autocmd Filetype sh    nnoremap <F7> :AsyncRun shellcheck %<CR>
+    autocmd Filetype perl  nnoremap <F7> :AsyncRun perlcritic %<CR>
 augroup END
 nnoremap <F7> :SyntasticToggleMode<CR><CR>
 
 nnoremap <F8> :edit! %<CR>
-nnoremap <F9> :set paste! paste?<CR>
+nnoremap <F9> :set paste!     paste?<CR>
 nnoremap <F10> :set hlsearch! hlsearch?<CR>
-nnoremap <F11> :PreviewTag<cr>
-inoremap <F11> <c-o>:PreviewTag<cr>
+
+function! g:CscopeDone()
+	exec "cs add ".fnameescape(g:asyncrun_text)
+endfunc
+
+function! g:CscopeUpdate(workdir, cscopeout)
+	let l:cscopeout = fnamemodify(a:cscopeout, ":p")
+	let l:cscopeout = fnameescape(l:cscopeout)
+	let l:workdir = (a:workdir == '')? '.' : a:workdir
+	try | exec "cs kill ".l:cscopeout | catch | endtry
+	exec "AsyncRun -post=call\\ g:CscopeDone() ".
+				\ "-text=".l:cscopeout." "
+				\ "-cwd=".fnameescape(l:workdir)." ".
+				\ "cscope -b -R -f ".l:cscopeout
+endfunc
+
+noremap <F11> :call g:CscopeUpdate(".", "cscope.out")<cr>
 
 set background=dark         " Assume a dark background
 " Allow to trigger background
@@ -185,7 +221,7 @@ noremap <F12> :call ToggleBG()<CR>
 
 
 " 自说明帮助
-nnoremap <leader><F1> :e $MYVIMRC<CR>
+nnoremap <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 " 扩展窗口
 nnoremap <leader><F2> :Tagbar<CR>
 nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
@@ -202,16 +238,16 @@ let g:which_key_map['h'] = {
             \ 'F1' :   ['help', 'vimhelp'],
             \ 'F2' :   ['set nu!', 'toggle number'],
             \ 'F3' :   ['set list!', 'toggle list'],
-            \ 'F4' :   ['set wrap!', 'toggle wrap'],
+            \ 'F4' :   ['set relativenumber!', 'toggle relativenumber'],
             \ 'F5' :   ['Compile', 'compile c/cpp java'] ,
             \ 'F6' :   [':Autoformat', 'Autoformat'],
             \ 'F7' :   [':SyntasticToggleMode', 'SyntasticToggleMode'],
             \ 'F8' :   ['edit! %', 'update buffer'],
             \ 'F9' :   ['set paste!', 'toggle paste'],
             \ 'F10' :  ['set hlsearch!', 'toggle hlsearch'],
-            \ 'F11' :  [':PreviewTag', 'switch Tag definition'],
+            \ 'F11' :  [':cscope', 'build cscope'],
             \ 'F12' :  ['ToggleBG', 'toggle background'],
-            \ '\F1' :  [':e $MYVIMRC', 'reread $MYVIMRC'],
+            \ '\F1' :  [':quickfix', 'toggle quickfix'],
             \ '\F2' :  [':Tagbar', 'better Taglist'],
             \ '\F3' :  [':NERDTreeToggle', 'NERDTreeToggle'],
             \ '\F4' :  [':CtrlPMixed', 'CtrlP'],
@@ -307,6 +343,18 @@ noremap <leader>Y "*y
 
 " Yank from the cursor to the end of the line, to be consistent with C and D.
 nnoremap Y y$
+xnoremap Y <Esc>y$gv
+
+" 分屏窗口可以上左下右扩展,使用快捷键:sp+h/j/k/l 分别向四个方向扩展
+nnoremap spl :set splitright<CR>:vsplit<CR>
+nnoremap sph :set nosplitright<CR>:vsplit<CR>
+nnoremap spj :set splitbelow<CR>:split<CR>
+nnoremap spk :set nosplitbelow<CR>:split<CR>
+
+nnoremap stl :terminal<CR>
+nnoremap sth :terminal<CR>
+nnoremap stj :vertical terminal<CR>
+nnoremap stk :vertical terminal<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " remove space; remove ^M; remove tab; remove all; \sh shell file type
@@ -340,6 +388,11 @@ let g:which_key_map['r'] = {
 nnoremap <silent> <c-x><c-r> :WhichKey! which_key_map.r<CR>
 nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
 
+" 使用 very magic 模式，规范所有特殊符号，启用后，除了下划线 _，大小写字母，和数字外，所有的字符都具有特殊含义
+nnoremap / /\v
+vnoremap / /\v
+cnoremap %s/ %s/\v
+nnoremap :g/ :g/\v
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -373,6 +426,9 @@ nnoremap <silent> <C-s>6 6gt
 nnoremap <silent> <C-s>7 7gt
 nnoremap <silent> <C-s>8 8gt
 nnoremap <silent> <C-s>9 9gt
+
+set showtabline=2               " 显示顶部标签栏，为 0 时隐藏标签栏，1 会按需显示，2 会永久显示
+set tabpagemax=10               " 设置最大标签页上限为 10
 
 let g:which_key_map['s'] = {
             \ 'name' : '+tab' ,
@@ -1056,6 +1112,7 @@ silent! helptags ALL	"为所有插件加载帮助文档
 " https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
+Plug 'skywind3000/asyncrun.vim'
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
 Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
@@ -1063,8 +1120,12 @@ Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snipp
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
 
+" Plug 'nvie/vim-nox'
+" Plug 'Shougo/neocomplete.vim'
+
+
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
-Plug 'skywind3000/vim-dict'            " VIM 词表收集
+" Plug 'skywind3000/vim-dict'            " VIM 词表收集
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
 Plug 'mattn/vim-gist'                  " Gist 代码段 命令
 Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
@@ -1075,6 +1136,10 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释 DoxAuthor Dox DoxBlock DoxAll
+
+Plug 'tpope/vim-endwise'
+Plug 'rhysd/clever-f.vim'
+Plug 'Shougo/echodoc.vim'
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
@@ -1092,7 +1157,7 @@ Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
 Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
 " Plug 'bagrat/vim-buffet'             " buffer管理
-Plug 'kien/ctrlp.vim'                  " find模糊搜索 <Ctrl>+p :CtrlP 或 :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
+Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
 " <Leader>vr 全局搜索光标所在单词,并替换想要的单词
@@ -1188,7 +1253,8 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:easycomplete_tab_trigger="<c-space>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
-let g:easycomplete_diagnostics_enable = 1
+let g:easycomplete_diagnostics_enable = 0
+let g:easycomplete_lsp_checking = 0
 let g:easycomplete_signature_enable = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1279,8 +1345,6 @@ let g:clang_format#style_options = {
 autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
-
-autocmd BufEnter * lcd %:p:h
 
 " 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
 " gcc: 注释或反注释
@@ -1401,7 +1465,7 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
-let g:gutentags_project_root = ['mkall.sh', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
+let g:gutentags_project_root = ['mkall.sh', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
@@ -1616,7 +1680,7 @@ let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
 " Taglist -> Tagbar(更完善的类支持)
 " exuberant-ctags -> universal-ctags (Home · Universal Ctags)
 
-nnoremap Tagbar :TagbarToggle<CR>           " 将开启tagbar的快捷键设置为　<Leader>tb
+nnoremap tagbar :TagbarToggle<CR>           " 将开启tagbar的快捷键设置为　<Leader>tb
 let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
@@ -1667,6 +1731,7 @@ nnoremap <C-\>i :cs find i <C-R>=expand("<cfile>")<CR><CR>:botright cwindow<CR><
 nnoremap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>:botright cwindow<CR><CR>
 
 augroup crun
+    autocmd!
     autocmd Filetype c    nnoremap <C-\>C :!find . -type f -name "*.[chly]" -o -name "*.inc" > cscope.files; cscope -Rbkq -i cscope.files<CR><CR>
     autocmd Filetype cpp  nnoremap <C-\>C :!find . -type f -name "*.[chly]" -o -name "*.cc" -o -name "*.cpp" > cscope.files; cscope -Rbkq -i cscope.files<CR><CR>
     autocmd Filetype java nnoremap <C-\>C :!find . -type f -name "*.java" > cscope.files; cscope -Rbkq -i cscope.files<CR><CR>
@@ -1885,6 +1950,8 @@ let g:ctrlp_custom_ignore = {
             \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
             \ 'link': 'some_bad_symbolic_links',
             \ }
+let g:ctrlp_by_filename = 1
+let g:ctrlp_regexp = 1
 let g:ctrlp_match_window_bottom = 1
 let g:ctrlp_max_height = 15
 let g:ctrlp_match_window_reversed = 0
@@ -2100,6 +2167,91 @@ vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
 call which_key#register('\', "g:which_key_map")
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" tpope/surround
+" Shougo/neocomplete.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nmap <C-J> yss}
+"Note: This option must be set in .vimrc(_vimrc).  NOT IN .gvimrc(_gvimrc)!
+" Disable AutoComplPop.
+let g:acp_enableAtStartup = 0
+" Use neocomplete.
+let g:neocomplete#enable_at_startup = 1
+" Use smartcase.
+let g:neocomplete#enable_smart_case = 1
+" Set minimum syntax keyword length.
+let g:neocomplete#sources#syntax#min_keyword_length = 3
+
+" Define dictionary.
+let g:neocomplete#sources#dictionary#dictionaries = {
+    \ 'default' : '',
+    \ 'vimshell' : $HOME.'/.vimshell_hist',
+    \ 'scheme' : $HOME.'/.gosh_completions'
+        \ }
+
+" Define keyword.
+if !exists('g:neocomplete#keyword_patterns')
+    let g:neocomplete#keyword_patterns = {}
+endif
+let g:neocomplete#keyword_patterns['default'] = '\h\w*'
+
+" Plugin key-mappings.
+inoremap <expr><C-g>     neocomplete#undo_completion()
+inoremap <expr><C-l>     neocomplete#complete_common_string()
+
+" Recommended key-mappings.
+" <CR>: close popup and save indent.
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return (pumvisible() ? "\<C-y>" : "" ) . "\<CR>"
+  " For no inserting <CR> key.
+  "return pumvisible() ? "\<C-y>" : "\<CR>"
+endfunction
+" <TAB>: completion.
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" <C-h>, <BS>: close popup and delete backword char.
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
+" Close popup by <Space>.
+"inoremap <expr><Space> pumvisible() ? "\<C-y>" : "\<Space>"
+
+" AutoComplPop like behavior.
+"let g:neocomplete#enable_auto_select = 1
+
+" Shell like behavior(not recommended).
+"set completeopt+=longest
+"let g:neocomplete#enable_auto_select = 1
+"let g:neocomplete#disable_auto_complete = 1
+"inoremap <expr><TAB>  pumvisible() ? "\<Down>" : "\<C-x>\<C-u>"
+
+" Enable omni completion.
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+
+" Enable heavy omni completion.
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+"let g:neocomplete#sources#omni#input_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
+"let g:neocomplete#sources#omni#input_patterns.c = '[^.[:digit:] *\t]\%(\.\|->\)'
+"let g:neocomplete#sources#omni#input_patterns.cpp = '[^.[:digit:] *\t]\%(\.\|->\)\|\h\w*::'
+
+" For perlomni.vim setting.
+" https://github.com/c9s/perlomni.vim
+let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" skywind3000/asyncrun.vim
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:asyncrun_mode = 0     | " 全局的默认运行模式
+let g:asyncrun_wrapper = '' | " 命令前缀，默认为空，比如可以设置成 nice
+let g:asyncrun_open = 10    | " 大于零的话会在运行时自动打开高度为具体值的 quickfix 窗口
+let g:asyncrun_bell = 1     | " 任务结束时候响铃提醒
+let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding，不一致，那么在这里设置一下
+let g:asyncrun_trim='1'     | " non-zero to trim the empty lines in the quickfix window.
+let g:asyncrun_auto=''      | " 用于触发 QuickFixCmdPre/QuickFixCmdPost 的 autocmd 名称
+let g:asyncrun_save=2       | " 全局设置，运行前是否保存文件，1是保存当前文件，2是保存所有修改过的文件
+let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
+
+command! -bang -nargs=+ -range=0 -complete=file H
+		\ call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
