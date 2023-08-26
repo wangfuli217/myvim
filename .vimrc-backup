@@ -50,12 +50,6 @@ nnoremap grep   :AsyncRun! grep -R -n <cword> . <CR><CR>
 nnoremap rgrep  :AsyncRun! grep -R -n <cword> . <CR><CR>
 nnoremap fgrep  :AsyncRun! grep -n <cword> %    <CR><CR>
 nnoremap man    :AsyncRun! man -S 3:2:1 <cword> <CR><CR>
-nnoremap sh     :%AsyncRun -raw bash        <CR><CR>
-nnoremap sh1    :.AsyncRun -raw bash        <CR><CR>
-vnoremap shv    :'<,'> AsyncRun -raw bash   <CR><CR>
-nnoremap pl     :%AsyncRun -raw perl        <CR><CR>
-nnoremap pl1    :.AsyncRun -raw perl        <CR><CR>
-vnoremap plv    :'<,'> AsyncRun -raw perl   <CR><CR>
 
 " :argdo
 " :bufdo
@@ -88,9 +82,9 @@ nnoremap <F4> :set relativenumber! relativenumber?<CR>
 " :make -> :compiler! helloworld -> compiler/helloworld.vim
 augroup ccompile
     autocmd!
-"    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
+"    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
 "    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
     autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:AsyncRun python     "$(VIM_FILEPATH)" <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:AsyncRun javac      "$(VIM_FILEPATH)" <CR>
@@ -111,9 +105,9 @@ autocmd FocusLost * :wa  | " 离开Vim编辑器时,自动保存文件
 
 augroup crun
     autocmd!
-"    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc % -std=gnu99 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
+"    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
 "    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
-    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
+    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:AsyncRun javac %; java %< <CR>
     autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right bash  "$(VIM_FILEPATH)" <CR>
@@ -162,6 +156,7 @@ endif
 " augroup END
 
 " 代码格式化
+" npm install --save-dev --save-exact prettier # https://prettier.io/docs/en/install.html
 augroup format
     autocmd!
     autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
@@ -179,32 +174,33 @@ nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 " 静态代码扫描
 augroup format
     autocmd!
-    autocmd Filetype c     nnoremap <F7> :AsyncRun cppcheck   --std=c99 --enable=warning,style -v %<CR>
+    autocmd Filetype c     nnoremap <F7> :AsyncRun (cppcheck   --std=c99 --enable=warning,style -v %; splint %)<CR>
     autocmd Filetype sh    nnoremap <F7> :AsyncRun shellcheck %<CR>
     autocmd Filetype perl  nnoremap <F7> :AsyncRun perlcritic %<CR>
 augroup END
 nnoremap <F7> :SyntasticToggleMode<CR><CR>
 
-nnoremap <F8> :edit! %<CR>
+augroup rangecmd
+    autocmd Filetype sh    nnoremap <F8>  :.AsyncRun -raw bash    <CR><CR>
+    autocmd Filetype perl  nnoremap <F8>  :.AsyncRun -raw perl    <CR><CR>
+    autocmd Filetype lua   nnoremap <F8>  :.AsyncRun -raw lua     <CR><CR>
+    autocmd Filetype tcl   nnoremap <F8>  :.AsyncRun -raw tclsh   <CR><CR>
+    autocmd Filetype python    nnoremap <F8>  :.AsyncRun -raw python   <CR><CR>
+    autocmd Filetype javascript    nnoremap <F8>  :.AsyncRun -raw node   <CR><CR>
+    autocmd Filetype php    nnoremap <F8>  :.AsyncRun -raw php   <CR><CR>
+    autocmd Filetype ruby    nnoremap <F8>  :.AsyncRun -raw ruby   <CR><CR>
+    autocmd Filetype sh    vnoremap <F8>  :'<,'> AsyncRun -raw bash     <CR><CR>
+    autocmd Filetype perl  vnoremap <F8>  :'<,'> AsyncRun -raw perl     <CR><CR>
+    autocmd Filetype lua   vnoremap <F8>  :'<,'> AsyncRun -raw lua      <CR><CR>
+    autocmd Filetype tcl   vnoremap <F8>  :'<,'> AsyncRun -raw tclsh    <CR><CR>
+    autocmd Filetype python    vnoremap <F8>  :'<,'> AsyncRun -raw python    <CR><CR>
+    autocmd Filetype javascript   vnoremap <F8>  :'<,'> AsyncRun -raw node    <CR><CR>
+    autocmd Filetype php   vnoremap <F8>  :'<,'> AsyncRun -raw php    <CR><CR>
+    autocmd Filetype ruby   vnoremap <F8>  :'<,'> AsyncRun -raw ruby    <CR><CR>
+augroup END
+
 nnoremap <F9> :set paste!     paste?<CR>
 nnoremap <F10> :set hlsearch! hlsearch?<CR>
-
-function! g:CscopeDone()
-	exec "cs add ".fnameescape(g:asyncrun_text)
-endfunc
-
-function! g:CscopeUpdate(workdir, cscopeout)
-	let l:cscopeout = fnamemodify(a:cscopeout, ":p")
-	let l:cscopeout = fnameescape(l:cscopeout)
-	let l:workdir = (a:workdir == '')? '.' : a:workdir
-	try | exec "cs kill ".l:cscopeout | catch | endtry
-	exec "AsyncRun -post=call\\ g:CscopeDone() ".
-				\ "-text=".l:cscopeout." "
-				\ "-cwd=".fnameescape(l:workdir)." ".
-				\ "cscope -b -R -f ".l:cscopeout
-endfunc
-
-noremap <F11> :call g:CscopeUpdate(".", "cscope.out")<cr>
 
 set background=dark         " Assume a dark background
 " Allow to trigger background
@@ -223,8 +219,8 @@ noremap <F12> :call ToggleBG()<CR>
 " 自说明帮助
 nnoremap <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 " 扩展窗口
-nnoremap <leader><F2> :Tagbar<CR>
-nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
+nnoremap <leader><F2> :TagbarToggle<CR>                           " :TagbarToggle; :TlistToggle
+nnoremap <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR> " :WMToggle; :ToggleBufExplorer; :NERDTreeToggle
 nnoremap <leader><F4> :CtrlPMixed<CR>
 nnoremap <leader><F6> :AV<CR>
 nnoremap <leader><F7> :MundoToggle<CR>
@@ -232,6 +228,24 @@ nnoremap <leader><F8> :TigOpenCurrentFile<CR>
 nnoremap <leader><F9> :TigOpenProjectRootDir<CR>
 nnoremap <leader><F10> :vert terminal<CR>
 nnoremap <leader><F11> <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
+function! g:CscopeDone()
+	exec "cs add ".fnameescape(g:asyncrun_text)
+endfunc
+
+function! g:CscopeUpdate(workdir, cscopeout)
+	let l:cscopeout = fnamemodify(a:cscopeout, ":p")
+	let l:cscopeout = fnameescape(l:cscopeout)
+	let l:workdir = (a:workdir == '')? '.' : a:workdir
+	try | exec "cs kill ".l:cscopeout | catch | endtry
+	exec "AsyncRun -post=call\\ g:CscopeDone() ".
+				\ "-text=".l:cscopeout." "
+				\ "-cwd=".fnameescape(l:workdir)." ".
+				\ "cscope -b -R -f ".l:cscopeout
+endfunc
+nnoremap <leader><F12> :call g:CscopeUpdate(".", "cscope.out")<cr>
+
+nnoremap <F11> <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
+nnoremap <F12> :call g:CscopeUpdate(".", "cscope.out")<cr>
 
 let g:which_key_map['h'] = {
             \ 'name' : '+F1-F12' ,
@@ -245,8 +259,8 @@ let g:which_key_map['h'] = {
             \ 'F8' :   ['edit! %', 'update buffer'],
             \ 'F9' :   ['set paste!', 'toggle paste'],
             \ 'F10' :  ['set hlsearch!', 'toggle hlsearch'],
-            \ 'F11' :  [':cscope', 'build cscope'],
-            \ 'F12' :  ['ToggleBG', 'toggle background'],
+            \ 'F11' :  [':shnote', 'ctags ft=sh add=tags'],
+            \ 'F12' :  [':cscope', 'build cscope'],
             \ '\F1' :  [':quickfix', 'toggle quickfix'],
             \ '\F2' :  [':Tagbar', 'better Taglist'],
             \ '\F3' :  [':NERDTreeToggle', 'NERDTreeToggle'],
@@ -258,7 +272,7 @@ let g:which_key_map['h'] = {
             \ '\F9' :  [':TigOpenProjectRootDir','Tig@RootDir'],
             \ '\F10' : [':vert terminal', 'vertical terminal'],
             \ '\F11' : [':shnote', 'ctags ft=sh add=tags'],
-            \ '\F12' : ['TODO', 'TODO'],
+            \ '\F12' : [':cscope', 'build cscope'],
             \ }
 nnoremap <silent> <c-x><c-h>    :WhichKey! which_key_map.h<CR>
 nnoremap <silent> <c-x>h        :WhichKey! which_key_map.h<CR>
@@ -356,6 +370,11 @@ nnoremap sth :terminal<CR>
 nnoremap stj :vertical terminal<CR>
 nnoremap stk :vertical terminal<CR>
 
+nnoremap sdl :Ve!<CR>
+nnoremap sdh :Ve<CR>
+nnoremap sdj :He!<CR>
+nnoremap sdk :He<CR>
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " remove space; remove ^M; remove tab; remove all; \sh shell file type
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -387,12 +406,6 @@ let g:which_key_map['r'] = {
             \ }
 nnoremap <silent> <c-x><c-r> :WhichKey! which_key_map.r<CR>
 nnoremap <silent> <c-x>r     :WhichKey! which_key_map.r<CR>
-
-" 使用 very magic 模式，规范所有特殊符号，启用后，除了下划线 _，大小写字母，和数字外，所有的字符都具有特殊含义
-nnoremap / /\v
-vnoremap / /\v
-cnoremap %s/ %s/\v
-nnoremap :g/ :g/\v
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim tab buffer simulate tmux windows manager; windows simulate pane
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -427,7 +440,7 @@ nnoremap <silent> <C-s>7 7gt
 nnoremap <silent> <C-s>8 8gt
 nnoremap <silent> <C-s>9 9gt
 
-set showtabline=2               " 显示顶部标签栏，为 0 时隐藏标签栏，1 会按需显示，2 会永久显示
+set showtabline=2               " 显示顶部标签栏,为 0 时隐藏标签栏,1 会按需显示,2 会永久显示
 set tabpagemax=10               " 设置最大标签页上限为 10
 
 let g:which_key_map['s'] = {
@@ -835,7 +848,7 @@ set t_Co=256
 " colorscheme这是个单独的命令,不是 set 选项.选择一个颜色主题
 " :colorscheme + 主题名 -> :colorscheme helloworld -> colors/helloworld.vim
 colorscheme desert " darkblue
-" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景，有的则分别为不同背景色定义不同的颜色主题
+" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景,有的则分别为不同背景色定义不同的颜色主题
 " set background=dark
 
 set ttyfast                " Faster redrawing.
@@ -885,7 +898,7 @@ set report      =0                  " Always report changed lines.
 set synmaxcol   =200                " Only highlight the first 200 columns.
 set shortmess-=S                    " display number of search matches & index of a current match
 
-" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符。
+" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符.
 set backspace=indent,eol,start      " allow backspacing over everything in insert mode
 set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
@@ -960,7 +973,7 @@ set noswapfile
 
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
-" 如果文件夹不存在，则新建文件夹
+" 如果文件夹不存在,则新建文件夹
 if !isdirectory($HOME.'/.vim/files') && exists('*mkdir')
     call mkdir($HOME.'/.vim/files')
 endif
@@ -968,7 +981,7 @@ endif
 set backup                                  " make backup files
 set backupdir   =$HOME/.vim/files/backup/   " where to put backup files
 set backupext   =-vimbackup                 "
-set backupskip  =$HOME/.vim/files/backup/   " Don’t create backups when editing files in certain directories
+set backupskip  =$HOME/.vim/files/backup/   " Don't create backups when editing files in certain directories
 " 交换文件
 set directory   =$HOME/.vim/files/swap/
 set updatecount =100
@@ -1132,6 +1145,8 @@ Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
 Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
 Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 
+Plug 'easymotion/vim-easymotion'       " \\w
+Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
@@ -1146,7 +1161,7 @@ Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 
-" Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
+Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
@@ -1346,7 +1361,7 @@ autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
 
-" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
+" 单行注释用 gcc,多行注释先进入可视模式再 gc,取消注释用 gcu
 " gcc: 注释或反注释
 " gcap: 注释一段
 " gc: visual 模式下直接注释所有已选择的行
@@ -1464,13 +1479,15 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
-let g:gutentags_project_root = ['mkall.sh', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
+" gutentags搜索工程目录的标志,碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+let g:gutentags_enabled=0
+let g:gutentags_ctags_auto_set_tags=0
+let g:gutentags_project_root = ['mkall.sh', 'COPYING', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
 
-" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
+" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中,避免污染工程目录
 let s:vim_tags = expand('~/.cache/tags')
 let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
@@ -1670,8 +1687,8 @@ let g:gutentags_ctags_exclude = [
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Show_One_File=1               " 不同时显示多个文件的tag，只显示当前文件的
-let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口，则退出vim
+let Tlist_Show_One_File=1               " 不同时显示多个文件的tag,只显示当前文件的
+let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口,则退出vim
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
@@ -1934,8 +1951,8 @@ let NERDTreeShowBookmarks = 1
 " 是否默认显示隐藏文件
 let NERDTreeShowHidden = 1
 
-" 不知道是什么含义，再开发机上，含有+的字符打不开，文件名不可能含有+
-" 因此设置为+，不设置的话，第一个字符都是虚的。
+" 不知道是什么含义,再开发机上,含有+的字符打不开,文件名不可能含有+
+" 因此设置为+,不设置的话,第一个字符都是虚的.
 let g:NERDTreeNodeDelimiter = '+'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1943,7 +1960,7 @@ let g:NERDTreeNodeDelimiter = '+'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " <c-o> - 打开被 <c-z> 标记的文件 1. t - 在新标签页中打开; 2. v - 在一个竖直分割窗口中; 3. h - 在一个水平分割窗口中; 4. r - 在当前窗口中打开.
 " <c-n> 提示符面板历史里的下一个字符串; <c-p> 提示符面板历史里的上一个字符串.
-let g:ctrlp_working_path_mode = 'r'
+let g:ctrlp_working_path_mode = 'ra'
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 let g:ctrlp_custom_ignore = {
@@ -1972,11 +1989,11 @@ let g:EasyGrepFilesToExclude =  "*.bak, *~, cscope.*, *.a, *.o, *.pyc, *.bak"
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/fzf.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" ^ 表示前缀精确匹配。要搜索一个以"welcome"开头的短语：^welcom。
-" $ 表示后缀精确匹配。要搜索一个以"my friends"结尾的短语：friends$。
-" ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
-" | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
-" ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
+" ^ 表示前缀精确匹配.要搜索一个以"welcome"开头的短语:^welcom.
+" $ 表示后缀精确匹配.要搜索一个以"my friends"结尾的短语:friends$.
+" ' 表示精确匹配.要搜索短语"welcom my friends":'welcom my friends.
+" | 表示"或者"匹配.要搜索"friends"或"foes":friends | foes.
+" ! 表示反向匹配.要搜索一个包含"welcome"但不包含"friends"的短语:welcome !friends
 "
 " function! s:fzf_statusline()
 "   " Override statusline as you like
@@ -2026,7 +2043,7 @@ let g:syntastic_loc_list_height = 5
 let g:syntastic_check_on_open = 1 " Recommended settings
 "自动跳转到发现的第一个错误或警告处
 let g:syntastic_auto_jump = 1
-"进行实时检查，如果觉得卡顿，将下面的选项置为1
+"进行实时检查,如果觉得卡顿,将下面的选项置为1
 let g:syntastic_check_on_wq = 0   " Recommended settings
 "高亮错误
 let g:syntastic_enable_highlighting=1
@@ -2150,6 +2167,8 @@ let g:tig_explorer_keymap_commit_tabedit = '<ESC>t'
 let g:tig_explorer_keymap_commit_split   = '<ESC>s'
 let g:tig_explorer_keymap_commit_vsplit  = '<ESC>v'
 
+command! GF call tig_explorer#open_current_file()
+command! GP call tig_explorer#open_project_root_dir()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " liuchengxu/vim-which-key
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2244,14 +2263,96 @@ let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
 " skywind3000/asyncrun.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:asyncrun_mode = 0     | " 全局的默认运行模式
-let g:asyncrun_wrapper = '' | " 命令前缀，默认为空，比如可以设置成 nice
+let g:asyncrun_wrapper = '' | " 命令前缀,默认为空,比如可以设置成 nice
 let g:asyncrun_open = 10    | " 大于零的话会在运行时自动打开高度为具体值的 quickfix 窗口
 let g:asyncrun_bell = 1     | " 任务结束时候响铃提醒
-let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding，不一致，那么在这里设置一下
+let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding,不一致,那么在这里设置一下
 let g:asyncrun_trim='1'     | " non-zero to trim the empty lines in the quickfix window.
 let g:asyncrun_auto=''      | " 用于触发 QuickFixCmdPre/QuickFixCmdPost 的 autocmd 名称
-let g:asyncrun_save=2       | " 全局设置，运行前是否保存文件，1是保存当前文件，2是保存所有修改过的文件
-let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
+let g:asyncrun_save=2       | " 全局设置,运行前是否保存文件,1是保存当前文件,2是保存所有修改过的文件
+let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息,默认为 25
 
 command! -bang -nargs=+ -range=0 -complete=file H
 		\ call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
+
+" EasyAlign
+xmap ga <Plug>(EasyAlign) " Visual 模式下快捷键
+nmap ga <Plug>(EasyAlign) " Normal 模式下快捷键
+
+" =       Around the 1st occurrences
+" 2=      Around the 2nd occurrences
+" *=      Around all occurrences
+" **=     Left/Right alternating alignment around all occurrences
+" <Enter> Switching between left/right/center alignment modes
+
+" <Space>                Around the 1st occurrences of whitespaces
+" 2<Space>               Around the 2nd occurrences
+" -<Space>               Around the last occurrences
+" <Enter><Enter>2<Space> Center-alignment around the 2nd occurrences
+
+command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0, 'command', <q-args>)
+" <Space>     Around 1st whitespaces              :'<,'>EasyAlign\
+" 2<Space>    Around 2nd whitespaces              :'<,'>EasyAlign2\
+" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\
+" -2<Space>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
+" :           Around 1st colon (key:  value)      :'<,'>EasyAlign:
+" <Right>:    Around 1st colon (key : value)      :'<,'>EasyAlign:>l1
+" =           Around 1st operators with =         :'<,'>EasyAlign=
+" 3=          Around 3rd operators with =         :'<,'>EasyAlign3=
+" *=          Around all operators with =         :'<,'>EasyAlign*=
+" **=         Left-right alternating around =     :'<,'>EasyAlign**=
+" <Enter>=    Right alignment around 1st =        :'<,'>EasyAlign!=
+" <Enter>**=  Right-left alternating around =     :'<,'>EasyAlign!**=
+
+" Using predefined alignment rules
+"   :EasyAlign[!] [N-th] DELIMITER_KEY [OPTIONS]
+" :EasyAlign :
+" :EasyAlign =
+" :EasyAlign *=
+" :EasyAlign 3\
+
+" Using arbitrary regular expressions
+"   :EasyAlign[!] [N-th] /REGEXP/ [OPTIONS]
+" :EasyAlign /[:;]\+/
+" :EasyAlign 2/[:;]\+/
+" :EasyAlign */[:;]\+/
+" :EasyAlign **/[:;]\+/
+
+" Left-alignment around the FIRST occurrences of delimiters
+":EasyAlign =
+
+" Left-alignment around the SECOND occurrences of delimiters
+":EasyAlign 2=
+
+" Left-alignment around the LAST occurrences of delimiters
+":EasyAlign -=
+
+" Left-alignment around ALL occurrences of delimiters
+":EasyAlign *=
+
+" Left-right ALTERNATING alignment around all occurrences of delimiters
+":EasyAlign **=
+
+" Right-left ALTERNATING alignment around all occurrences of delimiters
+":EasyAlign! **=
+
+":EasyAlign
+"Left, Right, Center
+":EasyAlign!
+"Right, Left, Center
+
+command! -nargs=? -bang A call AlternateFile("n<bang>", <f-args>)
+command! -nargs=? -bang AS call AlternateFile("h<bang>", <f-args>)
+command! -nargs=? -bang AV call AlternateFile("v<bang>", <f-args>)
+command! -nargs=? -bang AT call AlternateFile("t<bang>", <f-args>)
+
+command! -nargs=? -bang IH call AlternateOpenFileUnderCursor("n<bang>", <f-args>)
+command! -nargs=? -bang IHS call AlternateOpenFileUnderCursor("h<bang>", <f-args>)
+command! -nargs=? -bang IHV call AlternateOpenFileUnderCursor("v<bang>", <f-args>)
+command! -nargs=? -bang IHT call AlternateOpenFileUnderCursor("t<bang>", <f-args>)
+
+command! B :call BufExplorer()
+command! BS :call BufExplorerHorizontalSplit()
+command! BV :call BufExplorerVerticalSplit()
+
+command! -nargs=? T call tagbar#ToggleWindow(<f-args>)
