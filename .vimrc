@@ -213,9 +213,11 @@ nnoremap <leader><F4>  :CtrlPMixed<CR>
 nnoremap <leader><F6>  :AV<CR>
 nnoremap <leader><F7>  :MundoToggle<CR>
 nnoremap <leader><F8>  :TigOpenCurrentFile<CR>
-nnoremap <leader><F9>  :TigOpenProjectRootDir<CR>
+nnoremap <leader><F9>  :FloatermPrev<CR>
 nnoremap <leader><F10> :FloatermNew<CR>
 tnoremap <leader><F10> <C-\><C-n>:FloatermNew<CR>
+nnoremap <leader><F11> :REPLToggle<CR>
+
 
 function! g:CscopeDone()
     exec "cs add ".fnameescape(g:asyncrun_text)
@@ -225,7 +227,7 @@ function! g:CscopeUpdate(workdir, cscopeout)
     let l:cscopeout = fnamemodify(a:cscopeout, ":p")
     let l:cscopeout = fnameescape(l:cscopeout)
     let l:workdir = (a:workdir == '')? '.' : a:workdir
-    try | exec "cs kill ".l:cscopeout | catch | endtry
+    try | exec "cs kill ".l:cscopeout | catch | endtry:
     exec "AsyncRun -post=call\\ g:CscopeDone() ".
                 \ "-text=".l:cscopeout." "
                 \ "-cwd=".fnameescape(l:workdir)." ".
@@ -1221,6 +1223,7 @@ Plug 'kana/vim-textobj-syntax'
 Plug 'kana/vim-textobj-function', { 'for':['c', 'cpp', 'vim', 'java'] }
 Plug 'sgur/vim-textobj-parameter'
 Plug 'gaving/vim-textobj-argument'
+Plug 'sillybun/vim-repl' " https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
 call plug#end()
 
 colorscheme dracula
@@ -2362,6 +2365,41 @@ command! -nargs=? T call tagbar#ToggleWindow(<f-args>)
 command! -nargs=? TS execute "terminal"
 command! -nargs=? TV execute "vert terminal"
 
+
+nnoremap <leader>r :REPLToggle<Cr>
+command! -range   RS <line1>,<line2>call repl#SendChunkLines()
+command! -nargs=* R                 call repl#REPLToggle(<f-args>)
+let g:repl_program = {
+			\	"python": "/usr/local/bin/python",
+			\	"gnuplot": "gnuplot",
+			\	"matlab": "matlab -nodesktop -nosplash",
+			\	"cpp.root": "root -l",
+			\	"cpp": "cling -std=c++14",
+			\	"mma": "MathematicaScript",
+			\	"zsh": "zsh",
+			\	"default": "bash",
+			\	}  
+" root -l close splash window and work with stdin 
+let g:repl_height = 15
+let g:repl_width = 30
+let g:repl_position = 3 
+let g:repl_exit_commands = {
+			\	"/usr/local/bin/python": "exit()",
+			\	"bash": "exit",
+			\	"root": ".q",
+			\	"zsh": "exit",
+			\	"default": "exit",
+			\	}
+
+command! -nargs=* -complete=customlist,floaterm#cmdline#complete -bang -range          F    call floaterm#run('new', <bang>0, [visualmode(), <range>, <line1>, <line2>], <q-args>)
+command! -nargs=? -count=0 -bang -complete=customlist,floaterm#cmdline#complete_names1 FK   call floaterm#kill(<bang>0, <count>, <q-args>)
+command! -nargs=? -count=0 -bang -complete=customlist,floaterm#cmdline#complete_names1 FT   call floaterm#toggle(<bang>0, <count>, <q-args>)
+command! -nargs=? -range   -bang -complete=customlist,floaterm#cmdline#complete_names2 FS   call floaterm#send(<bang>0, visualmode(), <range>, <line1>, <line2>, <q-args>)
+command! -nargs=0 FP  call floaterm#prev()
+command! -nargs=0 FN  call floaterm#next()
+command! -nargs=0 FF  call floaterm#first()
+command! -nargs=0 FL  call floaterm#last()
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " yuratomo/w3m.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2409,3 +2447,8 @@ command! -nargs=* -complete=customlist,w3m#search_engine#List WT :call w3m#Open(
 command! -nargs=* -complete=customlist,w3m#search_engine#List WS :call w3m#Open(g:w3m#OPEN_SPLIT, <f-args>)
 command! -nargs=* -complete=customlist,w3m#search_engine#List WV :call w3m#Open(g:w3m#OPEN_VSPLIT, <f-args>)
 command! -nargs=* -complete=file WL :call w3m#Open(g:w3m#OPEN_NORMAL, 'local', <f-args>)
+
+
+
+
+
