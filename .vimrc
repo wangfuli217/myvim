@@ -84,8 +84,8 @@ augroup ccompile
     autocmd!
 "    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
 "    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
-    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -ljson-c -O1 <CR>
+    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 -ljson-c <CR>
     autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:AsyncRun python     "$(VIM_FILEPATH)" <CR>
     autocmd Filetype java   nnoremap   <F5> <Esc>:w<CR>:AsyncRun javac      "$(VIM_FILEPATH)" <CR>
     autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw bash  "$(VIM_FILEPATH)" <CR>
@@ -107,8 +107,8 @@ augroup crun
     autocmd!
 "    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
 "    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
-    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
-    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 <CR>
+    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -ljson-c -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
+    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1  -ljson-c  <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:AsyncRun javac %; java %< <CR>
     autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right bash  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right perl  "$(VIM_FILEPATH)" <CR>
@@ -209,15 +209,15 @@ nnoremap <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 " 扩展窗口
 nnoremap <leader><F2>  :TagbarToggle<CR>                           " :TagbarToggle; :TlistToggle
 nnoremap <leader><F3>  :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR> " :WMToggle; :ToggleBufExplorer; :NERDTreeToggle
-nnoremap <leader><F4>  :CtrlPMixed<CR>
-nnoremap <leader><F6>  :AV<CR>
-nnoremap <leader><F7>  :MundoToggle<CR>
-nnoremap <leader><F8>  :TigOpenCurrentFile<CR>
+nnoremap <leader><F4>  :vert terminal<CR>
+nnoremap <leader><F6>  :s/\s\+"/"/g<CR>:s/"\s\+/"/g<CR>
+vnoremap <leader><F6>  :s/\s\+"/"/g<CR>:s/"\s\+/"/g<CR>
+nnoremap <leader><F7>  :REPLToggle<CR>
+nnoremap <leader><F8>  :terminal<CR>
 nnoremap <leader><F9>  :FloatermPrev<CR>
 nnoremap <leader><F10> :FloatermNew<CR>
 tnoremap <leader><F10> <C-\><C-n>:FloatermNew<CR>
-nnoremap <leader><F11> :REPLToggle<CR>
-
+nnoremap <leader><F11> :call Gutentags()<cr>
 
 function! g:CscopeDone()
     exec "cs add ".fnameescape(g:asyncrun_text)
@@ -430,7 +430,7 @@ nnoremap <silent> <C-s>7 7gt
 nnoremap <silent> <C-s>8 8gt
 nnoremap <silent> <C-s>9 9gt
 
-set showtabline=2               " 显示顶部标签栏，为 0 时隐藏标签栏，1 会按需显示，2 会永久显示
+set showtabline=2               " 显示顶部标签栏,为 0 时隐藏标签栏,1 会按需显示,2 会永久显示
 set tabpagemax=10               " 设置最大标签页上限为 10
 
 let g:which_key_map['s'] = {
@@ -838,7 +838,7 @@ set t_Co=256
 " colorscheme这是个单独的命令,不是 set 选项.选择一个颜色主题
 " :colorscheme + 主题名 -> :colorscheme helloworld -> colors/helloworld.vim
 colorscheme desert " darkblue
-" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景，有的则分别为不同背景色定义不同的颜色主题
+" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景,有的则分别为不同背景色定义不同的颜色主题
 " set background=dark
 
 set ttyfast                " Faster redrawing.
@@ -888,7 +888,7 @@ set report      =0                  " Always report changed lines.
 set synmaxcol   =200                " Only highlight the first 200 columns.
 set shortmess-=S                    " display number of search matches & index of a current match
 
-" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符。
+" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符.
 set backspace=indent,eol,start      " allow backspacing over everything in insert mode
 set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
@@ -963,7 +963,7 @@ set noswapfile
 
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
-" 如果文件夹不存在，则新建文件夹
+" 如果文件夹不存在,则新建文件夹
 if !isdirectory($HOME.'/.vim/files') && exists('*mkdir')
     call mkdir($HOME.'/.vim/files')
 endif
@@ -971,7 +971,7 @@ endif
 set backup                                  " make backup files
 set backupdir   =$HOME/.vim/files/backup/   " where to put backup files
 set backupext   =-vimbackup                 "
-set backupskip  =$HOME/.vim/files/backup/   " Don’t create backups when editing files in certain directories
+set backupskip  =$HOME/.vim/files/backup/   " Don't create backups when editing files in certain directories
 " 交换文件
 set directory   =$HOME/.vim/files/swap/
 set updatecount =100
@@ -1115,22 +1115,23 @@ silent! helptags ALL	"为所有插件加载帮助文档
 " https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
-Plug 'skywind3000/asyncrun.vim'
-Plug 'skywind3000/asyncrun.extra'
-Plug 'voldikss/vim-floaterm'
+Plug 'skywind3000/asyncrun.vim'   " H/HS/HR
+Plug 'skywind3000/asyncrun.extra' "
+Plug 'voldikss/vim-floaterm'      " F/FS FK FT FP/FN/FL/FF  <leader>F9+F9  <leader>F10+F10
+Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read-Eval-Print Loop (REPL)
+
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
 Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
+" Plug 'skywind3000/vim-dict'            " VIM 词表收集
+
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
-
 " Plug 'nvie/vim-nox'
 " Plug 'Shougo/neocomplete.vim'
-
-
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
-" Plug 'skywind3000/vim-dict'            " VIM 词表收集
+
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
 Plug 'mattn/vim-gist'                  " Gist 代码段 命令
 Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
@@ -1142,17 +1143,26 @@ Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
-Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释 DoxAuthor Dox DoxBlock DoxAll
-
+Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释DF DL DA DB
+Plug 'tpope/vim-rsi'                   " readline key
 Plug 'tpope/vim-endwise'
+
+Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
+
 Plug 'rhysd/clever-f.vim'
 Plug 'Shougo/echodoc.vim'
 
+
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
+Plug 'inkarkat/vim-mark'               " '`        multi highlight mark ; <leader>m;
+" Plug 'mbbill/undotree'               " 可视化管理内容变更历史记录的插件
+Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 
+
+Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
@@ -1164,6 +1174,8 @@ Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
 Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
 " Plug 'bagrat/vim-buffet'             " buffer管理
+
+
 Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
@@ -1179,7 +1191,7 @@ Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 Plug 'vim-airline/vim-airline'         " 状态栏
 Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
-Plug 'asins/vimcdoc'              " vim中文文档  help
+Plug 'asins/vimcdoc'                   " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
 Plug 'vim-scripts/CRefVim'             " c reference manual; \cr
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
@@ -1197,11 +1209,7 @@ Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
 " Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
 
-" Plug 'mbbill/undotree'                 " 可视化管理内容变更历史记录的插件
-Plug 'simnalamburt/vim-mundo'            " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
-" Plug 'Konfekt/FastFold'                " 让 Vim 按需更新折叠内容,而不是一直调用
 
-Plug 'vim-scripts/a.vim'               " swtich between source files and header files
 " Plug 'octol/vim-cpp-enhanced-highlight' " c++ syntax highlighting
 " Plug 'xavierd/clang_complete'          " uses clang for accurately completing C and C++ code
 
@@ -1213,20 +1221,25 @@ Plug 'iberianpig/tig-explorer.vim'
 " Plug 'tbastos/vim-lua', {'for': 'lua'} " lua的高亮和缩进
 " Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 
-" Plug 'christoomey/vim-tmux-navigator'  "
-Plug 'dracula/vim', { 'as': 'dracula' }
-Plug 'yuratomo/w3m'
 
-Plug 'kana/vim-textobj-user'
-Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-syntax'
-Plug 'kana/vim-textobj-function', { 'for':['c', 'cpp', 'vim', 'java'] }
-Plug 'sgur/vim-textobj-parameter'
-Plug 'gaving/vim-textobj-argument'
-Plug 'sillybun/vim-repl' " https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
+" Plug 'christoomey/vim-tmux-navigator'  "
+Plug 'dracula/vim', { 'as': 'dracula' }  " Plug 'liuchengxu/space-vim-dark' + colorscheme space-vim-dark
+
+
+Plug 'kana/vim-textobj-user'                                            " base text object plugin for below
+Plug 'kana/vim-textobj-indent'                                          " *ai, *ii         for similarly indented to the current line
+Plug 'kana/vim-textobj-fold'                                            " *az, *iz         for fold
+Plug 'kana/vim-textobj-line'                                            " *al, *il         for line : like "^vg_" or "0v$h"
+Plug 'kana/vim-textobj-syntax'                                          " *ay, *iy         for syntax highlighted
+Plug 'kana/vim-textobj-entire'                                          " *ae, *ie         for entire content
+Plug 'kana/vim-textobj-function', { 'for':['c', 'cpp', 'vim', 'java'] } " daf/vif yaF/viF  for functions
+Plug 'sgur/vim-textobj-parameter'                                       " i,/a, function(param_a, param_b, param_c)   function(param_a, param_b, param_c)
+                                                                        "                |<--->|  |<--->|  |<--->|             |<----->|
+Plug 'gaving/vim-textobj-argument'                                      " daa cia        function(int arg1,    ch<press 'daa' here>ar* arg2="a,b,c(d,e)")
 call plug#end()
 
 colorscheme dracula
+
 
 let g:which_key_map['p'] = {
             \ 'name' : '+plugin' ,
@@ -1362,7 +1375,7 @@ autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
 
-" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
+" 单行注释用 gcc,多行注释先进入可视模式再 gc,取消注释用 gcu
 " gcc: 注释或反注释
 " gcap: 注释一段
 " gc: visual 模式下直接注释所有已选择的行
@@ -1480,15 +1493,22 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
-let g:gutentags_enabled=1
+" gutentags搜索工程目录的标志,碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+let g:gutentags_enabled=0
 let g:gutentags_ctags_auto_set_tags=1
 let g:gutentags_project_root = ['mkall.sh', 'COPYING', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
+
+function! g:Gutentags()
+    source ~/.vim/plugged/vim-gutentags/plugin/gutentags.vim
+    let g:gutentags_enabled=1
+    call gutentags#setup_gutentags()
+endfunc
+
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
 
-" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
+" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中,避免污染工程目录
 let s:vim_tags = expand('~/.cache/tags')
 let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
@@ -1688,8 +1708,8 @@ let g:gutentags_ctags_exclude = [
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Show_One_File=1               " 不同时显示多个文件的tag，只显示当前文件的
-let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口，则退出vim
+let Tlist_Show_One_File=1               " 不同时显示多个文件的tag,只显示当前文件的
+let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口,则退出vim
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
@@ -1952,8 +1972,8 @@ let NERDTreeShowBookmarks = 1
 " 是否默认显示隐藏文件
 let NERDTreeShowHidden = 1
 
-" 不知道是什么含义，再开发机上，含有+的字符打不开，文件名不可能含有+
-" 因此设置为+，不设置的话，第一个字符都是虚的。
+" 不知道是什么含义,再开发机上,含有+的字符打不开,文件名不可能含有+
+" 因此设置为+,不设置的话,第一个字符都是虚的.
 let g:NERDTreeNodeDelimiter = '+'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1990,11 +2010,11 @@ let g:EasyGrepFilesToExclude =  "*.bak, *~, cscope.*, *.a, *.o, *.pyc, *.bak"
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/fzf.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" ^ 表示前缀精确匹配。要搜索一个以"welcome"开头的短语：^welcom。
-" $ 表示后缀精确匹配。要搜索一个以"my friends"结尾的短语：friends$。
-" ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
-" | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
-" ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
+" ^ 表示前缀精确匹配.要搜索一个以"welcome"开头的短语:^welcom.
+" $ 表示后缀精确匹配.要搜索一个以"my friends"结尾的短语:friends$.
+" ' 表示精确匹配.要搜索短语"welcom my friends":'welcom my friends.
+" | 表示"或者"匹配.要搜索"friends"或"foes":friends | foes.
+" ! 表示反向匹配.要搜索一个包含"welcome"但不包含"friends"的短语:welcome !friends
 "
 " function! s:fzf_statusline()
 "   " Override statusline as you like
@@ -2044,7 +2064,7 @@ let g:syntastic_loc_list_height = 5
 let g:syntastic_check_on_open = 1 " Recommended settings
 "自动跳转到发现的第一个错误或警告处
 let g:syntastic_auto_jump = 1
-"进行实时检查，如果觉得卡顿，将下面的选项置为1
+"进行实时检查,如果觉得卡顿,将下面的选项置为1
 let g:syntastic_check_on_wq = 0   " Recommended settings
 "高亮错误
 let g:syntastic_enable_highlighting=1
@@ -2264,17 +2284,18 @@ let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
 " skywind3000/asyncrun.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:asyncrun_mode = 0     | " 全局的默认运行模式
-let g:asyncrun_wrapper = '' | " 命令前缀，默认为空，比如可以设置成 nice
+let g:asyncrun_wrapper = '' | " 命令前缀,默认为空,比如可以设置成 nice
 let g:asyncrun_open = 10    | " 大于零的话会在运行时自动打开高度为具体值的 quickfix 窗口
 let g:asyncrun_bell = 1     | " 任务结束时候响铃提醒
-let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding，不一致，那么在这里设置一下
+let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding,不一致,那么在这里设置一下
 let g:asyncrun_trim='1'     | " non-zero to trim the empty lines in the quickfix window.
 let g:asyncrun_auto=''      | " 用于触发 QuickFixCmdPre/QuickFixCmdPost 的 autocmd 名称
-let g:asyncrun_save=2       | " 全局设置，运行前是否保存文件，1是保存当前文件，2是保存所有修改过的文件
-let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
+let g:asyncrun_save=2       | " 全局设置,运行前是否保存文件,1是保存当前文件,2是保存所有修改过的文件
+let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息,默认为 25
 
-command! -bang -nargs=+ -range=0 -complete=file H
-		\ call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
+command! -bang -nargs=+ -range=0 -complete=file H  call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
+command! -bar  -bang -nargs=0                   HS call asyncrun#stop('<bang>')
+command! -nargs=0                               HR call asyncrun#reset()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/vim-easy-align
@@ -2299,7 +2320,7 @@ vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
 command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0, 'command', <q-args>)
 " <Space>     Around 1st whitespaces              :'<,'>EasyAlign\
 " 2<Space>    Around 2nd whitespaces              :'<,'>EasyAlign2\
-" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\ 
+" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\
 " -2<Space>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
 " :           Around 1st colon (key:  value)      :'<,'>EasyAlign:
 " <Right>:    Around 1st colon (key : value)      :'<,'>EasyAlign:>l1
@@ -2352,23 +2373,16 @@ command! -nargs=? -bang AS call AlternateFile("h<bang>", <f-args>)
 command! -nargs=? -bang AV call AlternateFile("v<bang>", <f-args>)
 command! -nargs=? -bang AT call AlternateFile("t<bang>", <f-args>)
 
-command! -nargs=? -bang H  call AlternateOpenFileUnderCursor("n<bang>", <f-args>)
-command! -nargs=? -bang HS call AlternateOpenFileUnderCursor("h<bang>", <f-args>)
-command! -nargs=? -bang HV call AlternateOpenFileUnderCursor("v<bang>", <f-args>)
-command! -nargs=? -bang HT call AlternateOpenFileUnderCursor("t<bang>", <f-args>)
+command!                B  :call ToggleBufExplorer()
+command!                BS :call BufExplorerHorizontalSplit()
+command!                BV :call BufExplorerVerticalSplit()
 
-command! B  :call ToggleBufExplorer()
-command! BS :call BufExplorerHorizontalSplit()
-command! BV :call BufExplorerVerticalSplit()
+command! -nargs=?       T  :call tagbar#ToggleWindow(<f-args>)
+command! -nargs=?       TS :execute "terminal"
+command! -nargs=?       TV :execute "vert terminal"
 
-command! -nargs=? T call tagbar#ToggleWindow(<f-args>)
-command! -nargs=? TS execute "terminal"
-command! -nargs=? TV execute "vert terminal"
-
-
-nnoremap <leader>r :REPLToggle<Cr>
-command! -range   RS <line1>,<line2>call repl#SendChunkLines()
-command! -nargs=* R                 call repl#REPLToggle(<f-args>)
+command! -range         RS <line1>,<line2>call repl#SendChunkLines()
+command! -nargs=*       R                 call repl#REPLToggle(<f-args>)
 let g:repl_program = {
 			\	"python": "/usr/local/bin/python",
 			\	"gnuplot": "gnuplot",
@@ -2378,11 +2392,12 @@ let g:repl_program = {
 			\	"mma": "MathematicaScript",
 			\	"zsh": "zsh",
 			\	"default": "bash",
-			\	}  
-" root -l close splash window and work with stdin 
+			\	}
+" root -l close splash window and work with stdin
 let g:repl_height = 15
 let g:repl_width = 30
-let g:repl_position = 3 
+let g:repl_position = 3                     "0表示出现在下方,1表示出现在上方,2在左边,3在右边
+let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件(1)还是停留在REPL窗口中(0)
 let g:repl_exit_commands = {
 			\	"/usr/local/bin/python": "exit()",
 			\	"bash": "exit",
@@ -2391,64 +2406,21 @@ let g:repl_exit_commands = {
 			\	"default": "exit",
 			\	}
 
+
+let g:floaterm_position='topright'
+let g:floaterm_width = 0.4
+let g:floaterm_height = 1.0
+let g:floaterm_wintype='normal'
 command! -nargs=* -complete=customlist,floaterm#cmdline#complete -bang -range          F    call floaterm#run('new', <bang>0, [visualmode(), <range>, <line1>, <line2>], <q-args>)
 command! -nargs=? -count=0 -bang -complete=customlist,floaterm#cmdline#complete_names1 FK   call floaterm#kill(<bang>0, <count>, <q-args>)
 command! -nargs=? -count=0 -bang -complete=customlist,floaterm#cmdline#complete_names1 FT   call floaterm#toggle(<bang>0, <count>, <q-args>)
 command! -nargs=? -range   -bang -complete=customlist,floaterm#cmdline#complete_names2 FS   call floaterm#send(<bang>0, visualmode(), <range>, <line1>, <line2>, <q-args>)
-command! -nargs=0 FP  call floaterm#prev()
-command! -nargs=0 FN  call floaterm#next()
-command! -nargs=0 FF  call floaterm#first()
-command! -nargs=0 FL  call floaterm#last()
+command! -nargs=0                                                                      FP  call floaterm#prev()
+command! -nargs=0                                                                      FN  call floaterm#next()
+command! -nargs=0                                                                      FF  call floaterm#first()
+command! -nargs=0                                                                      FL  call floaterm#last()
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" yuratomo/w3m.vim
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" <CR>      Open link under the cursor.
-" <S-CR>    Open link under the cursor (with new tab).
-" <TAB>     Move cursor next link.
-" <s-TAB>   Move cursor previous link.
-" <Space>   Scroll down.
-" <S-Space> Scroll up.
-" <BS>      Back page.
-" <A-LEFT>  Back page.
-" <A-RIGHT> Forward page.
-" =         Show href under the cursor.
-" f         Hit-A-Hint.
-" s         Toggle Syntax On/Off.
-" c         Toggle Cookie On/Off.
-" <M-D>     Edit current url.
-" W3m [url or keyword]
-" W3m search-engine-name keyword
-" [search-engine-name]
-" alc              : space alc
-" android          : Android SDK
-" as3              : ActionScript 3.0
-" go               : Go language
-" google           : Google
-" java             : JDK6
-" man              : man
-" msdn             : MSDN
-" perl             : PERL
-" php              : PHP
-" python           : Python
-" rfc              : RFC
-" ruby             : Ruby
-" wikipedia        : Wikipedia
-" yahoo            : Yahoo
-" yahoodict        : Yahoo dictionary
-" local            : Local HTML file
-
-let g:w3m#OPEN_NORMAL = 1
-let g:w3m#OPEN_SPLIT  = 2
-let g:w3m#OPEN_TAB    = 3
-let g:w3m#OPEN_VSPLIT = 4
-command! -nargs=* -complete=customlist,w3m#search_engine#List W  :call w3m#Open(g:w3m#OPEN_NORMAL, <f-args>)
-command! -nargs=* -complete=customlist,w3m#search_engine#List WT :call w3m#Open(g:w3m#OPEN_TAB, <f-args>)
-command! -nargs=* -complete=customlist,w3m#search_engine#List WS :call w3m#Open(g:w3m#OPEN_SPLIT, <f-args>)
-command! -nargs=* -complete=customlist,w3m#search_engine#List WV :call w3m#Open(g:w3m#OPEN_VSPLIT, <f-args>)
-command! -nargs=* -complete=file WL :call w3m#Open(g:w3m#OPEN_NORMAL, 'local', <f-args>)
-
-
-
-
-
+command! -nargs=0 DF :call <SID>DoxygenCommentFunc()
+command! -nargs=0 DL :call <SID>DoxygenLicenseFunc()
+command! -nargs=0 DA :call <SID>DoxygenAuthorFunc()
+command! -nargs=0 DB :call <SID>DoxygenBlockFunc()
