@@ -159,7 +159,7 @@ endif
 " npm install --save-dev --save-exact prettier # https://prettier.io/docs/en/install.html
 augroup format
     autocmd!
-    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
+    autocmd Filetype c     nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs -bad -bap --ignore-newlines -l200 -nut -npro -brf %<CR>:%s/\r//ga<CR>
     autocmd Filetype perl  nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!perltidy -i=4 -et=4 -ndsm -st -ce -bar -nola -l=220 %<CR>:%s/\r//ga<CR>
     autocmd Filetype cpp   nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:%s/\r//ga<CR>
     autocmd Filetype sh    nnoremap <F6> :FixWhitespace<CR>:!dos2unix %<CR>:!shfmt -l -w -i 2 -ci %<CR>:%s/\r//ga<CR>
@@ -209,12 +209,23 @@ nnoremap <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 " 扩展窗口
 nnoremap <leader><F2>  :TagbarToggle<CR>                           " :TagbarToggle; :TlistToggle
 nnoremap <leader><F3>  :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR> " :WMToggle; :ToggleBufExplorer; :NERDTreeToggle
-nnoremap <leader><F4>  :vert terminal<CR>
-nnoremap <leader><F6>  :s/\s\+"/"/g<CR>:s/"\s\+/"/g<CR>
-vnoremap <leader><F6>  :s/\s\+"/"/g<CR>:s/"\s\+/"/g<CR>
-nnoremap <leader><F7>  :REPLToggle<CR>
-nnoremap <leader><F8>  :terminal<CR>
+nnoremap <leader><F4>  <C-w>} " 使用preview窗口预览光标下符号的定义
+nnoremap <leader><F6>  :CtrlPBuffer<CR>
+function! Strip_Quoted()
+    let save_cursor = getpos(".")
+    let old_query = getreg('/')
+    :s/\s\+"/"/ge
+    :s/"\s\+/"/ge
+    :s/\s\+'/'/ge
+    :s/'\s\+/'/ge
+    call setpos('.', save_cursor)
+    call setreg('/', old_query)
+endfunction
+nnoremap <leader><F7>  :call Strip_Quoted()<CR>  ":E对齐一下
+vnoremap <leader><F7>  :call Strip_Quoted()<CR>  ":E对齐一下
+nnoremap <leader><F8>  :REPLToggle<CR>
 nnoremap <leader><F9>  :FloatermPrev<CR>
+tnoremap <leader><F10> <C-\><C-n>:FloatermPrev<CR>
 nnoremap <leader><F10> :FloatermNew<CR>
 tnoremap <leader><F10> <C-\><C-n>:FloatermNew<CR>
 nnoremap <leader><F11> :call Gutentags()<cr>
@@ -430,7 +441,7 @@ nnoremap <silent> <C-s>7 7gt
 nnoremap <silent> <C-s>8 8gt
 nnoremap <silent> <C-s>9 9gt
 
-set showtabline=2               " 显示顶部标签栏,为 0 时隐藏标签栏,1 会按需显示,2 会永久显示
+set showtabline=2               " 显示顶部标签栏，为 0 时隐藏标签栏，1 会按需显示，2 会永久显示
 set tabpagemax=10               " 设置最大标签页上限为 10
 
 let g:which_key_map['s'] = {
@@ -500,15 +511,15 @@ nnoremap <silent> <C-a>l :blast<cr>
 nnoremap <silent> <C-a><C-f> :bfirst<cr>
 nnoremap <silent> <C-a><C-l> :blast<cr>
                                "c-^ e#
-nnoremap <silent> <C-a>1 :b1<cr>  " e#1
-nnoremap <silent> <C-a>2 :b2<cr>  " e#2
-nnoremap <silent> <C-a>3 :b3<cr>  " e#3
-nnoremap <silent> <C-a>4 :b4<cr>  " e#4
-nnoremap <silent> <C-a>5 :b5<cr>  " e#5
-nnoremap <silent> <C-a>6 :b6<cr>  " e#6
-nnoremap <silent> <C-a>7 :b7<cr>  " e#7
-nnoremap <silent> <C-a>8 :b8<cr>  " e#8
-nnoremap <silent> <C-a>9 :b9<cr>  " e#9
+nnoremap <silent> <C-a>1 :bfirst<cr>             " e#1
+nnoremap <silent> <C-a>2 :bfirst<cr>:1bnext<cr>  " e#2
+nnoremap <silent> <C-a>3 :bfirst<cr>:2bnext<cr>  " e#3
+nnoremap <silent> <C-a>4 :bfirst<cr>:3bnext<cr>  " e#4
+nnoremap <silent> <C-a>5 :bfirst<cr>:4bnext<cr>  " e#5
+nnoremap <silent> <C-a>6 :bfirst<cr>:5bnext<cr>  " e#6
+nnoremap <silent> <C-a>7 :bfirst<cr>:6bnext<cr>  " e#7
+nnoremap <silent> <C-a>8 :bfirst<cr>:7bnext<cr>  " e#8
+nnoremap <silent> <C-a>9 :bfirst<cr>:8bnext<cr>  " e#9
 
 let g:which_key_map['a'] = {
             \ 'name' : '+buffer' ,
@@ -838,7 +849,7 @@ set t_Co=256
 " colorscheme这是个单独的命令,不是 set 选项.选择一个颜色主题
 " :colorscheme + 主题名 -> :colorscheme helloworld -> colors/helloworld.vim
 colorscheme desert " darkblue
-" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景,有的则分别为不同背景色定义不同的颜色主题
+" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景，有的则分别为不同背景色定义不同的颜色主题
 " set background=dark
 
 set ttyfast                " Faster redrawing.
@@ -888,7 +899,7 @@ set report      =0                  " Always report changed lines.
 set synmaxcol   =200                " Only highlight the first 200 columns.
 set shortmess-=S                    " display number of search matches & index of a current match
 
-" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符.
+" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符。
 set backspace=indent,eol,start      " allow backspacing over everything in insert mode
 set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
@@ -963,7 +974,7 @@ set noswapfile
 
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
-" 如果文件夹不存在,则新建文件夹
+" 如果文件夹不存在，则新建文件夹
 if !isdirectory($HOME.'/.vim/files') && exists('*mkdir')
     call mkdir($HOME.'/.vim/files')
 endif
@@ -971,7 +982,7 @@ endif
 set backup                                  " make backup files
 set backupdir   =$HOME/.vim/files/backup/   " where to put backup files
 set backupext   =-vimbackup                 "
-set backupskip  =$HOME/.vim/files/backup/   " Don't create backups when editing files in certain directories
+set backupskip  =$HOME/.vim/files/backup/   " Don’t create backups when editing files in certain directories
 " 交换文件
 set directory   =$HOME/.vim/files/swap/
 set updatecount =100
@@ -1075,28 +1086,51 @@ set fdm=manual                            "手动折叠
 set foldmethod=indent                     "基于缩进进行代码折叠
 set foldlevel=99
 
-" 用空格键来切换折叠,即相当于命令 za,但如果当前行根本就没有折叠,那就无所谓切换折叠了,那就换用命令 } 跳到下一个空行
-nnoremap <Space> @=(foldlevel(line('.'))>0) ? "za" : "}"<CR>
-nnoremap <expr> <Space> (foldlevel(line('.'))>0) ? "za" : "}"
-function! ToggleFold()
-    if foldlevel(line('.')) > 0
-        return "za"
-    else
-        return "}"
-    endif
-endfunction
-nnoremap <expr> <Space> ToggleFold()
-nnoremap <leader>f0 :set foldlevel=0<CR>
-nnoremap <leader>f1 :set foldlevel=1<CR>
-nnoremap <leader>f2 :set foldlevel=2<CR>
-nnoremap <leader>f3 :set foldlevel=3<CR>
-nnoremap <leader>f4 :set foldlevel=4<CR>
-nnoremap <leader>f5 :set foldlevel=5<CR>
-nnoremap <leader>f6 :set foldlevel=6<CR>
-nnoremap <leader>f7 :set foldlevel=7<CR>
-nnoremap <leader>f8 :set foldlevel=8<CR>
-nnoremap <leader>f9 :set foldlevel=9<CR>
+nnoremap <leader>f0 :e #<CR>
+nnoremap <leader>f1 :bfirst<cr>           <CR>
+nnoremap <leader>f2 :bfirst<cr>:1bnext<cr><CR>
+nnoremap <leader>f3 :bfirst<cr>:2bnext<cr><CR>
+nnoremap <leader>f4 :bfirst<cr>:3bnext<cr><CR>
+nnoremap <leader>f5 :bfirst<cr>:4bnext<cr><CR>
+nnoremap <leader>f6 :bfirst<cr>:5bnext<cr><CR>
+nnoremap <leader>f7 :bfirst<cr>:6bnext<cr><CR>
+nnoremap <leader>f8 :bfirst<cr>:7bnext<cr><CR>
+nnoremap <leader>f9 :bfirst<cr>:8bnext<cr><CR>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" fzf
+nnoremap <leader>fa :Ag<CR>
+nnoremap <leader>fr :Rg<CR>
+nnoremap <leader>fR :RG<CR>
 
+nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
+
+nnoremap <leader>ff :Files<CR>
+nnoremap <leader>fg :GFiles<CR>
+nnoremap <leader>fG :GFiles?<CR>
+nnoremap <leader>fb :Buffers<CR>
+nnoremap <leader>fl :BLines<CR>
+nnoremap <leader>fL :Lines<CR>
+nnoremap <leader>fL :Lines<CR>
+nnoremap <leader>ft :BTags<CR>
+nnoremap <leader>fT :Tags<CR>
+nnoremap <leader>fm :Marks<CR>
+nnoremap <leader>fM :Maps<CR>
+nnoremap <leader>fj :Jumps<CR>
+nnoremap <leader>fw :Windows<CR>
+nnoremap <leader>fh :History<CR>
+nnoremap <leader>f: :History:<CR>
+nnoremap <leader>f/ :History/<CR>
+nnoremap <leader>f? :Helptags<CR>
+nnoremap <leader>fs :Snippets<CR>
+nnoremap <leader>fc :BCommits<CR>
+nnoremap <leader>fC :Commits<CR>
+nnoremap <leader>fv :Commands<CR>
+nnoremap <leader>fz :FZF<CR>
+" :Ag [PATTERN]
+" :Rg [PATTERN]
+inoremap <expr> <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') " cat可以多个文件
+inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        " line
+inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 " buffer_line
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
 " :help packages
@@ -1118,7 +1152,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'skywind3000/asyncrun.vim'   " H/HS/HR
 Plug 'skywind3000/asyncrun.extra' "
 Plug 'voldikss/vim-floaterm'      " F/FS FK FT FP/FN/FL/FF  <leader>F9+F9  <leader>F10+F10
-Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read-Eval-Print Loop (REPL)
+Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
 
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
@@ -1155,7 +1189,7 @@ Plug 'Shougo/echodoc.vim'
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
-Plug 'inkarkat/vim-mark'               " '`        multi highlight mark ; <leader>m;
+" Plug 'inkarkat/vim-mark'               " '`        multi highlight mark ; <leader>m;
 " Plug 'mbbill/undotree'               " 可视化管理内容变更历史记录的插件
 Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
@@ -1177,6 +1211,7 @@ Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :B
 
 
 Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
+Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
 " <Leader>vr 全局搜索光标所在单词,并替换想要的单词
@@ -1185,7 +1220,8 @@ Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <
 " :Replace [target] [replacement]   # 类似 <Leader>vr
 " :ReplaceUndo                      # 撤销替换操作
 Plug 'dkprice/vim-easygrep'            " grep模糊查找
-" Plug 'junegunn/fzf.vim'              " 模糊搜索
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
+Plug 'junegunn/fzf.vim'
 Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 
 Plug 'vim-airline/vim-airline'         " 状态栏
@@ -1375,7 +1411,7 @@ autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
 
-" 单行注释用 gcc,多行注释先进入可视模式再 gc,取消注释用 gcu
+" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
 " gcc: 注释或反注释
 " gcap: 注释一段
 " gc: visual 模式下直接注释所有已选择的行
@@ -1493,22 +1529,23 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志,碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
 let g:gutentags_enabled=0
 let g:gutentags_ctags_auto_set_tags=1
 let g:gutentags_project_root = ['mkall.sh', 'COPYING', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
 
 function! g:Gutentags()
+    let g:loaded_gutentags = 0
     source ~/.vim/plugged/vim-gutentags/plugin/gutentags.vim
     let g:gutentags_enabled=1
-    call gutentags#setup_gutentags()
+    :GutentagsUpdate
 endfunc
 
 
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
 
-" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中,避免污染工程目录
+" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
 let s:vim_tags = expand('~/.cache/tags')
 let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
@@ -1708,8 +1745,8 @@ let g:gutentags_ctags_exclude = [
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Show_One_File=1               " 不同时显示多个文件的tag,只显示当前文件的
-let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口,则退出vim
+let Tlist_Show_One_File=1               " 不同时显示多个文件的tag，只显示当前文件的
+let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口，则退出vim
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
@@ -1972,8 +2009,8 @@ let NERDTreeShowBookmarks = 1
 " 是否默认显示隐藏文件
 let NERDTreeShowHidden = 1
 
-" 不知道是什么含义,再开发机上,含有+的字符打不开,文件名不可能含有+
-" 因此设置为+,不设置的话,第一个字符都是虚的.
+" 不知道是什么含义，再开发机上，含有+的字符打不开，文件名不可能含有+
+" 因此设置为+，不设置的话，第一个字符都是虚的。
 let g:NERDTreeNodeDelimiter = '+'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2010,11 +2047,11 @@ let g:EasyGrepFilesToExclude =  "*.bak, *~, cscope.*, *.a, *.o, *.pyc, *.bak"
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/fzf.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" ^ 表示前缀精确匹配.要搜索一个以"welcome"开头的短语:^welcom.
-" $ 表示后缀精确匹配.要搜索一个以"my friends"结尾的短语:friends$.
-" ' 表示精确匹配.要搜索短语"welcom my friends":'welcom my friends.
-" | 表示"或者"匹配.要搜索"friends"或"foes":friends | foes.
-" ! 表示反向匹配.要搜索一个包含"welcome"但不包含"friends"的短语:welcome !friends
+" ^ 表示前缀精确匹配。要搜索一个以"welcome"开头的短语：^welcom。
+" $ 表示后缀精确匹配。要搜索一个以"my friends"结尾的短语：friends$。
+" ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
+" | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
+" ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
 "
 " function! s:fzf_statusline()
 "   " Override statusline as you like
@@ -2064,7 +2101,7 @@ let g:syntastic_loc_list_height = 5
 let g:syntastic_check_on_open = 1 " Recommended settings
 "自动跳转到发现的第一个错误或警告处
 let g:syntastic_auto_jump = 1
-"进行实时检查,如果觉得卡顿,将下面的选项置为1
+"进行实时检查，如果觉得卡顿，将下面的选项置为1
 let g:syntastic_check_on_wq = 0   " Recommended settings
 "高亮错误
 let g:syntastic_enable_highlighting=1
@@ -2284,14 +2321,14 @@ let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
 " skywind3000/asyncrun.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:asyncrun_mode = 0     | " 全局的默认运行模式
-let g:asyncrun_wrapper = '' | " 命令前缀,默认为空,比如可以设置成 nice
+let g:asyncrun_wrapper = '' | " 命令前缀，默认为空，比如可以设置成 nice
 let g:asyncrun_open = 10    | " 大于零的话会在运行时自动打开高度为具体值的 quickfix 窗口
 let g:asyncrun_bell = 1     | " 任务结束时候响铃提醒
-let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding,不一致,那么在这里设置一下
+let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding，不一致，那么在这里设置一下
 let g:asyncrun_trim='1'     | " non-zero to trim the empty lines in the quickfix window.
 let g:asyncrun_auto=''      | " 用于触发 QuickFixCmdPre/QuickFixCmdPost 的 autocmd 名称
-let g:asyncrun_save=2       | " 全局设置,运行前是否保存文件,1是保存当前文件,2是保存所有修改过的文件
-let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息,默认为 25
+let g:asyncrun_save=2       | " 全局设置，运行前是否保存文件，1是保存当前文件，2是保存所有修改过的文件
+let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
 
 command! -bang -nargs=+ -range=0 -complete=file H  call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
 command! -bar  -bang -nargs=0                   HS call asyncrun#stop('<bang>')
@@ -2320,7 +2357,7 @@ vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
 command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0, 'command', <q-args>)
 " <Space>     Around 1st whitespaces              :'<,'>EasyAlign\
 " 2<Space>    Around 2nd whitespaces              :'<,'>EasyAlign2\
-" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\
+" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\ 
 " -2<Space>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
 " :           Around 1st colon (key:  value)      :'<,'>EasyAlign:
 " <Right>:    Around 1st colon (key : value)      :'<,'>EasyAlign:>l1
@@ -2392,12 +2429,12 @@ let g:repl_program = {
 			\	"mma": "MathematicaScript",
 			\	"zsh": "zsh",
 			\	"default": "bash",
-			\	}
-" root -l close splash window and work with stdin
+			\	}  
+" root -l close splash window and work with stdin 
 let g:repl_height = 15
 let g:repl_width = 30
-let g:repl_position = 3                     "0表示出现在下方,1表示出现在上方,2在左边,3在右边
-let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件(1)还是停留在REPL窗口中(0)
+let g:repl_position = 3                     "0表示出现在下方，1表示出现在上方，2在左边，3在右边
+let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件（1）还是停留在REPL窗口中（0）
 let g:repl_exit_commands = {
 			\	"/usr/local/bin/python": "exit()",
 			\	"bash": "exit",
