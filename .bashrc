@@ -846,8 +846,13 @@ fe() {
   [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
 }
 
-alias fzfv='vi $(fzf -m --preview "bat --style=numbers --color=always{}" )' #用来多选:TAB选中和Shift-TAB取消
-alias fzfe='fzf --bind "enter:execute(vim {})" --preview "bat --style=numbers --color=always{}"'
+fzfrun(){  # tmux大量日志情况下,分析日志信息
+  eval $@ 2>&1 > /tmp/fzfrun.log
+  cat /tmp/fzfrun.log | fzf --bind "enter:execute(vim /tmp/fzfrun.log)"
+}
+
+alias fzfv='vim $(fzf -m --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
+alias fzfe='fzf --bind "enter:execute(vim {})" --preview "bat --style=numbers --color=always {}"'
 
 # Modified version where you can press
 #   - CTRL-O to open with `open` command,
@@ -929,6 +934,12 @@ fdr() {
   local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
   cd "$DIR"
 }
+# fdf - cd into the directory of the selected file
+fdf() {
+   local file
+   local dir
+   file=$(fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+}
 
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat"; alias less="bat"; export MANPAGER="sh -c 'col -bx | bat -p -l man'"; export PAGER="bat"; }
@@ -942,7 +953,6 @@ fzfp() {
 fzf --preview '[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --style=numbers --color=always{} || rougify {}  || highlight -O ansi -l {} || coderay {} || cat {}) 2> /dev/null | head -500'
 }
 alias tt='fzf --preview '"'"'[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --style=numbers --color=always{} || rougify {}  || highlight -O ansi -l {} || coderay {} || cat {}) 2> /dev/null | head -500'"'"
-alias fzfv='vi $(fzf -m)' # TAB和Shift-TAB用来多选
 
 #### fzf + tmux ####
 # tmuxs [FUZZY PATTERN] - Select selected tmux session

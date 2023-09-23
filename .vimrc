@@ -91,7 +91,7 @@ augroup ccompile
     autocmd Filetype sh     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw bash  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype perl   nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw perl  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype lua    nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw lua   "$(VIM_FILEPATH)" <CR>
-    autocmd Filetype js     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw node  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype javascript     nnoremap   <F5> <Esc>:w<CR>:AsyncRun -raw node  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype vim    nnoremap   <F5> <Esc>:w<CR>:source %<CR>
 augroup END
 
@@ -113,7 +113,7 @@ augroup crun
     autocmd Filetype sh   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right bash  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype perl nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right perl  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype lua  nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right lua   "$(VIM_FILEPATH)" <CR>
-    autocmd Filetype js   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right node  "$(VIM_FILEPATH)" <CR>
+    autocmd Filetype javascript   nnoremap <leader><F5> <Esc>:w<CR>:AsyncRun -mode=term -pos=right node  "$(VIM_FILEPATH)" <CR>
     autocmd Filetype vim  nnoremap <leader><F5> <Esc>:w<CR>:source %<CR>
 augroup END
 
@@ -1096,41 +1096,55 @@ nnoremap <leader>f6 :bfirst<cr>:5bnext<cr><CR>
 nnoremap <leader>f7 :bfirst<cr>:6bnext<cr><CR>
 nnoremap <leader>f8 :bfirst<cr>:7bnext<cr><CR>
 nnoremap <leader>f9 :bfirst<cr>:8bnext<cr><CR>
+nnoremap <leader>fn :bnext<cr><CR>
+nnoremap <leader>fp :bprev<cr><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " fzf
-nnoremap <leader>fa :Ag<CR>
-nnoremap <leader>fr :Rg<CR>
-nnoremap <leader>fR :RG<CR>
+" Ag /Rg / RG / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
+nnoremap <leader>fa :Ag<CR>  | " :Ag [PATTERN]    ag search result (ALT-A to select all, ALT-D to deselect all)
+nnoremap <leader>fA :Ag!<CR>
+nnoremap <leader>fr :Rg<CR>  | " :Rg [PATTERN]    rg search result (ALT-A to select all, ALT-D to deselect all)
+nnoremap <leader>fR :RG<CR>  | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
 
 nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 
-nnoremap <leader>ff :Files<CR>
-nnoremap <leader>fg :GFiles<CR>
-nnoremap <leader>fG :GFiles?<CR>
-nnoremap <leader>fb :Buffers<CR>
-nnoremap <leader>fl :BLines<CR>
-nnoremap <leader>fL :Lines<CR>
-nnoremap <leader>fL :Lines<CR>
-nnoremap <leader>ft :BTags<CR>
-nnoremap <leader>fT :Tags<CR>
-nnoremap <leader>fm :Marks<CR>
-nnoremap <leader>fM :Maps<CR>
-nnoremap <leader>fj :Jumps<CR>
-nnoremap <leader>fw :Windows<CR>
-nnoremap <leader>fh :History<CR>
-nnoremap <leader>f: :History:<CR>
-nnoremap <leader>f/ :History/<CR>
-nnoremap <leader>f? :Helptags<CR>
-nnoremap <leader>fs :Snippets<CR>
-nnoremap <leader>fc :BCommits<CR>
-nnoremap <leader>fC :Commits<CR>
-nnoremap <leader>fv :Commands<CR>
-nnoremap <leader>fz :FZF<CR>
-" :Ag [PATTERN]
-" :Rg [PATTERN]
-inoremap <expr> <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') " cat可以多个文件
-inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        " line
-inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 " buffer_line
+" :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
+nnoremap <leader>fz :FZF<CR>       | "
+nnoremap <leader>ff :Files<CR>     | " Files (runs $FZF_DEFAULT_COMMAND if defined)
+nnoremap <leader>fg :GFiles<CR>    | " Git files (git ls-files)
+nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
+nnoremap <leader>fb :Buffers<CR>   | " Open buffers
+nnoremap <leader>fl :BLines<CR>    | " Lines in the current buffer
+nnoremap <leader>fL :Lines<CR>     | " Lines in loaded buffers
+nnoremap <leader>ft :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
+nnoremap <leader>fT :Tags<CR>      | " Tags in the project (ctags -R); Tags and Helptags require Perl
+nnoremap <leader>fm :Marks<CR>     | " Marks
+nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
+nnoremap <leader>fj :Jumps<CR>     | " Jumps
+nnoremap <leader>fw :Windows<CR>   | " Windows
+nnoremap <leader>fh :History<CR>   | " Open buffers history
+nnoremap <leader>f: :History:<CR>  | " Command history
+nnoremap <leader>f/ :History/<CR>  | " Search history
+nnoremap <leader>f? :Helptags<CR>  | " Help tags
+nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
+nnoremap <leader>fc :BCommits<CR>  | " Git commits (requires fugitive.vim)
+nnoremap <leader>fC :Commits<CR>   | " Git commits for the current buffer;
+nnoremap <leader>fv :Commands<CR>  | " Commands
+
+nnoremap <leader>f' :FZFBookmarks<CR>
+nnoremap <leader>f` :FZFBookmarks<CR>
+
+" :Ag [PATTERN]  Ag! open fzf in fullscreen
+" :Rg [PATTERN]  Rg! open fzf in fullscreen
+inoremap <expr> <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') | " cat可以多个文件
+inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        | " line
+inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
+
+" open in a new tab, a new split, or in a new vertical split
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
 " :help packages
@@ -1194,6 +1208,7 @@ Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
 Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
+Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
 
 
 Plug 'voldikss/vim-translator'         "
@@ -2242,80 +2257,6 @@ vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
 vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
 
 call which_key#register('\', "g:which_key_map")
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Shougo/neocomplete.vim
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"Note: This option must be set in .vimrc(_vimrc).  NOT IN .gvimrc(_gvimrc)!
-" Disable AutoComplPop.
-let g:acp_enableAtStartup = 0
-" Use neocomplete.
-let g:neocomplete#enable_at_startup = 1
-" Use smartcase.
-let g:neocomplete#enable_smart_case = 1
-" Set minimum syntax keyword length.
-let g:neocomplete#sources#syntax#min_keyword_length = 3
-
-" Define dictionary.
-let g:neocomplete#sources#dictionary#dictionaries = {
-    \ 'default' : '',
-    \ 'vimshell' : $HOME.'/.vimshell_hist',
-    \ 'scheme' : $HOME.'/.gosh_completions'
-        \ }
-
-" Define keyword.
-if !exists('g:neocomplete#keyword_patterns')
-    let g:neocomplete#keyword_patterns = {}
-endif
-let g:neocomplete#keyword_patterns['default'] = '\h\w*'
-
-" Plugin key-mappings.
-inoremap <expr><C-g>     neocomplete#undo_completion()
-inoremap <expr><C-l>     neocomplete#complete_common_string()
-
-" Recommended key-mappings.
-" <CR>: close popup and save indent.
-inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
-function! s:my_cr_function()
-  return (pumvisible() ? "\<C-y>" : "" ) . "\<CR>"
-  " For no inserting <CR> key.
-  "return pumvisible() ? "\<C-y>" : "\<CR>"
-endfunction
-" <TAB>: completion.
-inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
-" <C-h>, <BS>: close popup and delete backword char.
-inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
-inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
-" Close popup by <Space>.
-"inoremap <expr><Space> pumvisible() ? "\<C-y>" : "\<Space>"
-
-" AutoComplPop like behavior.
-"let g:neocomplete#enable_auto_select = 1
-
-" Shell like behavior(not recommended).
-"set completeopt+=longest
-"let g:neocomplete#enable_auto_select = 1
-"let g:neocomplete#disable_auto_complete = 1
-"inoremap <expr><TAB>  pumvisible() ? "\<Down>" : "\<C-x>\<C-u>"
-
-" Enable omni completion.
-autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
-autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
-autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
-autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
-
-" Enable heavy omni completion.
-if !exists('g:neocomplete#sources#omni#input_patterns')
-  let g:neocomplete#sources#omni#input_patterns = {}
-endif
-"let g:neocomplete#sources#omni#input_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
-"let g:neocomplete#sources#omni#input_patterns.c = '[^.[:digit:] *\t]\%(\.\|->\)'
-"let g:neocomplete#sources#omni#input_patterns.cpp = '[^.[:digit:] *\t]\%(\.\|->\)\|\h\w*::'
-
-" For perlomni.vim setting.
-" https://github.com/c9s/perlomni.vim
-let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " skywind3000/asyncrun.vim
