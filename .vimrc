@@ -1100,13 +1100,11 @@ nnoremap <leader>fn :bnext<cr><CR>
 nnoremap <leader>fp :bprev<cr><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " fzf
-" Ag /Rg / RG / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
+" Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
 nnoremap <leader>fa :Ag<CR>  | " :Ag [PATTERN]    ag search result (ALT-A to select all, ALT-D to deselect all)
 nnoremap <leader>fA :Ag!<CR>
 nnoremap <leader>fr :Rg<CR>  | " :Rg [PATTERN]    rg search result (ALT-A to select all, ALT-D to deselect all)
-nnoremap <leader>fR :RG<CR>  | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
-
-nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
+nnoremap <leader>fR :Rg!<CR> | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
 
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
 nnoremap <leader>fz :FZF<CR>       | "
@@ -1114,6 +1112,7 @@ nnoremap <leader>ff :Files<CR>     | " Files (runs $FZF_DEFAULT_COMMAND if defin
 nnoremap <leader>fg :GFiles<CR>    | " Git files (git ls-files)
 nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
 nnoremap <leader>fb :Buffers<CR>   | " Open buffers
+nnoremap <leader>fB :Buffers!<CR>   | " Open buffers
 nnoremap <leader>fl :BLines<CR>    | " Lines in the current buffer
 nnoremap <leader>fL :Lines<CR>     | " Lines in loaded buffers
 nnoremap <leader>ft :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
@@ -1127,12 +1126,11 @@ nnoremap <leader>f: :History:<CR>  | " Command history
 nnoremap <leader>f/ :History/<CR>  | " Search history
 nnoremap <leader>f? :Helptags<CR>  | " Help tags
 nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
-nnoremap <leader>fc :BCommits<CR>  | " Git commits (requires fugitive.vim)
+nnoremap <leader>fS :Snippets!<CR>  | " Snippets (UltiSnips)
+" nnoremap <leader>fc :BCommits<CR>  | " Git commits (requires fugitive.vim)
+nnoremap <leader>fc :Changes<CR>  | " Git commits (requires fugitive.vim)
 nnoremap <leader>fC :Commits<CR>   | " Git commits for the current buffer;
 nnoremap <leader>fv :Commands<CR>  | " Commands
-
-nnoremap <leader>f' :FZFBookmarks<CR>
-nnoremap <leader>f` :FZFBookmarks<CR>
 
 " :Ag [PATTERN]  Ag! open fzf in fullscreen
 " :Rg [PATTERN]  Rg! open fzf in fullscreen
@@ -1145,6 +1143,54 @@ let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
   \ 'ctrl-x': 'split',
   \ 'ctrl-v': 'vsplit' }
+
+nnoremap <leader>f' :FZFBookmarks<CR>
+nnoremap <leader>f` :FZFBookmarks<CR>
+
+nnoremap <Leader>fq :Quickfix<CR>
+nnoremap <Leader>fQ :Quickfix!<CR>
+
+nnoremap <Leader>fy :YankHistoryRgPaste<CR>
+nnoremap <Leader>f" :YankHistoryRgPaste<CR>
+
+" ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
+nnoremap <Leader>fd :Fern .<CR>
+nnoremap <Leader>fD ::Fern %:h<CR>
+
+" Floaterms
+nnoremap <Leader>fx ::Floaterms<CR>
+nnoremap <Leader>fX ::FloatermToggle<CR>
+
+let g:fzf_floaterm_newentries = {
+  \ '+root' : {
+    \ 'title': 'Root Shell',
+    \   'wintype': 'split',
+    \ 'cmd': 'sh' },
+  \ '+root-tab' : {
+    \ 'title': 'Root Shell (bottom window)',
+    \ 'wintype': 'split',
+    \ 'cmd': 'sh' },
+  \ '+fish' : {
+    \ 'title': 'Fish Shell',
+    \   'wintype': 'split',
+    \ 'cmd': 'fish' },
+  \ '+ipython' : {
+    \ 'title': 'IPython',
+    \ 'cmd': 'ipython' },
+  \ }
+
+  let g:floaterm_shell   = 'bash'
+  let g:floaterm_wintype = 'float'
+  let g:floaterm_opener  = 'edit'
+  let g:floaterm_height  = 0.8
+  let g:floaterm_width   = 0.8
+  
+nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" jiangmiao/auto-pairs
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:AutoPairsMapCR = 0
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
 " :help packages
@@ -1158,8 +1204,8 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 " mkdir -p ~/.vim/pack/plugins/start 创建一个存储插件的目录
-packloadall				"加载所有插件
-silent! helptags ALL	"为所有插件加载帮助文档
+packloadall             "加载所有插件
+silent! helptags ALL    "为所有插件加载帮助文档
 " https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
@@ -1198,8 +1244,9 @@ Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
 
 Plug 'rhysd/clever-f.vim'
-Plug 'Shougo/echodoc.vim'
 
+Plug 'jiazhoulvke/jianfan'           " 简繁转换 Tcn, Scn
+Plug 'roxma/vim-paste-easy'          " auto paste && nopaste
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
@@ -1235,8 +1282,17 @@ Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunk
 " :Replace [target] [replacement]   # 类似 <Leader>vr
 " :ReplaceUndo                      # 撤销替换操作
 Plug 'dkprice/vim-easygrep'            " grep模糊查找
+
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
+Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
+Plug 'yazgoo/yank-history'            " fy
+Plug 'mattn/vim-sonictemplate'        " Template <TAB>
+Plug 'voldikss/fzf-floaterm'          " :Floaterms
+
+Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
+Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
+
 Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 
 Plug 'vim-airline/vim-airline'         " 状态栏
@@ -1254,6 +1310,8 @@ Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg
 
 " Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Plug 'skywind3000/vim-quickui'
+
+Plug 'embear/vim-localvimrc' 
 
 Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/mru'                    " Most Recently opened/edited files
@@ -1613,6 +1671,9 @@ else
     set tags+=./.tags,.tags
 "   set tags+=/usr/include/tags
 endif
+
+" 生成系统头文件
+" ctags --fields=+niazS --extras=+q --c++-kinds=+px --c-kinds=+px --output-format=e-ctags -R -f ~/.vim/systags /usr/include
 
 let g:gutentags_ctags_exclude = [
 \ '802.1x',
