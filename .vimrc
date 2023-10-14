@@ -231,18 +231,17 @@ tnoremap <leader><F10> <C-\><C-n>:FloatermNew<CR>
 nnoremap <leader><F11> :call Gutentags()<cr>
 
 function! g:CscopeDone()
-    exec "cs add ".fnameescape(g:asyncrun_text)
+	exec "cs add ".fnameescape(g:asyncrun_text)
 endfunc
-
 function! g:CscopeUpdate(workdir, cscopeout)
-    let l:cscopeout = fnamemodify(a:cscopeout, ":p")
-    let l:cscopeout = fnameescape(l:cscopeout)
-    let l:workdir = (a:workdir == '')? '.' : a:workdir
-    try | exec "cs kill ".l:cscopeout | catch | endtry:
-    exec "AsyncRun -post=call\\ g:CscopeDone() ".
-                \ "-text=".l:cscopeout." "
-                \ "-cwd=".fnameescape(l:workdir)." ".
-                \ "cscope -b -R -f ".l:cscopeout
+	let l:cscopeout = fnamemodify(a:cscopeout, ":p")
+	let l:cscopeout = fnameescape(l:cscopeout)
+	let l:workdir = (a:workdir == '')? '.' : a:workdir
+	try | exec "cs kill ".l:cscopeout | catch | endtry
+	exec "AsyncRun -post=call\\ g:CscopeDone() ".
+				\ "-text=".l:cscopeout." "
+				\ "-cwd=".fnameescape(l:workdir)." ".
+				\ "cscope -b -R -f -q ".l:cscopeout
 endfunc
 
 nnoremap <F11> <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
@@ -304,6 +303,10 @@ inoremap <silent> [ [<c-g>u
 inoremap <silent> ] ]<c-g>u
 inoremap <silent> { {<c-g>u
 inoremap <silent> } }<c-g>u
+
+" Movement in insert mode
+inoremap <C-^> <C-o><C-^>
+
 " 开启折行显示选项时,按屏幕行移动
 
 " \j 与下行连接
@@ -490,6 +493,12 @@ let g:which_key_map.7 = 'which_key_ignore'
 let g:which_key_map.8 = 'which_key_ignore'
 let g:which_key_map.9 = 'which_key_ignore'
 let g:which_key_map.0 = 'which_key_ignore'
+
+"""" Disable CTRL-B on tmux or on screen
+if $TERM =~ 'screen'
+  nnoremap <C-b> <nop>
+  nnoremap <Leader><C-b> <C-b>
+endif
 
 """" buffer(args) b conflict with tmux, use screen hotkey a
 nnoremap <silent> <C-a>a :ls<CR>
@@ -1101,10 +1110,15 @@ nnoremap <leader>fp :bprev<cr><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " fzf
 " Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
-nnoremap <leader>fa :Ag<CR>  | " :Ag [PATTERN]    ag search result (ALT-A to select all, ALT-D to deselect all)
-nnoremap <leader>fA :Ag!<CR>
-nnoremap <leader>fr :Rg<CR>  | " :Rg [PATTERN]    rg search result (ALT-A to select all, ALT-D to deselect all)
-nnoremap <leader>fR :Rg!<CR> | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
+nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN]    ag search result (ALT-A to select all, ALT-D to deselect all)
+nnoremap <leader>fA :Ag! <C-R><C-A><CR>
+nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN]    rg search result (ALT-A to select all, ALT-D to deselect all)
+nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
+" or xnoremap <Leader>* "sy:Rg! <C-r>s
+xnoremap <leader>fa y:Ag! <C-R>"<CR>
+xnoremap <leader>fA y:Ag! <C-R>"<CR>
+xnoremap <leader>fr y:Rg! <C-R>"<CR>
+xnoremap <leader>fR y:Rg! <C-R>"<CR>
 
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
 nnoremap <leader>fz :FZF<CR>       | "
@@ -1112,11 +1126,12 @@ nnoremap <leader>ff :Files<CR>     | " Files (runs $FZF_DEFAULT_COMMAND if defin
 nnoremap <leader>fg :GFiles<CR>    | " Git files (git ls-files)
 nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
 nnoremap <leader>fb :Buffers<CR>   | " Open buffers
-nnoremap <leader>fB :Buffers!<CR>   | " Open buffers
+nnoremap <leader>fB :Buffers!<CR>  | " Open buffers
 nnoremap <leader>fl :BLines<CR>    | " Lines in the current buffer
 nnoremap <leader>fL :Lines<CR>     | " Lines in loaded buffers
 nnoremap <leader>ft :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
 nnoremap <leader>fT :Tags<CR>      | " Tags in the project (ctags -R); Tags and Helptags require Perl
+let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --fields=+niazS --extra=+q'
 nnoremap <leader>fm :Marks<CR>     | " Marks
 nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
 nnoremap <leader>fj :Jumps<CR>     | " Jumps
@@ -1134,9 +1149,13 @@ nnoremap <leader>fv :Commands<CR>  | " Commands
 
 " :Ag [PATTERN]  Ag! open fzf in fullscreen
 " :Rg [PATTERN]  Rg! open fzf in fullscreen
-inoremap <expr> <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') | " cat可以多个文件
-inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        | " line
-inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
+inoremap <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') | " cat可以多个文件
+inoremap <c-x><c-l> fzf#vim#complete#line()                        | " line
+inoremap <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
+
+nmap <leader><tab> <plug>(fzf-maps-n)
+xmap <leader><tab> <plug>(fzf-maps-x)
+omap <leader><tab> <plug>(fzf-maps-o)
 
 " open in a new tab, a new split, or in a new vertical split
 let g:fzf_action = {
@@ -1147,11 +1166,25 @@ let g:fzf_action = {
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
 
-nnoremap <Leader>fq :Quickfix<CR>
-nnoremap <Leader>fQ :Quickfix!<CR>
+nnoremap <Leader>fy  :YankHistoryYank<CR>  | " Yank
+nnoremap <Leader>fY  :YankHistoryPaste<CR> | " Paste
+nnoremap <Leader>fyc :YankHistoryClean<CR> | " Clean
 
-nnoremap <Leader>fy :YankHistoryRgPaste<CR>
-nnoremap <Leader>f" :YankHistoryRgPaste<CR>
+let g:fzf_files_command  = 'rg --color=never --hidden --files -g "!.git/"'
+let g:fzf_afiles_command = 'rg --color=never --no-ignore --hidden --files'
+nnoremap <leader>fF :AFiles<CR>     | " include .git
+nnoremap <leader>fu :Mru<CR>        | " MRU files like History
+nnoremap <leader>fU :MruCwd<CR>     | " MRU files like History in current dir
+" nnoremap <leader>fu :MruInCwd<CR> | " MRU files like History in current dir
+nnoremap <leader>fo :BOutline<CR>   | " Outline like BTag
+nnoremap <Leader>fO :Messages<CR>   | " :echomsg output
+nnoremap <Leader>f" :Registers<CR>  | " like junegunn/vim-peekaboo
+nnoremap <Leader>fq :Quickfix<CR>     | " getqflist
+nnoremap <Leader>fQ :LocationList<CR> | " getloclist
+
+" Tig revision
+nnoremap <leader>fr :TigOpenCurrentFile<CR>
+nnoremap <leader>fR :TigOpenProjectRootDir<CR>
 
 " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
 nnoremap <Leader>fd :Fern .<CR>
@@ -1186,6 +1219,21 @@ let g:fzf_floaterm_newentries = {
   let g:floaterm_width   = 0.8
   
 nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
+
+function! s:fzf_neighbouring_files()
+  let current_file =expand("%")
+  let cwd = fnamemodify(current_file, ':p:h')
+  let command = 'ag -g "" -f ' . cwd . ' --depth 0'
+
+  call fzf#run({
+        \ 'source': command,
+        \ 'sink':   'e',
+        \ 'options': '-m -x +s',
+        \ 'window':  'enew' })
+endfunction
+
+command! FZFNeigh call s:fzf_neighbouring_files()
+nnoremap <leader>f. :FZFNeigh<CR>  | " FZFNeigh
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " jiangmiao/auto-pairs
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1225,6 +1273,7 @@ Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snipp
 " Plug 'nvie/vim-nox'
 " Plug 'Shougo/neocomplete.vim'
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
+Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
 
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
 Plug 'mattn/vim-gist'                  " Gist 代码段 命令
@@ -1285,6 +1334,7 @@ Plug 'dkprice/vim-easygrep'            " grep模糊查找
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
+Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
 Plug 'yazgoo/yank-history'            " fy
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
@@ -1292,6 +1342,9 @@ Plug 'voldikss/fzf-floaterm'          " :Floaterms
 
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
+
+
+Plug 'azabiong/vim-highlighter'        " HiSet   = 'f<CR>'; HiErase = 'f<BS>'; HiFind  = 'f<Tab>'; HiClear = 'f<C-L>'; # Default key mappings: f Enter, f Backspace, f Ctrl+L, f Tab and t Enter
 
 Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 
@@ -1391,6 +1444,8 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:easycomplete_tab_trigger="<c-space>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
+let g:easycomplete_diagnostics_next = "<C-n>"
+let g:easycomplete_diagnostics_prev = "<C-p>"
 let g:easycomplete_diagnostics_enable = 0
 let g:easycomplete_lsp_checking = 0
 let g:easycomplete_signature_enable = 1
@@ -1856,17 +1911,84 @@ nnoremap wm :WMToggle<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " cscope setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! s:add_cscope_db()
+  " add any database in current directory
+  let db = findfile('cscope.out', '.;')
+  if !empty(db)
+    silent cs reset
+    silent! execute 'cs add' db
+  " else add database pointed to by environment
+  elseif !empty($CSCOPE_DB)
+    silent cs reset
+    silent! execute 'cs add' $CSCOPE_DB
+  endif
+endfunction
+
 if has("cscope")
-    set csprg=/usr/bin/cscope
-    set csto=1
-    set cst
-    set nocsverb
-    " add any database in current directory
-    if filereadable("cscope.out")
-        cs add cscope.out
-    endif
-    set csverb
+  set csprg=/usr/bin/cscope
+  set csto=0
+  set cst
+  set nocsverb
+  set csverb
+  call s:add_cscope_db()
+
+  "   's'   symbol: find all references to the token under cursor
+  "   'g'   global: find global definition(s) of the token under cursor
+  "   'c'   calls:  find all calls to the function name under cursor
+  "   't'   text:   find all instances of the text under cursor
+  "   'e'   egrep:  egrep search for the word under cursor
+  "   'f'   file:   open the filename under cursor
+  "   'i'   includes: find files that include the filename under cursor
+  "   'd'   called: find functions that function under cursor calls
+  nnoremap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+  nnoremap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+  nnoremap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+  nnoremap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+  xnoremap <C-\>t y:cs find t <C-R>"<CR>
+  " nnoremap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+  nnoremap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+  " nnoremap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+  nnoremap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+  " extends
+  nnoremap <C-\>e :cs find t extends <C-R>=expand("<cword>")<CR><CR>
+  " implements
+  nnoremap <C-\>i :cs find t implements <C-R>=expand("<cword>")<CR><CR>
+  " new
+  nnoremap <C-\>n :cs find t new <C-R>=expand("<cword>")<CR><CR>
 endif
+
+" ----------------------------------------------------------------------------
+" :CSBuild
+" ----------------------------------------------------------------------------
+function! s:build_cscope_db(...)
+  let git_dir = system('git rev-parse --git-dir')
+  let chdired = 0
+  if !v:shell_error
+    let chdired = 1
+    execute 'cd' substitute(fnamemodify(git_dir, ':p:h'), ' ', '\\ ', 'g')
+  endif
+
+  let exts = empty(a:000) ?
+    \ ['java', 'c', 'h', 'cc', 'hh', 'cpp', 'hpp'] : a:000
+
+  let cmd = "find . " . join(map(exts, "\"-name '*.\" . v:val . \"'\""), ' -o ')
+  let tmp = tempname()
+  try
+    echon 'Building cscope.files'
+    call system(cmd.' | grep -v /test/ > '.tmp)
+    echon ' - cscoped db'
+    call system('cscope -b -q -i'.tmp)
+    echon ' - complete!'
+    call s:add_cscope_db()
+  finally
+    silent! call delete(tmp)
+    if chdired
+      cd -
+    endif
+  endtry
+endfunction
+command! CSBuild call s:build_cscope_db(<f-args>)
 
 "cscope调用
 " find . -type f -name  *.[c] > cscope.files; cscope -Rbkq -i cscope.files
@@ -2256,11 +2378,14 @@ let g:mundo_right = 1
 " :Gblame 等价于git blame
 " :Git push xxxx master
 " fugitive shortcuts
-nnoremap <silent> <leader>gl :Glog<CR>
-nnoremap <silent> <leader>gd :Gdiff<CR>
-nnoremap <silent> <leader>gb :Gblame<CR>
+nnoremap <silent> <Leader>ga :Git add %<CR>
+nnoremap <silent> <Leader>gA :Git add .<CR>
+nnoremap <silent> <Leader>gb :Git blame<CR>
+nnoremap <silent> <leader>gl :Gllog!<CR>
+nnoremap <silent> <leader>gd :Gvdiffsplit!<CR>
+nnoremap <silent> <leader>gb :Git blame<CR>
 nnoremap <silent> <leader>gs :Gstatus<CR>
-nnoremap <silent> <leader>gc :Gcommit -v<CR>
+nnoremap <silent> <leader>gc :Git commit<CR>
 nnoremap <silent> <leader>gr :Gread<CR>
 nmap              <Leader>gg :Git<CR>gg<c-n>
 
@@ -2287,6 +2412,21 @@ let g:which_key_map.g.t = ['TigOpenCurrentFile', 'TigOpenCurrentFile']
 let g:which_key_map.g.T = ['TigOpenProjectRootDir', 'TigOpenProjectRootDir']
 nnoremap <silent> <c-x><c-g> :WhichKey! which_key_map.g<CR>
 nnoremap <silent> <c-x>g     :WhichKey! which_key_map.g<CR>
+
+" ----------------------------------------------------------------------------
+" :Root | Change directory to the root of the Git repository
+" ----------------------------------------------------------------------------
+function! s:root()
+  let root = systemlist('git rev-parse --show-toplevel')[0]
+  if v:shell_error
+    echo 'Not in git repo'
+  else
+    execute 'lcd' root
+    echo 'Changed directory to: '.root
+  endif
+endfunction
+command! Root call s:root()
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " iberianpig/tig-explorer.vim
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2335,6 +2475,8 @@ let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
 command! -bang -nargs=+ -range=0 -complete=file H  call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
 command! -bar  -bang -nargs=0                   HS call asyncrun#stop('<bang>')
 command! -nargs=0                               HR call asyncrun#reset()
+
+command! -bang -nargs=+ Grep AsyncRun -program=grep @ <args>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/vim-easy-align
@@ -2406,6 +2548,37 @@ command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0
 "Left, Right, Center
 ":EasyAlign!
 "Right, Left, Center
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" azabiong/vim-highlighter
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let HiSet   = 'f<CR>'
+let HiErase = 'f<BS>'
+let HiClear = '<leader>f<BS>'
+let HiFind  = 'f<Tab>'
+nn f<Space>         :Hi><CR>
+nn <leader>f<Space> :Hi<<CR>
+
+" :Hi/Find  [options]  expression  [directories_or_files]
+" :Hi/Find  red|blue
+" :Hi/Find  "pattern with spaces"
+" :Hi/Find  \b[AS]\w+
+" :Hi/Find  -F  'item[i+1].size() * 2'
+
+" :Hi   pattern  # set highlighting by entering a pattern
+" :Hi ==         # synchronizing the current window's highlights with other split windows
+" :Hi =          # switch back to single window highlighting mode
+" :Hi < and Hi >  # move the cursor back and forth to recently highlighted words
+" :Hi < and Hi >  # move the cursor to the nearest highlight, even if the pattern or type differs from the current selection
+
+" let HiFindTool = 'grep -H -EnrI --exclude-dir=.git'
+" let HiFindTool = 'ag --nocolor --noheading --column --nobreak'
+" let HiFindTool = 'rg -H --color=never --no-heading --column --smart-case'
+" let HiFindTool = 'ack -H --nocolor --noheading --column --smart-case'
+" let HiFindTool = 'sift --no-color --line-number --column --binary-skip --git --smart-case'
+" let HiFindTool = 'ggrep -H -EnrI --exclude-dir=.git'
+" let HiFindTool = 'git grep -EnI --no-color --column'
+
 
 command! -nargs=? -bang A  call AlternateFile("n<bang>", <f-args>)
 command! -nargs=? -bang AS call AlternateFile("h<bang>", <f-args>)

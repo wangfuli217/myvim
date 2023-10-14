@@ -139,11 +139,18 @@ alias makekclean='cdqsdk; make -j$(nproc) target/linux/clean;' # rm -rf build_di
 alias makek='cdqsdk; make target/linux/compile; make package/kernel/linux/compile'
 alias makekv='cdqsdk; make target/linux/compile -j1 V=scw; make package/kernel/linux/compile -j1 V=scw'
 
+# make target/linux/clean   V=s  # kernel clean
+# make target/linux/prepare V=s  # kernel prepare
+# make target/linux/refresh V=s  # kernel refresh
+# make target/linux/compile V=s  # kernel compile
+# make target/linux/install V=s  # kernel install
+
 makekm() {
   local oldpwd=$(pwd)
-  [ -z "$1" ] && { echo "specify kernel module:"; ( cdqsdk; ls package/kernel; ); return; }
+  local module
+  [ -z "$1" ] && module=$( cdqsdk; ls package/kernel | fzf; ) || module="$1"
   [ -d build_dir ] || cdqsdk
-  make package/kernel/$1/{clean,compile} -j1 V=scw ${project_mk_arg} ${project_user_mk_arg}
+  make package/kernel/$module/{clean,compile} -j1 V=scw ${project_mk_arg} ${project_user_mk_arg}
   cd $oldpwd
 }
 
@@ -351,6 +358,17 @@ svnproduct(){
   while ! [ -d .svn ]; do
     cd ../
   done
+  product=$(find $(pwd)/product -type d -maxdepth 1 | fzf)
+  [ -n "$product" ] && cd "$product"
+  OLDPWD=${oldpwd}
+}
+
+alias _cdproduct=_svnproduct
+_svnproduct(){
+  local oldpwd=$(pwd)
+  while ! [ -d .svn ]; do
+    cd ../
+  done
   cd $(pwd)/product
   OLDPWD=${oldpwd}
 }
@@ -374,11 +392,24 @@ svnqsdk(){
   OLDPWD=${oldpwd}
 }
 
+alias cdpackage=svnpackage
+alias cdpkg=svnpackage
+svnpackage(){
+  local oldpwd=$(pwd)
+  while ! [ -d .svn ]; do
+    cd ../
+  done
+  [ -d qsdk ] && cd $(pwd)/qsdk
+  [ -d package ] && cd package
+  OLDPWD=${oldpwd}
+}
+
+
 alias project='export __project=$(pwd)'
 cdproject(){
   local oldpwd=$(pwd)
   [ -n "$__project" ] && cd ${__project} || {
-    cdproduct
+    _cdproduct
     local project_var=$(ls -dlt * | head -n 1 | awk '{print $NF}')
     [ -n "project_var" ] && {
       cd $(pwd)/$project_var;
@@ -429,7 +460,7 @@ mkall(){
     return;
   }
 
-  cdproduct
+  _cdproduct
   local project_var=$(ls -dlt * | head -n 1 | awk '{print $NF}')
   [ -n "project_var" ] && {
     cd $(pwd)/$project_var;
@@ -665,8 +696,8 @@ vimwork(){
     [ -d $(pwd)/qsdk/package/network/utils/cgi-bin      ] && ln -sf $(pwd)/qsdk/package/network/utils/cgi-bin        vimwork
     [ -d $(pwd)/qsdk/package/network/utils/cloud-rzx    ] && ln -sf $(pwd)/qsdk/package/network/utils/cloud-rzx      vimwork
   fi
-  
-  
+
+
   if [ -d source/user ]; then
     [ -d source/user/client-monitor      ] && ln -sf $(pwd)/source/user/client-monitor     vimwork
     [ -d source/user/client_roaming      ] && ln -sf $(pwd)/source/user/client_roaming     vimwork
@@ -787,14 +818,15 @@ alias yuncore+='yuncore_help'
 yuncore_help(){   cat - <<'yuncore_help'
 cdp:       default cd to last cdp/cdb package   module, otherwise with name for specifying openwrt package   module;
 cdb:       default cd to last cdp/cdb build_dir module, otherwise with name for specifying openwrt build_dir module;
-cdf:       default cd to last cdf directory, otherwise with name for specifying directory or file in directory;
+cdf:       default cd to last cdf directory, otherwise with name for specifying directory or file in directory; # replace with fdf
 cdromfs:   cd to default padavan romfs  directory
 cdrootfs:  cd to default openwrt rootfs directory
 cduser:    cd to default padavan user  directory
 cdroot:    cd to default padavan/openwrt root directory
 cdqsdk:    cd to default openwrt root  directory
+cdpkg:     cd to default openwrt package  directory
 cdproject: cd to current project directory
-cdproduct: cd to current product directory
+_cdproduct: cd to current product directory
 put_ubin:  put last *.ubin to /ftptmp
 put_rbin:  put last *.rbin to /ftptmp
 put_FK:    put last KF_Image to /ftptmp
@@ -826,7 +858,7 @@ makekm: make linux kernel module;
 wfl_help
 }
 
-eval "$(starship init bash)" # 跨shell的可定制的提示符
+# eval "$(starship init bash)" # 跨shell的可定制的提示符
 
 source ~/.fzf/shell/key-bindings.bash
 source ~/.fzf/shell/completion.bash
@@ -851,8 +883,8 @@ fzfrun(){  # tmux大量日志情况下,分析日志信息
   cat /tmp/fzfrun.log | fzf --bind "enter:execute(vim /tmp/fzfrun.log)"
 }
 
-alias fzfv='vim $(fzf -m --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
-alias fzfe='fzf --bind "enter:execute(vim {})" --preview "bat --style=numbers --color=always {}"'
+alias fzfv='vim $(fzf -m --bind "ctrl-e:execute-silent(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
+alias fzfe='fzf --bind "enter:execute-silent(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}"'
 
 # Modified version where you can press
 #   - CTRL-O to open with `open` command,
@@ -964,6 +996,27 @@ tmuxs() {
     fzf --query="$1" --select-1 --exit-0) &&
   tmux switch-client -t "$session"
 }
+
+# tmuxw [FUZZY PATTERN] - Select selected tmux windows in self-session
+tmuxw() {
+  local index name
+  read -r index name <<< $(tmux list-windows -F "#{window_index} #{window_name}" | \
+    fzf --query="$1" --select-1 --exit-0)
+  [ -n "$index" ] && tmux select-window -t ":=$index"
+}
+
+# tmuxw [FUZZY PATTERN] - Select selected tmux windows in all-session
+tmuxx() {
+local session index name
+read -r session index name <<< $( (
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t tmp;
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t FAP680-M1;
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t WB_5G03; 
+) | fzf --query="$1" --select-1 --exit-0 )
+
+[ -n "$session" ] && [ -n "$index" ] && tmux switch-client -t "$session" && tmux select-window -t ":=$index"
+}
+
 # tmuxp - switch pane (@george-b)  # bind-key 0 run "tmux split-window -p 40 'bash -ci ftpane'"
 tmuxp() {
   local panes current_window current_pane target target_window target_pane
@@ -1003,84 +1056,22 @@ fkill() {
 }
 # fkill - kill processes - list only the ones you can kill. Modified the earlier script.
 fkill() {
-    local pid 
+    local pid
     if [ "$UID" != "0" ]; then
         pid=$(ps -f -u $UID | sed 1d | fzf -m | awk '{print $2}')
     else
         pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
-    fi  
+    fi
 
     if [ "x$pid" != "x" ]
     then
         echo $pid | xargs kill -${1:-9}
-    fi  
+    fi
 }
 
 
 fman() {
     man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
-}
-
-f() {
-    # Store the program
-    program="$1"
-
-    # Remove first argument off the list
-    shift
-
-    # Store option flags with separating spaces, or just set as single space
-    options="$@"
-    if [ -z "${options}" ]; then
-        options=" "
-    else
-        options=" $options "
-    fi
-
-    # Store the arguments from fzf
-    arguments="$(fzf --multi)"
-
-    # If no arguments passed (e.g. if Esc pressed), return to terminal
-    if [ -z "${arguments}" ]; then
-        return 1
-    fi
-
-    # We want the command to show up in our bash history, so write the shell's
-    # active history to ~/.bash_history. Then we'll also add the command from
-    # fzf, then we'll load it all back into the shell's active history
-    history -w
-
-    # ADD A REPEATABLE COMMAND TO THE BASH HISTORY ############################
-    # Store the arguments in a temporary file for sanitising before being
-    # entered into bash history
-    : > /tmp/fzf_tmp
-    for file in "${arguments[@]}"; do
-        echo "$file" >> /tmp/fzf_tmp
-    done
-
-    # Put all input arguments on one line and sanitise the command by putting
-    # single quotes around each argument, also first put an extra single quote
-    # next to any pre-existing single quotes in the raw argument
-    sed -i "s/'/''/g; s/.*/'&'/g; s/\n//g" /tmp/fzf_tmp
-
-    # If the program is on the GUI list, add a '&' to the command history
-    if [[ "$program" =~ ^(nautilus|zathura|evince|vlc|eog|kolourpaint)$ ]]; then
-        sed -i '${s/$/ \&/}' /tmp/fzf_tmp
-    fi
-
-    # Grab the sanitised arguments
-    arguments="$(cat /tmp/fzf_tmp)"
-
-    # Add the command with the sanitised arguments to our .bash_history
-    echo $program$options$arguments >> ~/.bash_history
-
-    # Reload the ~/.bash_history into the shell's active history
-    history -r
-
-    # EXECUTE THE LAST COMMAND IN ~/.bash_history #############################
-    fc -s -1
-
-    # Clean up temporary variables
-    rm /tmp/fzf_tmp
 }
 
 # z() {
