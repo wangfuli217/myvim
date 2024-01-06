@@ -145,12 +145,60 @@ alias makekv='cdqsdk; make target/linux/compile -j1 V=scw; make package/kernel/l
 # make target/linux/compile V=s  # kernel compile
 # make target/linux/install V=s  # kernel install
 
+mkpkg (){
+  local oldpwd=$(pwd)
+  cdqsdk;
+  local dir
+  dir=$(find -L package/ -type d | grep -v 'files\|patches\|src\|hotplug.d\|config\|.svn\|.git' | fzf -0 -1 +m)
+  [ -n "$dir" ] && { package=$(basename $dir); make package/$package/{clean,compile} "$@";
+    echo "make package/$package/{clean,compile} $@;"
+  }
+  cd "$oldpwd"
+}
+
+mkmod (){
+  local oldpwd=$(pwd)
+  cdqsdk;
+  local dir
+  dir=$(find -L package/kernel/ -maxdepth 1 -type d | fzf -0 -1 +m)
+  [ -n "$dir" ] && { module=$(basename $dir); make package/kernel/$module/{clean,compile} "$@";
+    echo "make package/kernel/$module/{clean,compile} $@";
+  }
+  cd "$oldpwd"
+}
+
+mkqsdk(){ # reduce fzf interactive
+  local oldpwd=$(pwd)
+  cdqsdk;
+  eval "$@"
+  cd "$oldpwd"
+}
+
+mkuser (){
+  local oldpwd=$(pwd)
+  cduser;
+  local dir
+  dir=$(find -maxdepth 1 -type d | fzf -0 -1 +m)
+  [ -n "$dir" ] && ( cd $dir; make "$@"; )
+  echo "$(basename $dir)"
+  cd "$oldpwd"
+}
+
+mkorig(){ # reduce fzf interactive
+  local oldpwd=$(pwd)
+  cduser;
+  eval "cd $1; make"
+  cd "$oldpwd"
+}
+
 makekm() {
   local oldpwd=$(pwd)
   local module
   [ -z "$1" ] && module=$( cdqsdk; ls package/kernel | fzf; ) || module="$1"
   [ -d build_dir ] || cdqsdk
-  make package/kernel/$module/{clean,compile} -j1 V=scw ${project_mk_arg} ${project_user_mk_arg}
+  eval ${project_mk_arg} ${project_user_mk_arg}
+  make package/kernel/$module/{clean,compile} -j1 V=scw
+  echo "make package/kernel/$module/{clean,compile} -j1 V=scw"
   cd $oldpwd
 }
 
@@ -162,10 +210,11 @@ makevv(){
 
 gitc(){
     [ -d .git ] && return
+    git config user.name "wangfuli"
+    git config user.email "wangfl217@126.com"
     git init
     cp /home/wangfuli/git/gitignore/C.gitignore ./.gitignore
     git add *
-    git commit -m "init"
 }
 
 # 删除文件末尾128位签名
@@ -229,7 +278,7 @@ ubin_bin(){
     bindir="${prefix}$((ubin_bin_step++))_${suffix}"
     mkdir $bindir
     cp KF_Image $bindir
-    local newbin=$(ls -dlt *Build* | head -1 | awk '{print $NF}')
+    local newbin=$(ls -dlt *Build* | grep '^d' | head -1 | awk '{print $NF}')
     mv ${newbin}/* $bindir
     rmdir ${newbin}
 }
@@ -237,10 +286,10 @@ ubin_bin(){
 put_ubin(){
   local oldpwd=$(pwd)
   [ -d images ] && {
-    newdir=$(ls -dlt images/*Build* | head -n 1 | awk '{print $NF}')
+    newdir=$(ls -dlt images/*Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   } || {
     stat *-Buildx*  > /dev/null 2>&1 || { cdproject; [ -d images ] && cd images; }
-    newdir=$(ls -dlt *Build* | head -n 1 | awk '{print $NF}')
+    newdir=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   }
 
   echo "$newdir"/*.ubin
@@ -254,10 +303,10 @@ put_ubin(){
 put_rbin(){
   local oldpwd=$(pwd)
   [ -d images ] && {
-    newdir=$(ls -dlt images/*Build* | head -n 1 | awk '{print $NF}')
+    newdir=$(ls -dlt images/*Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   } || {
     stat *-Buildx*  > /dev/null 2>&1 || { cdproject; [ -d images ] && cd images; }
-    newdir=$(ls -dlt *Build* | head -n 1 | awk '{print $NF}')
+    newdir=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   }
 
   echo "$newdir"/*.rbin
@@ -284,11 +333,27 @@ put_KF(){
   }
   cd ${oldpwd}
 }
+
 put_img(){
   local oldpwd=$(pwd)
-  [ -d package ] || { cdqsdk; }
-  echo bin/*/openwrt-*-squashfs-root.img
-  put bin/*/openwrt-*-squashfs-root.img
+  cdqsdk
+
+  [ -d build_dir ] && {
+    test -f bin/*/openwrt-*-squashfs-root.img && {
+        echo bin/*/openwrt-*-squashfs-root.img
+        put bin/*/openwrt-*-squashfs-root.img
+    }
+    find  bin/targets/ramips/ -name "*.bin" > /dev/null 2>&1 && {
+        echo bin/targets/ramips/*/*.bin
+        put bin/targets/ramips/*/*.bin
+    }
+  }
+
+  [ -d source ] && {
+    echo source/linux-*/usr/initramfs_data.cpio.lzma
+    put source/linux-*/usr/initramfs_data.cpio.lzma
+  }
+
   cd ${oldpwd}
 }
 
@@ -338,7 +403,7 @@ svnromfs(){
   while ! [ -d .svn ]; do
     cd ../
   done
-  cd $(pwd)/source/romfs/
+  [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
   OLDPWD=${oldpwd}
 }
 
@@ -348,7 +413,7 @@ svnuser(){
   while ! [ -d .svn ]; do
     cd ../
   done
-  cd $(pwd)/source/user/
+  [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
   OLDPWD=${oldpwd}
 }
 
@@ -369,7 +434,7 @@ _svnproduct(){
   while ! [ -d .svn ]; do
     cd ../
   done
-  cd $(pwd)/product
+  [ -d "$(pwd)/product" ] && cd $(pwd)/product
   OLDPWD=${oldpwd}
 }
 
@@ -410,8 +475,8 @@ cdproject(){
   local oldpwd=$(pwd)
   [ -n "$__project" ] && cd ${__project} || {
     _cdproduct
-    local project_var=$(ls -dlt * | head -n 1 | awk '{print $NF}')
-    [ -n "project_var" ] && {
+    local project_var=$(ls -dlt * | grep '^d' | head -n 1 | awk '{print $NF}')
+    [ -n "project_var" ] && [ -d "$(pwd)/$project_var" ] && {
       cd $(pwd)/$project_var;
     }
   }
@@ -424,7 +489,8 @@ mklast() {
   local oldpwd=$(pwd)
   [ -d build_dir ] || cdqsdk
   [ -n "$1" ] && { __last_cdp="$1"; __last_cdb="$1"; }
-  [ -n "$__last_cdp" ] && make package/$__last_cdp/{clean,compile} ${project_mk_arg} ${project_user_mk_arg}
+  eval ${project_mk_arg} ${project_user_mk_arg}
+  [ -n "$__last_cdp" ] && make package/$__last_cdp/{clean,compile}
   cd $oldpwd
 }
 
@@ -432,7 +498,8 @@ mklastv(){
   local oldpwd=$(pwd)
   [ -d build_dir ] || cdqsdk;
   [ -n "$1" ] && { __last_cdp="$1"; __last_cdb="$1"; }
-  [ -n "$__last_cdp" ] && make package/$__last_cdp/{clean,compile} -j1 V=s ${project_mk_arg} ${project_user_mk_arg}
+  eval ${project_mk_arg} ${project_user_mk_arg}
+  [ -n "$__last_cdp" ] && make package/$__last_cdp/{clean,compile} -j1 V=s
   cd $oldpwd
 }
 
@@ -443,7 +510,6 @@ project_env(){
   export project_mk_arg=${makecmd}
 }
 
-
 mkall(){
   local oldpwd=$(pwd)
   [ -f mkall.sh ] && {
@@ -453,7 +519,7 @@ mkall(){
     return;
   }
 
-  [ -n "$__project" ] && {
+  [ -n "$__project" ] && [ -d "$__project" ] && [ "${__project%/product}" = "$__project" ] && {
     cd ${__project};
     [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; } || { ./mkall.sh $@; export PRODUCT_DIR=$(basename $(pwd)); project_env; };
     cd ${oldpwd};
@@ -461,8 +527,8 @@ mkall(){
   }
 
   _cdproduct
-  local project_var=$(ls -dlt * | head -n 1 | awk '{print $NF}')
-  [ -n "project_var" ] && {
+  local project_var=$(ls -dlt * | grep '^d' | head -n 1 | awk '{print $NF}');
+  [ -n "project_var" ] && [ -d "$(pwd)/$project_var" ] && {
     cd $(pwd)/$project_var;
     project;
     [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; } || { ./mkall.sh $@; export PRODUCT_DIR=$(basename $(pwd)); project_env; };
@@ -513,6 +579,7 @@ cdb(){
   cd build_dir/target-*/${cdb_var}*
   export __last_cdb="$cdb_var"
   export __last_cdp="$cdb_var"
+  eval xsync
   OLDPWD=${oldpwd}
 }
 # default cd to last package feeds
@@ -551,7 +618,7 @@ cdf() {
   [ -f "$cddir" ] && { cd $(dirname "$cddir"); }
 
   export __last_cdf="$cdf_var"
-  eval xsync
+
   OLDPWD=${oldpwd}
 }
 
@@ -597,7 +664,11 @@ cross_path_mips(){
 
 alias cdftp='cd /mnt/hgfs/ftptmp/'
 #[c]
-alias indentwfl='indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf '
+indentlen='wc -L $@'
+indentwfl(){
+  dos2unix $@
+  indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf -nbbo $@
+}
 alias exptab="perl -pi -e 's/\t/ q( ) x ( 4 - pos() %4 ) /ge' "
 alias cppcheckwfl='cppcheck --std=c99 --enable=warning,style -v '
 #[bash]
@@ -611,7 +682,7 @@ alias lua="rlwrap -Ar -pcyan --always-readline lua"
 alias iperl='rlwrap -A -S "iperl> " perl -MData::Printer -wnE '\'' BEGIN { say "HI"; } say eval()//$@'\' # sudo cpan Data::Printer 有返回值回显1
 alias vi='vim -u ~/.vimrc-backup'
 
-ntpdate -s time.nist.gov
+# ntpdate -s time.nist.gov
 
 alias tt0='tmux select-window -t :=10'
 alias tt1='tmux select-window -t :=11'
@@ -627,10 +698,11 @@ alias tt9='tmux select-window -t :=19'
 alias tt680='tmux switch -t FAP680-M1'
 alias tt5G03='tmux switch -t WB_5G03'
 alias tttmp='tmux switch -t tmp'
-alias ttplast='tmux rotate-window; tmux resize-pane -Z'
+alias ttplast='tmux last-pane; tmux resize-pane -Z'
+alias tpl='tmux last-pane; tmux resize-pane -Z'
 
 alias xsync='pwd > /mnt/hgfs/ftptmp/xsync'
-
+alias eu='pwd > /mnt/hgfs/ftptmp/xsync'
 
 alias psmem10='ps auxf | sort -nr -k 4 | head -10'
 alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
@@ -865,9 +937,13 @@ source ~/.fzf/shell/completion.bash
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
+export FZF_MARKS_JUMP='\C-x\C-g'
+[ -d /home/wangfuli/git/fzf-marks ] && source /home/wangfuli/git/fzf-marks/fzf-marks.plugin.bash
+
 FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
+
 
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
@@ -883,8 +959,18 @@ fzfrun(){  # tmux大量日志情况下,分析日志信息
   cat /tmp/fzfrun.log | fzf --bind "enter:execute(vim /tmp/fzfrun.log)"
 }
 
-alias fzfv='vim $(fzf -m --bind "ctrl-e:execute-silent(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
-alias fzfe='fzf --bind "enter:execute-silent(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}"'
+alias fzfv='vim $(fzf -m --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
+alias fzfe='fzf --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}"'
+alias fzftmp='find /mnt/hgfs/ftptmp -maxdepth 1 -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat {}"'
+alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat {}"'
+
+viminfo (){
+  local files;
+  files=$(grep '^>' ~/.viminfo | cut -c3- |
+    while read line; do
+    [ -f "${line/\~/$HOME}" ] && echo "$line"
+    done | fzf -d -m -q "$*" -1) && vim ${files//\~/$HOME}
+}
 
 # Modified version where you can press
 #   - CTRL-O to open with `open` command,
@@ -946,11 +1032,13 @@ fd() {
   dir=$(find ${1:-.} -path '*/\.*' -prune \
                   -o -type d -print 2> /dev/null | fzf +m) &&
   cd "$dir"
+  eval xsync
 }
 # fda - including hidden directories
 fda() {
   local dir
   dir=$(find ${1:-.} -type d 2> /dev/null | fzf +m) && cd "$dir"
+  eval xsync
 }
 # fdr - cd to selected parent directory
 fdr() {
@@ -965,13 +1053,50 @@ fdr() {
   }
   local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
   cd "$DIR"
+  eval xsync
 }
 # fdf - cd into the directory of the selected file
 fdf() {
-   local file
-   local dir
-   file=$(fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  local file
+  local dir
+  file=$(fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  eval xsync
 }
+
+# fdfp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
+fdfp () {
+  local file;
+  file="$(fzf -0 -1 --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --bind "ctrl-e:execute(vim {})" --bind "ctrl-s:execute(svn diff {})" -m)";
+  if [[ -n $file ]]; then
+      put $file;
+  fi
+}
+
+# fdfg - get the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
+fdfg (){
+  local file;
+  file="$(fzf -0 -1 --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --bind "ctrl-e:execute(vim {})" --bind "ctrl-s:execute(svn diff {})" -m)";
+  for fn in $file; do
+    (d=$(dirname $fn); f=$(basename $fn); cd "$d"; get "$f";)
+  done
+}
+
+# bind -x '"\C-t":__fzf_cd__'           跳转目录
+# bind -x '"\alt-a":__fzf_select__'     选择文件
+# bind -x '"\C-r":__fzf_history__'      回溯历史
+# "\C-x\C-g"    自定义跳转目录(goto)                                   ==> goto
+# "\C-x\C-p"    自定义命令cheatsheet查看                               ==> preview
+# "\C-x\C-l"    cht.sh命令cheatsheet查看                               ==> last
+# bind -x '"\C-x\C-o":fzfo'      # fzf + cygstart                      ==> open
+bind -x '"\C-x\C-e":fzfv'      # fzf + vim                           ==> vim
+bind -x '"\C-x\C-v":fzfe'      # fzf + edit                          ==> editor
+bind -x '"\C-x\C-y":fzfy'      # fzf + ~/.local/share/yank_history   ==> yank
+bind -x '"\C-x\C-d":fdf'       # fzf + cd                            ==> directory
+bind -x '"\C-x\C-t":fzftmp'    # fzf + tmp                           ==> tmp
+bind -x '"\C-x\C-x":fzfcheat'  # fzf + cheat                         ==> cheat
+# bind -x '"\C-x\C-u":eu'        # fzf + ubuntu                        ==> ubuntu
+bind -x '"\C-x\C-m":fman'      # fzf + manual                        ==> manual
+bind -x '"\C-x\C-r":ugit'      # fzf + manual                        ==> revert
 
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat"; alias less="bat"; export MANPAGER="sh -c 'col -bx | bat -p -l man'"; export PAGER="bat"; }
@@ -985,6 +1110,13 @@ fzfp() {
 fzf --preview '[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --style=numbers --color=always{} || rougify {}  || highlight -O ansi -l {} || coderay {} || cat {}) 2> /dev/null | head -500'
 }
 alias tt='fzf --preview '"'"'[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --style=numbers --color=always{} || rougify {}  || highlight -O ansi -l {} || coderay {} || cat {}) 2> /dev/null | head -500'"'"
+
+fzfk() {
+  cat /usr/share/dict/words | fzf -e  --query "$@ "
+}
+alias fzfy='ag -g "" -f ~/.local/share/yank_history | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {} " '
+
+
 
 #### fzf + tmux ####
 # tmuxs [FUZZY PATTERN] - Select selected tmux session
@@ -1008,10 +1140,13 @@ tmuxw() {
 # tmuxw [FUZZY PATTERN] - Select selected tmux windows in all-session
 tmuxx() {
 local session index name
+
+read -r ses1 ses2 ses3 <<< $(tmux ls -F "#{session_name}")
+
 read -r session index name <<< $( (
-tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t tmp;
-tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t FAP680-M1;
-tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t WB_5G03; 
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t $ses1;
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t $ses2;
+tmux list-windows -F "#{session_name} #{window_index} #{window_name}" -t $ses2;
 ) | fzf --query="$1" --select-1 --exit-0 )
 
 [ -n "$session" ] && [ -n "$index" ] && tmux switch-client -t "$session" && tmux select-window -t ":=$index"
@@ -1073,6 +1208,16 @@ fkill() {
 fman() {
     man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
 }
+
+alias tmp='vim /mnt/hgfs/ftptmp/tmp.txt;'
+alias tmp1='vim /mnt/hgfs/ftptmp/tmp1.txt;'
+alias tmpa='vim /mnt/hgfs/ftptmp/tmpa.txt;'
+alias tmpb='vim /mnt/hgfs/ftptmp/tmpb.txt;'
+alias tmpab='vimdiff /mnt/hgfs/ftptmp/{tmpa.txt,tmpb.txt}'
+alias tmpx='vim /mnt/hgfs/ftptmp/tmpx.txt;'
+alias tmppl='vim /mnt/hgfs/ftptmp/tmp.pl;'
+alias tmpsh='vim /mnt/hgfs/ftptmp/tmp.sh;'
+alias tmppy='vim /mnt/hgfs/ftptmp/tmp.py;'
 
 # z() {
 #   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0

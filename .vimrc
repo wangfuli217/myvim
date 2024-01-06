@@ -1123,7 +1123,7 @@ xnoremap <leader>fR y:Rg! <C-R>"<CR>
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
 nnoremap <leader>fz :FZF<CR>       | "
 nnoremap <leader>ff :Files<CR>     | " Files (runs $FZF_DEFAULT_COMMAND if defined)
-nnoremap <leader>fg :GFiles<CR>    | " Git files (git ls-files)
+nnoremap <leader>fg :FZFFzm<CR>    | " fzf-marks
 nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
 nnoremap <leader>fb :Buffers<CR>   | " Open buffers
 nnoremap <leader>fB :Buffers!<CR>  | " Open buffers
@@ -1149,9 +1149,11 @@ nnoremap <leader>fv :Commands<CR>  | " Commands
 
 " :Ag [PATTERN]  Ag! open fzf in fullscreen
 " :Rg [PATTERN]  Rg! open fzf in fullscreen
-inoremap <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words ') | " cat可以多个文件
-inoremap <c-x><c-l> fzf#vim#complete#line()                        | " line
-inoremap <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
+inoremap <expr> <c-x><c-k> fzf#complete('cat /usr/share/dict/words')      | " cat可以多个文件
+inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        | " line
+inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
+" Path completion with custom source command
+inoremap <expr> <c-x><c-f> fzf#vim#complete#path('rg --files')
 
 nmap <leader><tab> <plug>(fzf-maps-n)
 xmap <leader><tab> <plug>(fzf-maps-x)
@@ -1166,9 +1168,24 @@ let g:fzf_action = {
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
 
-nnoremap <Leader>fy  :YankHistoryYank<CR>  | " Yank
-nnoremap <Leader>fY  :YankHistoryPaste<CR> | " Paste
-nnoremap <Leader>fyc :YankHistoryClean<CR> | " Clean
+" alias fzfy='ag -g "" -f ~/.local/share/yank_history | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {} " '
+let g:yank_history_max_size = 100
+nnoremap <Leader>fy :YankHistoryRgPaste<CR> | " Paste
+nnoremap <Leader>fY :YankHistoryClean<CR>   | " Clean
+nnoremap <Leader>@   :YankHistoryYank<CR>   | " to @@ register
+function! s:fzf_yank_files()
+  let cwd = $HOME . "/.local/share/yank_history"
+  let command = 'ag -g "" -f ' . cwd . ' --depth 0'
+
+  call fzf#run({
+        \ 'source': command,
+        \ 'sink':   'e',
+        \ 'options': '-m -x +s',
+        \ 'window':  'enew' })
+endfunction
+command! FZFYankHistory call s:fzf_yank_files()
+nnoremap <leader>f@ :FZFYankHistory<CR>  | " FZFYankHistory
+
 
 let g:fzf_files_command  = 'rg --color=never --hidden --files -g "!.git/"'
 let g:fzf_afiles_command = 'rg --color=never --no-ignore --hidden --files'
@@ -1183,8 +1200,8 @@ nnoremap <Leader>fq :Quickfix<CR>     | " getqflist
 nnoremap <Leader>fQ :LocationList<CR> | " getloclist
 
 " Tig revision
-nnoremap <leader>fr :TigOpenCurrentFile<CR>
-nnoremap <leader>fR :TigOpenProjectRootDir<CR>
+nnoremap <leader>fk :TigOpenCurrentFile<CR>
+nnoremap <leader>fK :TigOpenProjectRootDir<CR>
 
 " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
 nnoremap <Leader>fd :Fern .<CR>
@@ -1305,7 +1322,7 @@ Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
-
+Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
 
 Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
@@ -1339,6 +1356,7 @@ Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
 Plug 'yazgoo/yank-history'            " fy
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
 Plug 'voldikss/fzf-floaterm'          " :Floaterms
+Plug 'tenfyzhong/fzf-marks.vim'       "
 
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
@@ -2636,3 +2654,12 @@ command! -nargs=0 DF :call <SID>DoxygenCommentFunc()
 command! -nargs=0 DL :call <SID>DoxygenLicenseFunc()
 command! -nargs=0 DA :call <SID>DoxygenAuthorFunc()
 command! -nargs=0 DB :call <SID>DoxygenBlockFunc()
+
+
+let g:yankstack_map_keys = 1
+nmap <leader>p <Plug>yankstack_substitute_older_paste
+xmap <leader>p <Plug>yankstack_substitute_older_paste
+imap <leader>p <Plug>yankstack_substitute_older_paste
+nmap <leader>n <Plug>yankstack_substitute_newer_paste
+xmap <leader>n <Plug>yankstack_substitute_newer_paste
+imap <leader>n <Plug>yankstack_substitute_newer_paste
