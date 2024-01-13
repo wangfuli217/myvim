@@ -1208,8 +1208,8 @@ nnoremap <Leader>fd :Fern .<CR>
 nnoremap <Leader>fD ::Fern %:h<CR>
 
 " Floaterms
-nnoremap <Leader>fx ::Floaterms<CR>
-nnoremap <Leader>fX ::FloatermToggle<CR>
+nnoremap <Leader>fx :Floaterms<CR>
+nnoremap <Leader>fX :FloatermToggle<CR>
 
 let g:fzf_floaterm_newentries = {
   \ '+root' : {
@@ -1234,7 +1234,7 @@ let g:fzf_floaterm_newentries = {
   let g:floaterm_opener  = 'edit'
   let g:floaterm_height  = 0.8
   let g:floaterm_width   = 0.8
-  
+
 nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 
 function! s:fzf_neighbouring_files()
@@ -1322,7 +1322,8 @@ Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
-Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
+" Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
+Plug 'nmaiti/fzf_cscope.vim'            "
 
 Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
@@ -1382,7 +1383,7 @@ Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg
 " Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Plug 'skywind3000/vim-quickui'
 
-Plug 'embear/vim-localvimrc' 
+Plug 'embear/vim-localvimrc'
 
 Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/mru'                    " Most Recently opened/edited files
@@ -2622,8 +2623,8 @@ let g:repl_program = {
 			\	"mma": "MathematicaScript",
 			\	"zsh": "zsh",
 			\	"default": "bash",
-			\	}  
-" root -l close splash window and work with stdin 
+			\	}
+" root -l close splash window and work with stdin
 let g:repl_height = 15
 let g:repl_width = 30
 let g:repl_position = 3                     "0表示出现在下方，1表示出现在上方，2在左边，3在右边
@@ -2638,7 +2639,7 @@ let g:repl_exit_commands = {
 
 
 let g:floaterm_position='topright'
-let g:floaterm_width = 0.4
+let g:floaterm_width = 1.0
 let g:floaterm_height = 1.0
 let g:floaterm_wintype='normal'
 command! -nargs=* -complete=customlist,floaterm#cmdline#complete -bang -range          F    call floaterm#run('new', <bang>0, [visualmode(), <range>, <line1>, <line2>], <q-args>)
@@ -2656,10 +2657,10 @@ command! -nargs=0 DA :call <SID>DoxygenAuthorFunc()
 command! -nargs=0 DB :call <SID>DoxygenBlockFunc()
 
 
-let g:yankstack_map_keys = 1
-nmap <leader>p <Plug>yankstack_substitute_older_paste
-xmap <leader>p <Plug>yankstack_substitute_older_paste
-imap <leader>p <Plug>yankstack_substitute_older_paste
-nmap <leader>n <Plug>yankstack_substitute_newer_paste
-xmap <leader>n <Plug>yankstack_substitute_newer_paste
-imap <leader>n <Plug>yankstack_substitute_newer_paste
+" let g:yankstack_map_keys = 1
+" nmap <leader>p <Plug>yankstack_substitute_older_paste
+" xmap <leader>p <Plug>yankstack_substitute_older_paste
+" imap <leader>p <Plug>yankstack_substitute_older_paste
+" nmap <leader>n <Plug>yankstack_substitute_newer_paste
+" xmap <leader>n <Plug>yankstack_substitute_newer_paste
+" imap <leader>n <Plug>yankstack_substitute_newer_paste
