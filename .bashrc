@@ -404,6 +404,7 @@ svnromfs(){
     cd ../
   done
   [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
 
@@ -414,6 +415,7 @@ svnuser(){
     cd ../
   done
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
 
@@ -444,8 +446,18 @@ svnroot(){
   while ! [ -d .svn ]; do
     cd ../
   done
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
+
+_gitroot() {
+    git rev-parse --show-toplevel
+}
+cdgit() {
+  cd "$(_gitroot)/${1:-}";
+  [ -n $1 ] && eval $@
+}
+
 
 alias cdqsdk=svnqsdk
 svnqsdk(){
@@ -454,6 +466,7 @@ svnqsdk(){
     cd ../
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
 
@@ -466,6 +479,7 @@ svnpackage(){
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
   [ -d package ] && cd package
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
 
@@ -595,30 +609,26 @@ cdp(){
   cd $(find -L -maxdepth 4 -type d -name "*$cdp_var*" | head -n 1)
   export __last_cdp="$cdp_var"
   export __last_cdb="$cdp_var"
-  ( [ -d src ] && { cd src; eval xsync; } )
+  [ -d src ] && { cd src; eval xsync; }
   OLDPWD=${oldpwd}
 }
 # jump file/directory base path
 cdf() {
   local oldpwd=$(pwd)
 
-  local cdf_var="$1"
-  [ "$#" = "0" ] && [ -n "$__last_cdf" ] && { cdf_var=$__last_cdf; }
-  [ -z "$cdf_var" ] && return;
+  local oldpwd=$(pwd)
+  [ -d package ] || { svnqsdk; }
 
-  local cddir
-  [ ${cdf_var%%.*} = ${cdf_var} ] && {
-    cddir=$(find -L -type d -name "$cdf_var*" | head -n 1)
-  } || {
-    cddir=$(find -L -name "$cdf_var*" | head -n 1)
-  }
+  local cdp_var="$1"
+  [ "$#" = "0" ] && [ -n "$__last_cdp" ] && { cdp_var=$__last_cdp; }
+  [ -z "$cdp_var" ] && { cd package; return; }
 
-  [ -z "$cddir" ] && { echo "file/directory $cdf_var not find"; return; }
-  [ -d "$cddir" ] && { cd "$cddir"; }
-  [ -f "$cddir" ] && { cd $(dirname "$cddir"); }
-
-  export __last_cdf="$cdf_var"
-
+  cd package
+  cd $(find -L -maxdepth 4 -type d -name "*$cdp_var*" | head -n 1)
+  export __last_cdp="$cdp_var"
+  export __last_cdb="$cdp_var"
+  [ -d src ] && { cd src; eval xsync; }
+  fzfe
   OLDPWD=${oldpwd}
 }
 
@@ -626,6 +636,7 @@ cdrootfs(){
   local oldpwd=$(pwd)
   [ -d build_dir ] || { svnqsdk; }
   cd build_dir/target-*/linux-*/base-files/ipkg-*/base-files
+  [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
 }
 
@@ -669,6 +680,21 @@ indentwfl(){
   dos2unix $@
   indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf -nbbo $@
 }
+
+indentyc(){
+  for f in $@; do
+    count=$(wc -L $f | awk '{print $1}')
+    dos2unix $f
+    sed -i 's/\s*$//g' $f;
+    indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l${count} -nut -npro -brf -nbbo $f
+  done
+}
+
+indentycc(){
+  indentyc *.c
+  indentyc *.h
+}
+
 alias exptab="perl -pi -e 's/\t/ q( ) x ( 4 - pos() %4 ) /ge' "
 alias cppcheckwfl='cppcheck --std=c99 --enable=warning,style -v '
 #[bash]
@@ -1093,10 +1119,19 @@ bind -x '"\C-x\C-v":fzfe'      # fzf + edit                          ==> editor
 bind -x '"\C-x\C-y":fzfy'      # fzf + ~/.local/share/yank_history   ==> yank
 bind -x '"\C-x\C-d":fdf'       # fzf + cd                            ==> directory
 bind -x '"\C-x\C-t":fzftmp'    # fzf + tmp                           ==> tmp
-bind -x '"\C-x\C-x":fzfcheat'  # fzf + cheat                         ==> cheat
+#bind -x '"\C-x\C-x":fzfcheat'  # fzf + cheat                         ==> cheat
 # bind -x '"\C-x\C-u":eu'        # fzf + ubuntu                        ==> ubuntu
 bind -x '"\C-x\C-m":fman'      # fzf + manual                        ==> manual
 bind -x '"\C-x\C-r":ugit'      # fzf + manual                        ==> revert
+bind -x '"\C-t":__fzf_cd__'    # fzf + ubuntu
+bind -m emacs-standard '"\C-e": " \C-b\C-k \C-u`__fzf_select__`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
+
+# export FZF_DEFAULT_COMMAND='fd'
+export FZF_COMPLETION_TRIGGER='\'
+# export FZF_TMUX=1
+export FZF_TMUX_HEIGHT='80%'
+# export fzf_preview_cmd='[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --color=always || ccat --color=always {} || highlight -O ansi -l {} || cat {}) 2> /dev/null | head -500'
+
 
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat"; alias less="bat"; export MANPAGER="sh -c 'col -bx | bat -p -l man'"; export PAGER="bat"; }
@@ -1219,6 +1254,42 @@ alias tmppl='vim /mnt/hgfs/ftptmp/tmp.pl;'
 alias tmpsh='vim /mnt/hgfs/ftptmp/tmp.sh;'
 alias tmppy='vim /mnt/hgfs/ftptmp/tmp.py;'
 
+inorun() (
+  # Run command whenever a given file or a file
+  # in the given directory changes.
+  # inorun <file> <cmd>...
+  file="$1"
+  shift
+  cmd="$@"
+  # Run the command once when we start.
+  eval "$cmd"
+  while true; do \
+    eval "$cmd"
+    inotifywait -qre close_write "$file"
+  done
+)
+
+runn() {
+  n="$1"
+  shift
+  i=0
+  while [ "$i" -lt "$n" ]; do
+      if ! $*; then
+        echo "FAIL i = $i"
+        break
+      fi
+      i="$(($i + 1))"
+  done
+}
+
+testprogs() (
+  for f in "$@"; do
+    "./$f" &>/dev/null
+    if [ "$?" != 0 ]; then
+      echo "$f"
+    fi
+  done
+)
 # z() {
 #   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0
 #   local dir

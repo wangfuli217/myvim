@@ -1141,10 +1141,10 @@ nnoremap <leader>f: :History:<CR>  | " Command history
 nnoremap <leader>f/ :History/<CR>  | " Search history
 nnoremap <leader>f? :Helptags<CR>  | " Help tags
 nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
-nnoremap <leader>fS :Snippets!<CR>  | " Snippets (UltiSnips)
+nnoremap <leader>fS :Scratch<CR>   | " Scratch
 " nnoremap <leader>fc :BCommits<CR>  | " Git commits (requires fugitive.vim)
 nnoremap <leader>fc :Changes<CR>  | " Git commits (requires fugitive.vim)
-nnoremap <leader>fC :Commits<CR>   | " Git commits for the current buffer;
+nnoremap <leader>fC :Codi<CR>     | " Git commits for the current buffer;
 nnoremap <leader>fv :Commands<CR>  | " Commands
 
 " :Ag [PATTERN]  Ag! open fzf in fullscreen
@@ -1251,6 +1251,12 @@ endfunction
 
 command! FZFNeigh call s:fzf_neighbouring_files()
 nnoremap <leader>f. :FZFNeigh<CR>  | " FZFNeigh
+
+augroup fzf_commands
+  autocmd!
+  autocmd FileType fzf tnoremap <silent> <buffer> <c-j> <down>
+  autocmd FileType fzf tnoremap <silent> <buffer> <c-k> <up>
+augroup end
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " jiangmiao/auto-pairs
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1301,6 +1307,7 @@ Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 Plug 'easymotion/vim-easymotion'       " \\w
 Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
 Plug 'tpope/vim-surround'
+Plug 'gcmt/wildfire.vim'               " in Visual mode, type k' to select all text in '', or type k) k] k} kp
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释DF DL DA DB
@@ -1309,7 +1316,9 @@ Plug 'tpope/vim-endwise'
 
 Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
 
-Plug 'rhysd/clever-f.vim'
+Plug 'rhysd/clever-f.vim'              " fFtT
+Plug 'mtth/scratch.vim'                " :Scratch; gs/gS
+Plug 'metakirby5/codi.vim'             " Codi [filetype]; Codi!;
 
 Plug 'jiazhoulvke/jianfan'           " 简繁转换 Tcn, Scn
 Plug 'roxma/vim-paste-easy'          " auto paste && nopaste
@@ -1339,7 +1348,7 @@ Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :B
 " Plug 'bagrat/vim-buffet'             " buffer管理
 
 
-Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
+" Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
@@ -2235,22 +2244,22 @@ let g:NERDTreeNodeDelimiter = '+'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " <c-o> - 打开被 <c-z> 标记的文件 1. t - 在新标签页中打开; 2. v - 在一个竖直分割窗口中; 3. h - 在一个水平分割窗口中; 4. r - 在当前窗口中打开.
 " <c-n> 提示符面板历史里的下一个字符串; <c-p> 提示符面板历史里的上一个字符串.
-let g:ctrlp_working_path_mode = 'ra'
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_cmd = 'CtrlP'
-let g:ctrlp_custom_ignore = {
-            \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
-            \ 'link': 'some_bad_symbolic_links',
-            \ }
-let g:ctrlp_by_filename = 1
-let g:ctrlp_regexp = 1
-let g:ctrlp_match_window_bottom = 1
-let g:ctrlp_max_height = 15
-let g:ctrlp_match_window_reversed = 0
-let g:ctrlp_mruf_max = 500
-let g:ctrlp_follow_symlinks = 1
-let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:10,results:20'
-let g:ctrlp_user_command = 'find -L %s -type f'        " MacOSX/Linux
+" let g:ctrlp_working_path_mode = 'ra'
+" let g:ctrlp_map = '<c-p>'
+" let g:ctrlp_cmd = 'CtrlP'
+" let g:ctrlp_custom_ignore = {
+"             \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
+"             \ 'link': 'some_bad_symbolic_links',
+"             \ }
+" let g:ctrlp_by_filename = 1
+" let g:ctrlp_regexp = 1
+" let g:ctrlp_match_window_bottom = 1
+" let g:ctrlp_max_height = 15
+" let g:ctrlp_match_window_reversed = 0
+" let g:ctrlp_mruf_max = 500
+" let g:ctrlp_follow_symlinks = 1
+" let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:10,results:20'
+" let g:ctrlp_user_command = 'find -L %s -type f'        " MacOSX/Linux
 " let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " dkprice/vim-easygrep
@@ -2655,6 +2664,8 @@ command! -nargs=0 DF :call <SID>DoxygenCommentFunc()
 command! -nargs=0 DL :call <SID>DoxygenLicenseFunc()
 command! -nargs=0 DA :call <SID>DoxygenAuthorFunc()
 command! -nargs=0 DB :call <SID>DoxygenBlockFunc()
+
+
 
 
 " let g:yankstack_map_keys = 1
