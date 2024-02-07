@@ -1295,3 +1295,5 @@ testprogs() (
 #   local dir
 #   dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
 # }
+
+# export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS} --bind \"ctrl-a:select-all\" --bind \"ctrl-d:deselect-all\" --bind \"ctrl-v:execute('[ -d {} ] && cd {} || vim {}')\" --bind \"ctrl-o:execute('[ -d {} ] && cd {} || vim {}')\" --bind \"ctrl-e:execute('[ -d {} ] && cd {} || vi {}')\" --preview '[ -d {} ] && tree {} || bat --color always {} ' "
