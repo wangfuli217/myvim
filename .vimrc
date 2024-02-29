@@ -30,6 +30,17 @@ endfunction
 " make
 nmap <Leader>make :call Make_Arg(input('make arg: '))<CR>
 
+function! Bash_Arg(arg)
+  let l:arg = a:arg
+  if len(l:arg) == 0
+    execute ":FloatermNew --title=interactive"
+  else
+    execute ':AsyncRun bash -i -c ' . l:arg
+  endif
+endfunction
+" make
+nmap <Leader>bash :call Bash_Arg(input('bash arg: '))<CR>
+
 let g:which_key_map =  {}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
