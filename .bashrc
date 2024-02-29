@@ -94,7 +94,7 @@ alias l='ls -CF'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n 1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -278,7 +278,7 @@ ubin_bin(){
     bindir="${prefix}$((ubin_bin_step++))_${suffix}"
     mkdir $bindir
     cp KF_Image $bindir
-    local newbin=$(ls -dlt *Build* | grep '^d' | head -1 | awk '{print $NF}')
+    local newbin=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
     mv ${newbin}/* $bindir
     rmdir ${newbin}
 }
@@ -665,7 +665,7 @@ cross_path_mips(){
   ls ${cross_path}
   cd $oldpwd
 }
-
+export PATH=/snap/bin/:${PATH}
 #
 # cdp(){
 # local t=$(pwd)
@@ -730,8 +730,8 @@ alias tpl='tmux last-pane; tmux resize-pane -Z'
 alias xsync='pwd > /mnt/hgfs/ftptmp/xsync'
 alias eu='pwd > /mnt/hgfs/ftptmp/xsync'
 
-alias psmem10='ps auxf | sort -nr -k 4 | head -10'
-alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
+alias psmem10='ps auxf | sort -nr -k 4 | head -n 10'
+alias pscpu10='ps auxf | sort -nr -k 3 | head -n 10'
 
 cdvim(){
   local oldpwd=$(pwd)
@@ -985,10 +985,10 @@ fzfrun(){  # tmux大量日志情况下,分析日志信息
   cat /tmp/fzfrun.log | fzf --bind "enter:execute(vim /tmp/fzfrun.log)"
 }
 
-alias fzfv='vim $(fzf -m --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
-alias fzfe='fzf --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {}"'
-alias fzftmp='find /mnt/hgfs/ftptmp -maxdepth 1 -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat {}"'
-alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat {}"'
+alias fzfv='vim $(fzf -m --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
+alias fzfe='fzf --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}"'
+alias fzftmp='find /mnt/hgfs/ftptmp -maxdepth 1 -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat {}"'
+alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat {}"'
 
 viminfo (){
   local files;
@@ -1002,9 +1002,9 @@ viminfo (){
 #   - CTRL-O to open with `open` command,
 #   - CTRL-E or Enter key to open with the $EDITOR
 fo() {
-  IFS=$'\n' out=("$(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
-  key=$(head -1 <<< "$out")
-  file=$(head -2 <<< "$out" | tail -1)
+  IFS=$'\n' out=("$(fzf-tmux --multi  --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
+  key=$(head -n 1 <<< "$out")
+  file=$(head -n 2 <<< "$out" | tail -n 1)
   if [ -n "$file" ]; then
     [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
   fi
@@ -1032,8 +1032,7 @@ vg() {
 
   file="$(ag --nobreak --noheading $@ | fzf -0 -1 -m | awk -F: '{print $1}')"
 
-  if [[ -n $file ]]
-  then
+  if [[ -n $file ]] ; then
      vim $file
   fi
 }
@@ -1045,9 +1044,19 @@ vgf() {
 
   read -r file line <<<"$(ag --nobreak --noheading $@ | fzf -m -0 -1 | awk -F: '{print $1, $2}')"
 
-  if [[ -n $file ]]
-  then
+  if [[ -n $file ]] ; then
      vim $file +$line
+  fi
+}
+
+vgd() {
+  local file
+
+  file="$(ag --nobreak --noheading $@ | fzf -0 -1 | awk -F: '{print $1}')"
+
+  if [[ -n $file ]] ; then
+     cd $(dirname $file)
+     eval xsync
   fi
 }
 
@@ -1089,23 +1098,55 @@ fdf() {
   eval xsync
 }
 
-# fdfp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
-fdfp () {
-  local file;
-  file="$(fzf -0 -1 --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --bind "ctrl-e:execute(vim {})" --bind "ctrl-s:execute(svn diff {})" -m)";
-  if [[ -n $file ]]; then
-      put $file;
+# fdp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
+fdp () {
+  local file
+  local dir
+  file=$(fzf +m -q "$1") && put $file
+  eval xsync
+}
+
+# vgp - put the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
+vgp (){
+  local file
+  file="$(ag --nobreak --noheading $@ | fzf -0 -1 | awk -F: '{print $1}')"
+
+  if [[ -n $file ]] ; then
+     put $file
   fi
 }
 
-# fdfg - get the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
-fdfg (){
-  local file;
-  file="$(fzf -0 -1 --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --bind "ctrl-e:execute(vim {})" --bind "ctrl-s:execute(svn diff {})" -m)";
-  for fn in $file; do
-    (d=$(dirname $fn); f=$(basename $fn); cd "$d"; get "$f";)
-  done
+# ftags - search ctags with preview
+# only works if tags-file was generated with --excmd=number
+# ftags() {
+#   local line
+#   [ -e tags ] &&
+#   line=$(
+#     awk 'BEGIN { FS="\t" } !/^!/ {print toupper($4)"\t"$1"\t"$2"\t"$3}' tags |
+#     fzf \
+#       --nth=1,2 \
+#       --with-nth=2 \
+#       --preview-window="50%" \
+#       --preview="ccat {3} --color=always | tail -n +\$(echo {4} | tr -d \";\\\"\")"
+#   ) && ${EDITOR:-vim} $(cut -f3 <<< "$line") -c "set nocst" \
+#                                       -c "silent tag $(cut -f2 <<< "$line")"
+# }
+
+ftags() {
+     [ -e tags ] || ctags -e -R --languages=C --langmap=C:.h.c --c-kinds=+px --extras=+r
+    export PATH=${PATH}:/home/wangfuli/git/fzf-ctags/bin
+    fzf-ctags
 }
+
+cscope_build(){
+    find -L . -iname '*.c' -o -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' > cscope.files &&
+    sort cscope.files > cscope.files.sorted && mv cscope.files.sorted cscope.files &&
+    cscope -kbq -i cscope.files -f cscope.out &&
+    ctags -R --fields=+aimSl --c-kinds=+lpx --c++-kinds=+lpx --exclude='.svn' \
+    --exclude='.git' --exclude='*.a' --exclude='*.js' --exclude='*.pxd' --exclude='*.pyx' --exclude='*.so' &&
+    echo "Done."
+}
+
 
 # bind -x '"\C-t":__fzf_cd__'           跳转目录
 # bind -x '"\alt-a":__fzf_select__'     选择文件
@@ -1134,7 +1175,7 @@ export FZF_TMUX_HEIGHT='80%'
 
 
 # bat
-[[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat"; alias less="bat"; export MANPAGER="sh -c 'col -bx | bat -p -l man'"; export PAGER="bat"; }
+[[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'"; }
 svn_diff(){
 svn diff $@ | bat
 }

@@ -1110,10 +1110,10 @@ nnoremap <leader>fp :bprev<cr><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " fzf
 " Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
-nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN]    ag search result (ALT-A to select all, ALT-D to deselect all)
-nnoremap <leader>fA :Ag! <C-R><C-A><CR>
-nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN]    rg search result (ALT-A to select all, ALT-D to deselect all)
-nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :RG [PATTERN]    rg search result; relaunch ripgrep on every keystroke
+nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fA :Ag! <C-R><C-A><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) WORD
+nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) WORD
 " or xnoremap <Leader>* "sy:Rg! <C-r>s
 xnoremap <leader>fa y:Ag! <C-R>"<CR>
 xnoremap <leader>fA y:Ag! <C-R>"<CR>
@@ -1122,7 +1122,7 @@ xnoremap <leader>fR y:Rg! <C-R>"<CR>
 
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
 nnoremap <leader>fz :FZF<CR>       | "
-nnoremap <leader>ff :Files<CR>     | " Files (runs $FZF_DEFAULT_COMMAND if defined)
+nnoremap <leader>ff :FZF<CR>       | " Files (runs $FZF_DEFAULT_COMMAND if defined)
 nnoremap <leader>fg :FZFFzm<CR>    | " fzf-marks
 nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
 nnoremap <leader>fb :Buffers<CR>   | " Open buffers
@@ -1131,7 +1131,7 @@ nnoremap <leader>fl :BLines<CR>    | " Lines in the current buffer
 nnoremap <leader>fL :Lines<CR>     | " Lines in loaded buffers
 nnoremap <leader>ft :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
 nnoremap <leader>fT :Tags<CR>      | " Tags in the project (ctags -R); Tags and Helptags require Perl
-let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --fields=+niazS --extra=+q'
+let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --c-kinds=+px --fields=+niazS --extra=+r'
 nnoremap <leader>fm :Marks<CR>     | " Marks
 nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
 nnoremap <leader>fj :Jumps<CR>     | " Jumps
@@ -1169,12 +1169,8 @@ nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
 
 " alias fzfy='ag -g "" -f ~/.local/share/yank_history | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {} " '
-let g:yank_history_max_size = 100
-nnoremap <Leader>fy :YankHistoryRgPaste<CR> | " Paste
-nnoremap <Leader>fY :YankHistoryClean<CR>   | " Clean
-nnoremap <Leader>@   :YankHistoryYank<CR>   | " to @@ register
 function! s:fzf_yank_files()
-  let cwd = $HOME . "/.local/share/yank_history"
+  let cwd = $HOME . "/.vim/registers/"
   let command = 'ag -g "" -f ' . cwd . ' --depth 0'
 
   call fzf#run({
@@ -1185,6 +1181,9 @@ function! s:fzf_yank_files()
 endfunction
 command! FZFYankHistory call s:fzf_yank_files()
 nnoremap <leader>f@ :FZFYankHistory<CR>  | " FZFYankHistory
+
+let g:vimreg_window_size_view = 15
+let g:vimreg_window_size_edit = 15
 
 
 let g:fzf_files_command  = 'rg --color=never --hidden --files -g "!.git/"'
@@ -1198,6 +1197,10 @@ nnoremap <Leader>fO :Messages<CR>   | " :echomsg output
 nnoremap <Leader>f" :Registers<CR>  | " like junegunn/vim-peekaboo
 nnoremap <Leader>fq :Quickfix<CR>     | " getqflist
 nnoremap <Leader>fQ :LocationList<CR> | " getloclist
+
+nnoremap <Leader>tt :FzfFunky<Cr>
+" narrow the list down with a word under cursor
+nnoremap <Leader>tT :execute 'FzfFunky ' . expand('<cword>')<Cr>
 
 " Tig revision
 nnoremap <leader>fk :TigOpenCurrentFile<CR>
@@ -1260,6 +1263,26 @@ augroup end
 
 nmap <leader>f] <Plug>(fzf_tags)
 nmap <C-]> <Plug>(fzf_tags)
+
+
+command! FzReadme call fzf#run(fzf#wrap(#{
+          \ source: values(map(copy(g:plugs), {k,v-> k.' '.get(split(globpath(get(v,'dir',''), '\creadme.*'), '\n'), 0, '')})),
+          \ options: ['--with-nth=1', '--preview', 'bat --color=always --plain {2}'],
+          \ sink: funcref('s:PlugReadmeFzf')}))
+function s:PlugReadmeFzf(name_and_path) abort
+  execute 'PlugReadme' substitute(a:name_and_path, ' .*', '', '')
+endfunction
+
+let g:any_jump_preview_lines_count = 5
+
+let g:any_jump_window_width_ratio  = 1.0
+let g:any_jump_window_height_ratio = 1.0
+let g:any_jump_window_top_offset   = 10
+
+let g:any_jump_max_search_results = 28
+let g:any_jump_preview_lines_count = 10
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " jiangmiao/auto-pairs
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1284,6 +1307,7 @@ silent! helptags ALL    "为所有插件加载帮助文档
 " https://github.com/yyq123/learn-vim   帮助文档
 call plug#begin('~/.vim/plugged')
 Plug 'skywind3000/asyncrun.vim'   " H/HS/HR
+Plug 'skywind3000/vim-terminal-help'  " \wt; drop abc.txt; <c-\><c-n>; <c-_>"0; :H {shell command}
 Plug 'skywind3000/asyncrun.extra' "
 Plug 'voldikss/vim-floaterm'      " F/FS FK FT FP/FN/FL/FF  <leader>F9+F9  <leader>F10+F10
 Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
@@ -1309,6 +1333,8 @@ Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 
 Plug 'easymotion/vim-easymotion'       " \\w
 Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
+Plug 'vim-scripts/VisIncr'             " :I [#]; :II [# [zfill]]; :IO [#]; :IIO [# [zfill]]; :IX [#]; :IIX [# [zfill]]; :IYMD [#]; :IMDY [#]; :IDMY [#]; :ID [#]
+
 Plug 'tpope/vim-surround'
 Plug 'gcmt/wildfire.vim'               " in Visual mode, type k' to select all text in '', or type k) k] k} kp
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
@@ -1327,6 +1353,9 @@ Plug 'jclsn/glow.vim'                    " :Glow  :Glowsplit :Glowpop
 
 Plug 'jiazhoulvke/jianfan'           " 简繁转换 Tcn, Scn
 Plug 'roxma/vim-paste-easy'          " auto paste && nopaste
+Plug 'christoomey/vim-system-copy'   " cp for copying; cv for pasting; cP for line copying; cV for line pasting
+" let g:system_copy#copy_command='xclip -sel clipboard'
+" let g:system_copy#paste_command='xclip -sel clipboard -o'
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
@@ -1337,7 +1366,14 @@ Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
 " Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
-Plug 'nmaiti/fzf_cscope.vim'            "
+Plug 'nmaiti/fzf_cscope.vim'             "
+Plug 'tracyone/fzf-funky'                "
+
+Plug 'rjungemann/registers-everywhere'    " ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
+Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Close) ab;  vrs(Resize) 5 :vrr(Refresh)
+Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
+
+Plug 'vim-scripts/autopreview'            "
 
 Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
@@ -1369,10 +1405,11 @@ Plug 'junegunn/fzf.vim'
 Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
 Plug 'zackhsi/fzf-tags'               " nmap <leader>f] <Plug>(fzf_tags)
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
-Plug 'yazgoo/yank-history'            " fy
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
 Plug 'voldikss/fzf-floaterm'          " :Floaterms
 Plug 'tenfyzhong/fzf-marks.vim'       "
+Plug 'pechorin/any-jump.vim'       " <leader>j :AnyJump; <leader>ab :AnyJumpBack; <leader>al :AnyJumpLastResult
+Plug '4513ECHO/vim-readme-viewer'       "
 
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
@@ -1387,7 +1424,6 @@ Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
 Plug 'asins/vimcdoc'                   " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
-Plug 'vim-scripts/CRefVim'             " c reference manual; \cr
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
 Plug 'hotchpotch/perldoc-vim'          " apt-get install perl-doc; K hotkey
 Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg} / :CMakeHelpOnline [{arg}]
@@ -1412,6 +1448,7 @@ Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 Plug 'liuchengxu/vim-which-key'          " c-xc-x hotkey help
 
 Plug 'tpope/vim-fugitive'
+Plug 'junegunn/gv.vim'                   " :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|<cr>/O
 Plug 'iberianpig/tig-explorer.vim'
 " Plug 'xolox/vim-lua-ftplugin'          " Lua file type
 " Plug 'tbastos/vim-lua', {'for': 'lua'} " lua的高亮和缩进
@@ -2767,3 +2804,16 @@ let g:nv_expect_keys = []
 
 
 nnoremap <leader>fG :Glowpop<CR> 
+
+
+" terminal
+let g:terminal_key ="<leader>wt"        "哪个键将用于切换终端窗口，默认为<m-=>。
+" let g:terminal_cwd ="<leader>"        "初始化工作目录：0保持不变，1文件路径和2项目根目录。
+" let g:terminal_height ="<leader>"     "新的终端高度，默认为10。
+" let g:terminal_pos  ="<leader>"       "打开终端的位置，默认为rightbelow。
+" let g:terminal_shell ="<leader>"      "指定外壳而不是默认外壳。
+" let g:terminal_edit ="<leader>"       "命令在vim中打开文件，默认为tab drop。
+" let g:terminal_kill ="<leader>"       "设置term退出vim时终止学期会话。
+" let g:terminal_list  ="<leader>"      "设置为0以将终端缓冲区隐藏在缓冲区列表中。
+" let g:terminal_fixheight ="<leader>"  "设置为1以设置winfixheight终端窗口。
+" let g:terminal_close ="<leader>"      "设置为1以在处理完成后关闭窗口。
