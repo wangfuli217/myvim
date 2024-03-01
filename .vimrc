@@ -10,10 +10,18 @@ nmap <Leader>sudo :w !sudo tee >/dev/null %<CR>
 nnoremap <leader>astyle <Esc>:!astyle --style=kr -j -J -s4 -c -xn -xb -xl -xk -xV -xf -xh -S -L -K -N -m0 -p -H -xg -k3 -W3 -xC96 -n -z2 -v -Q --mode=c % <CR>
 " indent
 nnoremap <leader>indent <Esc>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs -bad -bap --ignore-newlines -l96 -nut -npro -brf % <CR>
-" shfmt2
-nnoremap <leader>shfmt <Esc>:!shfmt -l -w -i 2 -ci % <CR>
-" shfmt4
-nnoremap <leader>shfmt4 <Esc>:!shfmt -l -w -i 4 -ci % <CR>
+
+function! Shfmt_Arg(arg)
+  let l:arg = a:arg
+  if len(l:arg) == 0
+    execute ':!shfmt -l -w -i 2 -ci % '
+  else
+    execute ':!shfmt -l -w -i ' . l:arg . ' -ci % '
+  endif
+endfunction
+" shfmt
+nmap <Leader>shfmt :call Shfmt_Arg(input('shfmt space: '))<CR>
+
 " shellcheck
 nnoremap <leader>shcheck <Esc>:AsyncRun shellcheck "$(VIM_FILEPATH)" <CR>
 " json
@@ -33,13 +41,25 @@ nmap <Leader>make :call Make_Arg(input('make arg: '))<CR>
 function! Bash_Arg(arg)
   let l:arg = a:arg
   if len(l:arg) == 0
-    execute ":FloatermNew --title=interactive"
+    | " execute ":FloatermNew --title=interactive"
+    execute ":call TerminalToggle()"
   else
     execute ':AsyncRun bash -i -c ' . l:arg
   endif
 endfunction
 " make
 nmap <Leader>bash :call Bash_Arg(input('bash arg: '))<CR>
+
+function! Gcc_Arg(arg)
+  let l:arg = a:arg
+  if len(l:arg) == 0
+    execute ":AsyncRun gcc -Wall -Wextra -Wconversion $(VIM_FILEPATH) -std=gnu99 -g -o $(VIM_FILEDIR)/$(VIM_FILENOEXT) -pthread -lrt -lm -ljson-c -O1; $(VIM_FILEDIR)/$(VIM_FILENOEXT)"
+  else
+    execute ":AsyncRun gcc -Wall -Wextra -Wconversion $(VIM_FILEPATH) -std=gnu99 -g -o $(VIM_FILEDIR)/$(VIM_FILENOEXT) -pthread -lrt -lm -ljson-c -O1 " . l:arg . "; $(VIM_FILEDIR)/$(VIM_FILENOEXT)"
+  endif
+endfunction
+" make
+nmap <Leader>gcc :call Gcc_Arg(input('gcc arg: '))<CR>
 
 let g:which_key_map =  {}
 
@@ -817,7 +837,10 @@ Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snipp
 " Plug 'nvie/vim-nox'
 " Plug 'Shougo/neocomplete.vim'
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
-Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
+" Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
+Plug 'ervandew/supertab'               "
+" let g:SuperTabDefaultCompletionType = <c-n>
+" let g:SuperTabContextDefaultCompletionType = <c-n>
 
 Plug 'mattn/webapi-vim'                " Gist 代码段 API
 Plug 'mattn/vim-gist'                  " Gist 代码段 命令
