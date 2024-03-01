@@ -2034,7 +2034,7 @@ nnoremap <leader>wR :REPLToggle<CR>
 vnoremap <leader>wR :REPLToggle<CR>
 " <C-W><C-w>
 let g:repl_program = {
-    \   "python": "ipython",
+    \   "python": "python",
     \   'lua': 'lua',
     \   "gnuplot": "gnuplot",
     \   "matlab": "matlab -nodesktop -nosplash",
