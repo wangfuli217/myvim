@@ -1,5 +1,18 @@
 set nocompatible        " disable backwards-compatible with vi
 
+""""""""""""""""""""""""""""""
+" => Visual mode related
+""""""""""""""""""""""""""""""
+" Visual mode pressing * or # searches for the current selection
+" Super useful! From an idea by Michael Naumann
+vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
+vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>"
+
+" autocmd TermOpen term://* startinsert
+tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
+
+nmap <leader>dir :cd %:p:h<cr>:pwd<cr>
+
 " Hex read
 nmap <Leader>xxd :%!xxd<CR> :set filetype=xxd<CR>
 " Hex write
@@ -2122,7 +2135,8 @@ let g:floaterm_keymap_next   = '<F9>'
 
 nnoremap  <leader>ws :execute "terminal" <CR>
 nnoremap  <leader>wv :execute "vert terminal" <CR>
-nnoremap  <leader>wf :FloatermNew fzf <CR>
+vnoremap <leader>wf :'<,'>FloatermSend <CR>
+nnoremap <leader>wf :'<,'>FloatermSend <CR>
 
 " :FloatermNew python (python driectly) vs :FloatermNew! python (bash; then python driectly)
 
