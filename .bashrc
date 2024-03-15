@@ -1331,6 +1331,9 @@ testprogs() (
     fi
   done
 )
+which drop      >/dev/null 2>&1 && alias f=drop
+which floaterm  >/dev/null 2>&1 && alias f=floaterm
+
 # z() {
 #   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0
 #   local dir
