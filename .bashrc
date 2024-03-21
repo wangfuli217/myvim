@@ -970,7 +970,6 @@ FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
 
-
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
 #   - Bypass fuzzy finder if there's only one match (--select-1)

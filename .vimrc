@@ -638,6 +638,8 @@ set foldmethod=indent                     "基于缩进进行代码折叠
 set foldlevel=99
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -f -g ""'
+
 " fzf
 " Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
 nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
@@ -702,6 +704,8 @@ let g:fzf_action = {
   \ 'ctrl-v': 'vsplit' }
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
+" let g:fzf_layout = { 'down': '40%' }
+let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
@@ -886,7 +890,9 @@ Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
 " Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
+" Plug 'chengzeyi/fzf-preview.vim'       "
 Plug 'nmaiti/fzf_cscope.vim'             "
+Plug 'brookhong/cscope.vim'              "
 " 's'   symbol: find all references to the token under cursor.
 " 'g'   global: find global definition(s) of the token under cursor
 " 'c'   calls:  find all calls to the function name under cursor.
@@ -931,13 +937,16 @@ Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunk
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
 Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
+" z= spelling suggestions via fzf https://github.com/junegunn/fzf/issues/2284
+Plug 'https://gitlab.com/mcepl/vim-fzfspell/'
+Plug 'tknightz/projectile.vim'        " :AddProject; :ListProject; :RemoveProject
 Plug 'zackhsi/fzf-tags'               " nmap <leader>f] <Plug>(fzf_tags)
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
 Plug 'voldikss/fzf-floaterm'          " :Floaterms
 Plug 'tenfyzhong/fzf-marks.vim'       "
 Plug 'pechorin/any-jump.vim'       " <leader>j :AnyJump; <leader>ab :AnyJumpBack; <leader>al :AnyJumpLastResult
-Plug '4513ECHO/vim-readme-viewer'       "
+Plug '4513ECHO/vim-readme-viewer'       " :PlugHelp or :FzReadme
 
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
@@ -1402,6 +1411,9 @@ if has("cscope")
   nnoremap <C-\>n :cs find t new <C-R>=expand("<cword>")<CR><CR>
 endif
 
+
+nnoremap <leader>fi :call CscopeFindInteractive(expand('<cword>'))<CR>
+nnoremap <leader>fI :call ToggleLocationList()<CR> 
 " ----------------------------------------------------------------------------
 " :CSBuild
 " ----------------------------------------------------------------------------
@@ -1722,6 +1734,7 @@ let g:NERDTreeNodeDelimiter = '+'
 " imap <c-x><c-k> <plug>(fzf-complete-word)
 " imap <c-x><c-f> <plug>(fzf-complete-path)
 " imap <c-x><c-l> <plug>(fzf-complete-line)
+let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-syntastic/syntastic
 " :help syntastic-commands
@@ -2277,3 +2290,36 @@ nnoremap <leader>fp :PlugHelp<cr>
 
 command! -bang Zoxide call fzf#run(fzf#wrap('zoxide',
     \ {'source': 'zoxide query -l', 'sink': 'cd'}, <bang>0))
+    
+
+noremap <leader>f^ :call SwitchToHeaderOrSource()<CR>
+function! SwitchToHeaderOrSource()
+    let extn="cpp"
+    if (expand("%:e")=="cpp")
+        let extn="hpp"
+    elseif(expand("%:e")=="hpp")
+        let extn="cpp"
+    elseif(expand("%:e")=="h")
+        let extn="c"
+    else
+        let extn="h"
+    endif
+    :call fzf#vim#files('.', {'options':['--query', expand("%:t:r").' '.expand(extn)]})<CR>
+endfunction
+
+" nnoremap <F10> :call asyncrun#quickfix_toggle(6)<cr>
+" nnoremap <leader>q :call QuickfixToggle()<cr>
+let g:quickfix_is_open = 0
+
+function! QuickfixToggle()
+    if g:quickfix_is_open
+        cclose
+        let g:quickfix_is_open = 0
+    else
+        copen
+        let g:quickfix_is_open = 1
+    endif
+endfunction
+
+command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
+command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
