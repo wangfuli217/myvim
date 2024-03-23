@@ -724,6 +724,9 @@ endfunction
 command! FZFYankHistory call s:fzf_yank_files()
 nnoremap <leader>fy :FZFYankHistory<CR>  | " FZFYankHistory
 
+let g:fzf_history_dir = '~/.local/share/fzf-history'  " CTRL-N: next-history CTRL-P:previous-history  instead of 'down' and 'up'
+
+
 let g:vimreg_window_size_view = 15
 let g:vimreg_window_size_edit = 15
 
@@ -754,8 +757,6 @@ nnoremap <Leader>fD ::Fern %:h<CR>
 " Floaterms
 nnoremap <Leader>fx :Floaterms<CR>
 nnoremap <Leader>fX :FloatermToggle<CR>
-
-nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 
 function! s:fzf_neighbouring_files()
   let current_file =expand("%")
@@ -1734,7 +1735,8 @@ let g:NERDTreeNodeDelimiter = '+'
 " imap <c-x><c-k> <plug>(fzf-complete-word)
 " imap <c-x><c-f> <plug>(fzf-complete-path)
 " imap <c-x><c-l> <plug>(fzf-complete-line)
-let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
+let $FZF_DEFAULT_OPTS = " --bind ctrl-a:select-all --bind ctrl-d:deselect-all --layout=reverse --inline-info"
+" --preview-window 'up:40%'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-syntastic/syntastic
 " :help syntastic-commands
@@ -2320,6 +2322,56 @@ function! QuickfixToggle()
         let g:quickfix_is_open = 1
     endif
 endfunction
+
+
+function s:GoTo(jumpline)
+  let values = split(a:jumpline, ":")
+  execute "e ".values[0]
+  call cursor(str2nr(values[1]), str2nr(values[2]))
+  execute "normal zvzz"
+endfunction
+
+function s:GetLine(bufnr, lnum)
+  let lines = getbufline(a:bufnr, a:lnum)
+  if len(lines)>0
+    return trim(lines[0])
+  else
+    return ''
+  endif
+endfunction
+
+
+" getjumplist()
+function! FZF_changes_jumps_Jumps()
+  " Get jumps with filename added
+  let jumps = map(reverse(copy(getjumplist()[0])),
+    \ { key, val -> extend(val, {'name': getbufinfo(val.bufnr)[0].name }) })
+
+  let jumptext = map(copy(jumps), { index, val ->
+      \ (val.name).':'.(val.lnum).':'.(val.col+1).': '.s:GetLine(val.bufnr, val.lnum) })
+
+  call fzf#run(fzf#vim#with_preview(fzf#wrap({
+        \ 'source': jumptext,
+        \ 'column': 1,
+        \ 'options': ['--delimiter', ':', '--bind', 'alt-a:select-all,alt-d:deselect-all', '--preview-window', '+{2}-/2'],
+        \ 'sink': function('s:GoTo')})))
+endfunction
+
+
+" getchangelist()
+function! FZF_changes_jumps_Changes()
+  let changes  = reverse(copy(getchangelist()[0]))
+
+  let changetext = map(copy(changes), { index, val ->
+      \ expand('%').':'.(val.lnum).':'.(val.col+1).': '.s:GetLine(bufnr('%'), val.lnum) })
+
+  call fzf#run(fzf#vim#with_preview(fzf#wrap({
+        \ 'source': changetext,
+        \ 'column': 1,
+        \ 'options': ['--delimiter', ':', '--bind', 'alt-a:select-all,alt-d:deselect-all', '--preview-window', '+{2}-/2'],
+        \ 'sink': function('s:GoTo')})))
+endfunction
+
 
 command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
