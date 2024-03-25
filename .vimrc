@@ -830,6 +830,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'skywind3000/asyncrun.vim'   " HH/HS/HR
 Plug 'skywind3000/vim-terminal-help'  " \wt; drop abc.txt; <c-\><c-n>; <c-_>"0; :H {shell command}
 Plug 'skywind3000/asyncrun.extra' "
+Plug 'skywind3000/asynctasks.vim' "
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
 Plug 'windwp/vim-floaterm-repl'   " <leader>wr
 Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
@@ -949,6 +950,7 @@ Plug 'tenfyzhong/fzf-marks.vim'       "
 Plug 'pechorin/any-jump.vim'       " <leader>j :AnyJump; <leader>ab :AnyJumpBack; <leader>al :AnyJumpLastResult
 Plug '4513ECHO/vim-readme-viewer'       " :PlugHelp or :FzReadme
 
+Plug 'liuchengxu/vista.vim/'            " Vista!! Toggle vista view window
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
 
@@ -1037,7 +1039,7 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'jayli/vim-easycomplete'  :h easycomplete
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:easycomplete_tab_trigger="<c-space>"    " 唤醒补全按键:默认 Tab 键
+let g:easycomplete_tab_trigger="<TAB>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
 let g:easycomplete_diagnostics_next = "<C-n>"
 let g:easycomplete_diagnostics_prev = "<C-p>"
@@ -2372,6 +2374,39 @@ function! FZF_changes_jumps_Changes()
         \ 'sink': function('s:GoTo')})))
 endfunction
 
+
+function! s:fzf_sink(what)
+    let p1 = stridx(a:what, '<')
+    if p1 >= 0
+        let name = strpart(a:what, 0, p1)
+        let name = substitute(name, '^\s*\(.\{-}\)\s*$', '\1', '')
+        if name != ''
+            exec "AsyncTask ". fnameescape(name)
+        endif
+    endif
+endfunction
+
+function! s:fzf_task()
+    let rows = asynctasks#source(&columns * 48 / 100)
+    let source = []
+    for row in rows
+        let name = row[0]
+        let source += [name . '  ' . row[1] . '  : ' . row[2]]
+    endfor
+    let opts = { 'source': source, 'sink': function('s:fzf_sink'),
+                \ 'options': '+m --nth 1 --inline-info --tac' }
+    if exists('g:fzf_layout')
+        for key in keys(g:fzf_layout)
+            let opts[key] = deepcopy(g:fzf_layout[key])
+        endfor
+    endif
+    call fzf#run(opts)
+endfunction
+
+let g:asynctasks_config_name = ['.tasks', '.git/tasks.ini', '~/.vim/task_template.ini']
+let g:asynctasks_rtp_config = "task_template.ini"
+
+command! -nargs=0 AsyncTaskFzf call s:fzf_task()
 
 command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
