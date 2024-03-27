@@ -408,7 +408,7 @@ set t_Co=256
 " colorscheme这是个单独的命令,不是 set 选项.选择一个颜色主题
 " :colorscheme + 主题名 -> :colorscheme helloworld -> colors/helloworld.vim
 colorscheme desert " darkblue
-" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景,有的则分别为不同背景色定义不同的颜色主题
+" background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景，有的则分别为不同背景色定义不同的颜色主题
 " set background=dark
 
 set ttyfast                " Faster redrawing.
@@ -458,7 +458,7 @@ set report      =0                  " Always report changed lines.
 set synmaxcol   =200                " Only highlight the first 200 columns.
 set shortmess-=S                    " display number of search matches & index of a current match
 
-" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符.
+" 插入模式下在哪里允许 <BS> 删除光标前面的字符.逗号分隔的三个值分别指:行首的空白字符,换行符和插入模式开始处之前的字符。
 set backspace=indent,eol,start      " allow backspacing over everything in insert mode
 set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
@@ -533,7 +533,7 @@ set noswapfile
 
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
-" 如果文件夹不存在,则新建文件夹
+" 如果文件夹不存在，则新建文件夹
 if !isdirectory($HOME.'/.vim/files') && exists('*mkdir')
     call mkdir($HOME.'/.vim/files')
 endif
@@ -541,7 +541,7 @@ endif
 set backup                                  " make backup files
 set backupdir   =$HOME/.vim/files/backup/   " where to put backup files
 set backupext   =-vimbackup                 "
-set backupskip  =$HOME/.vim/files/backup/   " Don't create backups when editing files in certain directories
+set backupskip  =$HOME/.vim/files/backup/   " Don’t create backups when editing files in certain directories
 " 交换文件
 set directory   =$HOME/.vim/files/swap/
 set updatecount =100
@@ -752,7 +752,7 @@ nnoremap <leader>fK :TigOpenProjectRootDir<CR>
 
 " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
 nnoremap <Leader>fd :Fern .<CR>
-nnoremap <Leader>fD ::Fern %:h<CR>
+nnoremap <Leader>fD :Fern %:h<CR>
 
 " Floaterms
 nnoremap <Leader>fx :Floaterms<CR>
@@ -835,7 +835,7 @@ Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTas
 " :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskFzf
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
 Plug 'windwp/vim-floaterm-repl'   " <leader>wr
-Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read-Eval-Print Loop (REPL)
+Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
 
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
@@ -849,7 +849,7 @@ Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snipp
 " Plug 'Shougo/neocomplete.vim'
 Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 " Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
-Plug 'ervandew/supertab'               "
+Plug 'ervandew/supertab'               " 
 " let g:SuperTabDefaultCompletionType = <c-n>
 " let g:SuperTabContextDefaultCompletionType = <c-n>
 
@@ -1138,7 +1138,7 @@ autocmd FileType python,shell,coffee set commentstring=#\ %s
 "修改注释风格
 autocmd FileType java,c,cpp set commentstring=//\ %s
 
-" 单行注释用 gcc,多行注释先进入可视模式再 gc,取消注释用 gcu
+" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
 " gcc: 注释或反注释
 " gcap: 注释一段
 " gc: visual 模式下直接注释所有已选择的行
@@ -1256,7 +1256,7 @@ let g:DoxygenToolkit_licenseTag  = s:gplv3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" gutentags搜索工程目录的标志,碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
+" gutentags搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归  # openwrt/build_dir/target-mipsel-openwrt-linux-gnu/'project'
 let g:gutentags_enabled=0
 let g:gutentags_ctags_auto_set_tags=1
 let g:gutentags_project_root = ['mkall.sh', 'COPYING', 'base-files', 'base-files', 'cgi-bin', '.sgbuilt_user', '.config', '.root', '.svn', '.git', '.project', '.built', '.configured_yyynyynnnn', '.gitignore', 'README', 'm4', 'configure', 'configure.ac', '.version', '.pc']
@@ -1271,7 +1271,7 @@ endfunc
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
 
-" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中,避免污染工程目录
+" 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
 let s:vim_tags = expand('~/.cache/tags')
 let g:gutentags_cache_dir = s:vim_tags
 " 检测 ~/.cache/tags 不存在就新建
@@ -1334,8 +1334,8 @@ let g:gutentags_ctags_exclude = [
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist setting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Show_One_File=1               " 不同时显示多个文件的tag,只显示当前文件的
-let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口,则退出vim
+let Tlist_Show_One_File=1               " 不同时显示多个文件的tag，只显示当前文件的
+let Tlist_Exit_OnlyWindow=1             " 如果taglist窗口是最后一个窗口，则退出vim
 let Tlist_Ctags_Cmd="/usr/bin/ctags"    " 将taglist与ctags关联
 let Tlist_File_Fold_Auto_Close = 0      " 不要关闭其他文件的tags
 let Tlist_Use_Right_Window = 1          " 在右侧显示窗口
@@ -1418,7 +1418,7 @@ endif
 
 
 nnoremap <leader>fi :call CscopeFindInteractive(expand('<cword>'))<CR>
-nnoremap <leader>fI :call ToggleLocationList()<CR>
+nnoremap <leader>fI :call ToggleLocationList()<CR> 
 " ----------------------------------------------------------------------------
 " :CSBuild
 " ----------------------------------------------------------------------------
@@ -1684,8 +1684,8 @@ let NERDTreeShowBookmarks = 1
 " 是否默认显示隐藏文件
 let NERDTreeShowHidden = 1
 
-" 不知道是什么含义,再开发机上,含有+的字符打不开,文件名不可能含有+
-" 因此设置为+,不设置的话,第一个字符都是虚的.
+" 不知道是什么含义，再开发机上，含有+的字符打不开，文件名不可能含有+
+" 因此设置为+，不设置的话，第一个字符都是虚的。
 let g:NERDTreeNodeDelimiter = '+'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1714,11 +1714,11 @@ let g:NERDTreeNodeDelimiter = '+'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/fzf.vim (above)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" ^ 表示前缀精确匹配.要搜索一个以"welcome"开头的短语:^welcom.
-" $ 表示后缀精确匹配.要搜索一个以"my friends"结尾的短语:friends$.
-" ' 表示精确匹配.要搜索短语"welcom my friends":'welcom my friends.
-" | 表示"或者"匹配.要搜索"friends"或"foes":friends | foes.
-" ! 表示反向匹配.要搜索一个包含"welcome"但不包含"friends"的短语:welcome !friends
+" ^ 表示前缀精确匹配。要搜索一个以"welcome"开头的短语：^welcom。
+" $ 表示后缀精确匹配。要搜索一个以"my friends"结尾的短语：friends$。
+" ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
+" | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
+" ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
 "
 " function! s:fzf_statusline()
 "   " Override statusline as you like
@@ -1770,7 +1770,7 @@ let g:syntastic_loc_list_height = 5
 let g:syntastic_check_on_open = 1 " Recommended settings
 "自动跳转到发现的第一个错误或警告处
 let g:syntastic_auto_jump = 1
-"进行实时检查,如果觉得卡顿,将下面的选项置为1
+"进行实时检查，如果觉得卡顿，将下面的选项置为1
 let g:syntastic_check_on_wq = 0   " Recommended settings
 "高亮错误
 let g:syntastic_enable_highlighting=1
@@ -1933,14 +1933,14 @@ call which_key#register('\', "g:which_key_map")
 " skywind3000/asyncrun.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:asyncrun_mode = 0     | " 全局的默认运行模式
-let g:asyncrun_wrapper = '' | " 命令前缀,默认为空,比如可以设置成 nice
+let g:asyncrun_wrapper = '' | " 命令前缀，默认为空，比如可以设置成 nice
 let g:asyncrun_open = 10    | " 大于零的话会在运行时自动打开高度为具体值的 quickfix 窗口
 let g:asyncrun_bell = 1     | " 任务结束时候响铃提醒
-let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding,不一致,那么在这里设置一下
+let g:asyncrun_encs = ''    | " 如果系统编码和 Vim 内部编码 &encoding，不一致，那么在这里设置一下
 let g:asyncrun_trim='1'     | " non-zero to trim the empty lines in the quickfix window.
 let g:asyncrun_auto=''      | " 用于触发 QuickFixCmdPre/QuickFixCmdPost 的 autocmd 名称
-let g:asyncrun_save=2       | " 全局设置,运行前是否保存文件,1是保存当前文件,2是保存所有修改过的文件
-let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息,默认为 25
+let g:asyncrun_save=2       | " 全局设置，运行前是否保存文件，1是保存当前文件，2是保存所有修改过的文件
+let g:asyncrun_timer=50     | " 每 100ms 处理多少条消息，默认为 25
 
 command! -bang -nargs=+ -range=0 -complete=file HH call asyncrun#run('<bang>', '', <q-args>, <count>, <line1>, <line2>)
 command! -bar  -bang -nargs=0                   HS call asyncrun#stop('<bang>')
@@ -1969,7 +1969,7 @@ vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
 command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0, 'command', <q-args>)
 " <Space>     Around 1st whitespaces              :'<,'>EasyAlign\
 " 2<Space>    Around 2nd whitespaces              :'<,'>EasyAlign2\
-" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\
+" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\ 
 " -2<Space>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
 " :           Around 1st colon (key:  value)      :'<,'>EasyAlign:
 " <Right>:    Around 1st colon (key : value)      :'<,'>EasyAlign:>l1
@@ -2071,9 +2071,9 @@ let g:repl_program = {
 
 let g:repl_height = 15
 let g:repl_width = 100
-let g:repl_position = 3                     " 0表示出现在下方,1表示出现在上方,2在左边,3在右边
-let g:sendtorepl_invoke_key = "<leader>wg"  " 传送代码快捷键,默认为<leader>w
-let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件(1)还是停留在REPL窗口中(0)
+let g:repl_position = 3                     " 0表示出现在下方，1表示出现在上方，2在左边，3在右边
+let g:sendtorepl_invoke_key = "<leader>wg"  " 传送代码快捷键，默认为<leader>w
+let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件（1）还是停留在REPL窗口中（0）
 let g:repl_exit_commands = {
     \   "/usr/local/bin/python": "exit()",
     \   "bash": "exit",
@@ -2083,22 +2083,22 @@ let g:repl_exit_commands = {
     \   }
 
 " autocmd Filetype python nnoremap <F12> <Esc>:REPLDebugStopAtCurrentLine<Cr> F12: 在当前行设置断点并运行
-" autocmd Filetype python nnoremap <F10> <Esc>:REPLPDBN<Cr>                   F10: 运行一行(不进入函数)
-" autocmd Filetype python nnoremap <F11> <Esc>:REPLPDBS<Cr>                   F10: 运行一行(进入函数)
+" autocmd Filetype python nnoremap <F10> <Esc>:REPLPDBN<Cr>                   F10: 运行一行（不进入函数）
+" autocmd Filetype python nnoremap <F11> <Esc>:REPLPDBS<Cr>                   F10: 运行一行（进入函数）
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " skywind3000/vim-terminal-help : drop filename.txt(vim)  H (bash)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:terminal_key ="<leader>wt"        "哪个键将用于切换终端窗口,默认为<m-=>.
-" let g:terminal_cwd ="<leader>"        "初始化工作目录:0保持不变,1文件路径和2项目根目录.
-" let g:terminal_height ="<leader>"     "新的终端高度,默认为10.
-" let g:terminal_pos  ="<leader>"       "打开终端的位置,默认为rightbelow.
-" let g:terminal_shell ="<leader>"      "指定外壳而不是默认外壳.
-" let g:terminal_edit ="<leader>"       "命令在vim中打开文件,默认为tab drop.
-" let g:terminal_kill ="<leader>"       "设置term退出vim时终止学期会话.
-" let g:terminal_list  ="<leader>"      "设置为0以将终端缓冲区隐藏在缓冲区列表中.
-" let g:terminal_fixheight ="<leader>"  "设置为1以设置winfixheight终端窗口.
-" let g:terminal_close ="<leader>"      "设置为1以在处理完成后关闭窗口.
+let g:terminal_key ="<leader>wt"        "哪个键将用于切换终端窗口，默认为<m-=>。
+" let g:terminal_cwd ="<leader>"        "初始化工作目录：0保持不变，1文件路径和2项目根目录。
+" let g:terminal_height ="<leader>"     "新的终端高度，默认为10。
+" let g:terminal_pos  ="<leader>"       "打开终端的位置，默认为rightbelow。
+" let g:terminal_shell ="<leader>"      "指定外壳而不是默认外壳。
+" let g:terminal_edit ="<leader>"       "命令在vim中打开文件，默认为tab drop。
+" let g:terminal_kill ="<leader>"       "设置term退出vim时终止学期会话。
+" let g:terminal_list  ="<leader>"      "设置为0以将终端缓冲区隐藏在缓冲区列表中。
+" let g:terminal_fixheight ="<leader>"  "设置为1以设置winfixheight终端窗口。
+" let g:terminal_close ="<leader>"      "设置为1以在处理完成后关闭窗口。
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " voldikss/vim-floaterm : floaterm filename.txt
@@ -2238,7 +2238,7 @@ function! FzfGetQuickFixList(cmdstr)
             endif
             let nums = subItem
         endfor
-        if nums != ""
+        if nums != "" 
             call add(l:newQuickfixHistoryList, nums . ':' . itemInfo[1])
         endif
     endfor
@@ -2247,7 +2247,7 @@ function! FzfGetQuickFixList(cmdstr)
 endfunction
 
 function! s:FzfQuickfixOpen(line)
-    if a:line == ""
+    if a:line == "" 
         return
     endif
     let lineInfo = split(a:line, ":")
@@ -2257,7 +2257,7 @@ function! s:FzfQuickfixOpen(line)
 endfunction
 
 function! s:FzfQuickfixLocalOpen(line)
-    if a:line == ""
+    if a:line == "" 
         return
     endif
     let lineInfo = split(a:line, ":")
@@ -2296,7 +2296,7 @@ nnoremap <leader>fp :PlugHelp<cr>
 
 command! -bang Zoxide call fzf#run(fzf#wrap('zoxide',
     \ {'source': 'zoxide query -l', 'sink': 'cd'}, <bang>0))
-
+    
 
 noremap <leader>f^ :call SwitchToHeaderOrSource()<CR>
 function! SwitchToHeaderOrSource()
