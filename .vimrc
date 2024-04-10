@@ -175,8 +175,9 @@ augroup END
 " nnoremap <leader><F7> :bufdo SyntasticToggleMode<CR><CR>
 
 
-tnoremap <F8> <C-\><C-n>:<C-^><CR>
-nnoremap <F8> <C-^><CR>
+nnoremap <silent><F8> :MaximizerToggle<CR>
+vnoremap <silent><F8> :MaximizerToggle<CR>gv
+inoremap <silent><F8> <C-o>:MaximizerToggle<CR>
 
 nnoremap <F9> :FloatermNext<CR>
 tnoremap <F9> <C-\><C-n>:FloatermNext<CR>
@@ -256,9 +257,9 @@ nnoremap <silent> * *zz
 nnoremap <silent> # #zz
 nnoremap <silent> g* g*zz
 " 代码跳转后居中 + 多选择跳转:nmap <c-]> g<c-]>
-nnoremap <silent> <c-]> g<c-]>zz
-nnoremap <silent> <c-o> g<c-o>zz
-nnoremap <silent> <c-i> g<c-i>zz
+" nnoremap <silent> <c-]> g<c-]>zz
+" nnoremap <silent> <c-o> g<c-o>zz
+" nnoremap <silent> <c-i> g<c-i>zz
 " 执行删除<silent> 操作时插入断点 Ctrl-G u (类似commit的操作)
 inoremap <silent> <silent> <c-u> <c-g>u<c-u>
 inoremap <silent> <c-w> <c-g>u<c-w>
@@ -780,7 +781,7 @@ augroup fzf_commands
 augroup end
 
 nnoremap <leader>f] <Plug>(fzf_tags)
-nnoremap <C-]> <Plug>(fzf_tags)
+" nnoremap <C-]> <Plug>(fzf_tags)
 
 
 command! FzReadme call fzf#run(fzf#wrap(#{
@@ -833,6 +834,8 @@ Plug 'skywind3000/asyncrun.extra' "
 Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
 " :AsyncTask file-build ; noremap <silent><f5> :AsyncTask file-run<cr>   ; <leader>fe :AsyncTaskFzf
 " :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskFzf
+" Plug 'skywind3000/vim-auto-popmenu'
+
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
 Plug 'windwp/vim-floaterm-repl'   " <leader>wr
 Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
@@ -1000,6 +1003,7 @@ Plug 'junegunn/gv.vim'                   " :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|
 " Plug 'christoomey/vim-tmux-navigator'  "
 Plug 'dracula/vim', { 'as': 'dracula' }  " Plug 'liuchengxu/space-vim-dark' + colorscheme space-vim-dark
 
+Plug 'szw/vim-maximizer'                 " :MaximizerToggle
 
 Plug 'kana/vim-textobj-user'                                            " base text object plugin for below
 Plug 'kana/vim-textobj-indent'                                          " *ai, *ii         for similarly indented to the current line
@@ -1011,6 +1015,7 @@ Plug 'kana/vim-textobj-function', { 'for':['c', 'cpp', 'vim', 'java'] } " daf/vi
 Plug 'sgur/vim-textobj-parameter'                                       " i,/a, function(param_a, param_b, param_c)   function(param_a, param_b, param_c)
                                                                         "                |<--->|  |<--->|  |<--->|             |<----->|
 Plug 'gaving/vim-textobj-argument'                                      " daa cia        function(int arg1,    ch<press 'daa' here>ar* arg2="a,b,c(d,e)")
+Plug 'lambdalisue/suda.vim'
 call plug#end()
 
 colorscheme dracula
@@ -1024,10 +1029,10 @@ colorscheme dracula
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " - https://github.com/Valloric/YouCompleteMe
 " - https://github.com/nvim-lua/completion-nvim
-let g:UltiSnipsExpandTrigger="<tab>"
+" let g:UltiSnipsExpandTrigger="<tab>"
 " 使用 <c-b> 切换下一个触发点, <c-z>上一个触发点
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+" let g:UltiSnipsJumpForwardTrigger="<tab>"
+" let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
 
 " 使用 UltiSnipsEdit 命令时垂直分割屏幕
 let g:UltiSnipsEditSplit="vertical"
@@ -1041,7 +1046,7 @@ let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-mysnippet"]
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'jayli/vim-easycomplete'  :h easycomplete
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:easycomplete_tab_trigger="<TAB>"    " 唤醒补全按键:默认 Tab 键
+let g:easycomplete_tab_trigger="<tab>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
 let g:easycomplete_diagnostics_next = "<C-n>"
 let g:easycomplete_diagnostics_prev = "<C-p>"
@@ -2376,7 +2381,9 @@ function! FZF_changes_jumps_Changes()
         \ 'sink': function('s:GoTo')})))
 endfunction
 
-
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" skywind3000/asynctasks
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! s:fzf_sink(what)
     let p1 = stridx(a:what, '<')
     if p1 >= 0
@@ -2409,8 +2416,39 @@ let g:asynctasks_config_name = ['.tasks', '.git/tasks.ini', '~/.vim/task_templat
 let g:asynctasks_rtp_config = "task_template.ini"
 
 command! -nargs=0 AsyncTaskFzf call s:fzf_task()
-nnoremap <leader>fe :AsyncTaskFzf<cr>
-nnoremap <leader>fE :AsyncTaskEdit<cr>
+noremap <leader>fe :AsyncTaskFzf<cr>
+noremap <leader>fE :AsyncTaskEdit<cr> :AsyncTaskEdit!<cr>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" skywind3000/vim-auto-popmenu
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" enable this plugin for filetypes, '*' for all files.
+let g:apc_enable_ft = {'*':1 }
+
+" source for dictionary, current or other loaded buffers, see ':help cpt'
+set cpt=.,k,w,b
+
+" don't select the first item.
+set completeopt=menu,menuone,noselect
+
+" suppress annoy messages.
+set shortmess+=c
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" userdefined
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+command! FZFCd call fzf#run({
+\   'options'    : '-x',
+\   'sink'       : 'cd',
+\   'source'     : 'find * -path "*/.*" -type d -prune -o -type d',
+\   'tmux_height': '40%',
+\ })
 
 command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" userdefined
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:maximizer_set_default_mapping = 0
+let g:maximizer_set_mapping_with_bang = 0
+  let g:maximizer_default_mapping_key = '<F8>'
