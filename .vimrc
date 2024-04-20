@@ -373,8 +373,8 @@ augroup END
 
 augroup enableAutoSaveSession
     autocmd!
-    " autocmd VimLeave * mksession! ./session.vim
-    " autocmd VimEnter * source ./session.vim
+    autocmd VimLeave * AsyncTask auto-vimleave-mksession
+"  autocmd VimEnter *  AsyncTask auto-vimenter-sosession
 augroup END
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 基本配置
@@ -833,7 +833,7 @@ Plug 'skywind3000/vim-terminal-help'  " \wt; drop abc.txt; <c-\><c-n>; <c-_>"0; 
 Plug 'skywind3000/asyncrun.extra' "
 Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
 " :AsyncTask file-build ; noremap <silent><f5> :AsyncTask file-run<cr>   ; <leader>fe :AsyncTaskFzf
-" :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskFzf
+" :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskLast
 " Plug 'skywind3000/vim-auto-popmenu'
 
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
@@ -866,13 +866,14 @@ Plug 'easymotion/vim-easymotion'       " \\w
 Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
 Plug 'vim-scripts/VisIncr'             " :I [#]; :II [# [zfill]]; :IO [#]; :IIO [# [zfill]]; :IX [#]; :IIX [# [zfill]]; :IYMD [#]; :IMDY [#]; :IDMY [#]; :ID [#]
 
-Plug 'tpope/vim-surround'
+Plug 'tpope/vim-surround'              " cs]{  ds{ds)  ysiw<em>
 Plug 'gcmt/wildfire.vim'               " in Visual mode, type k' to select all text in '', or type k) k] k} kp
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释DF DL DA DB
 Plug 'tpope/vim-rsi'                   " readline key
-Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-endwise'               " helps to end certain structures automatically.
+Plug 'tpope/vim-obsession'             " :Obsess  :Obsess!
 
 Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
 
@@ -897,7 +898,7 @@ Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
 " Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
-" Plug 'chengzeyi/fzf-preview.vim'       "
+Plug 'chengzeyi/fzf-preview.vim'       "
 Plug 'nmaiti/fzf_cscope.vim'             "
 Plug 'brookhong/cscope.vim'              "
 " 's'   symbol: find all references to the token under cursor.
@@ -916,6 +917,7 @@ Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Clo
 Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
 
 Plug 'vim-scripts/autopreview'            "
+Plug 'dhruvasagar/vim-table-mode'            "
 
 Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
@@ -923,6 +925,15 @@ Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set 
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
+Plug 'Yggdroot/LeaderF'
+Plug 'skywind3000/Leaderf-snippet'
+
+" maps
+inoremap <c-x><c-x> <c-\><c-o>:Leaderf snippet<cr>
+
+" optional: preview
+let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
+let g:Lf_PreviewResult.snippet = 1
 
 " netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
@@ -943,12 +954,27 @@ Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunk
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
+let g:fzf_history_dir = '~/.local/share/fzf-history'
+
+Plug 'junegunn/limelight.vim'
+" Color name (:help cterm-colors) or ANSI code
+let g:limelight_conceal_ctermfg = 'gray'
+let g:limelight_conceal_ctermfg = 240
+
+" Color name (:help gui-colors) or RGB color
+let g:limelight_conceal_guifg = 'DarkGray'
+let g:limelight_conceal_guifg = '#777777'  
+
+Plug 'junegunn/seoul256.vim'
+set background=dark          " let g:seoul256_background = 236
+" set background=light       " let g:seoul256_background = 256
 Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
 " z= spelling suggestions via fzf https://github.com/junegunn/fzf/issues/2284
 Plug 'https://gitlab.com/mcepl/vim-fzfspell/'
 Plug 'tknightz/projectile.vim'        " :AddProject; :ListProject; :RemoveProject
 Plug 'zackhsi/fzf-tags'               " nmap <leader>f] <Plug>(fzf_tags)
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
+Plug 'AndrewRadev/quickpeek.vim', {'on': 'Quickfix'}  ":Quickpeek; :QuickpeekStop; :QuickpeekToggle
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
 Plug 'voldikss/fzf-floaterm'          " :Floaterms
 Plug 'tenfyzhong/fzf-marks.vim'       "
@@ -2417,7 +2443,7 @@ let g:asynctasks_rtp_config = "task_template.ini"
 
 command! -nargs=0 AsyncTaskFzf call s:fzf_task()
 noremap <leader>fe :AsyncTaskFzf<cr>
-noremap <leader>fE :AsyncTaskEdit<cr> :AsyncTaskEdit!<cr>
+noremap <leader>fE :AsyncTaskLast<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " skywind3000/vim-auto-popmenu
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2451,4 +2477,65 @@ command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:maximizer_set_default_mapping = 0
 let g:maximizer_set_mapping_with_bang = 0
-  let g:maximizer_default_mapping_key = '<F8>'
+let g:maximizer_default_mapping_key = '<F8>'
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" dhruvasagar/vim-table-mode
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"==============================================================
+"    file: vim-table-mode.vim
+"   brief: 
+" command:
+"           :TableModeToggle 触发表格模式
+"           :TableModeEnable 开启表格模式
+"           :TableModeDisable 关闭表格模式
+"           :Tablize 格式成表格
+"           :TableModeRealign 表格重排
+"           :TableAddFormula 增加formula
+"           :TableEvalFormulaLine 计算formula
+"           :TableSort[!] [i][u][r][n][x][o] 排序
+"
+"
+"    nmap: <leader>t prefix
+"          <leader>tm 触发table mode
+"          <leader>tt tableize格式化选择行
+"          <leader>T tableize格式化选择行，让用户选择分隔符
+"          <leader>tr 重新对齐表格
+"          <leader>t? 重新输出定义的formulas
+"          [|         移到前一个单元格
+"          ]|         移到后一个单元格
+"          {|         移到上一个单元格
+"          }|         移到下一个单元格
+"          <leader>tdd 删除行
+"          <leader>tdc 删除列
+"          <leader>tfa 请求一个fomula给当前单元格
+"          <leader>tfe 
+"          <leader>ts  排序
+"
+"   imap: | 在table mode下触发创建表格
+"         || 扩展表格头
+" VIM Version: 7.4
+"  author: tenfyzhong
+"   email: tenfy@tenfy.cn
+" created: 2016-06-30 14:18:42
+"==============================================================
+let g:table_mode_corner='|'
+let g:table_mode_corner_corner='+'
+let g:table_mode_header_fillchar='='
+
+" Table mode toggle
+nnoremap <silent> <Leader>tm :TableModeToggle<cr>
+
+function! s:isAtStartOfLine(mapping)
+  let text_before_cursor = getline('.')[0 : col('.')-1]
+  let mapping_pattern = '\V' . escape(a:mapping, '\')
+  let comment_pattern = '\V' . escape(substitute(&l:commentstring, '%s.*$', '', ''), '\')
+  return (text_before_cursor =~? '^' . ('\v(' . comment_pattern . '\v)?') . '\s*\v' . mapping_pattern . '\v$')
+endfunction
+
+inoreabbrev <expr> <bar><bar>
+          \ <SID>isAtStartOfLine('\|\|') ?
+          \ '<c-o>:TableModeEnable<cr><bar><space><bar><left><left>' : '<bar><bar>'
+inoreabbrev <expr> __
+          \ <SID>isAtStartOfLine('__') ?
+          \ '<c-o>:silent! TableModeDisable<cr>' : '__'

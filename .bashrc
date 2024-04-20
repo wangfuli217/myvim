@@ -3,10 +3,6 @@
 # for examples
 
 # If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-    *) return;;
-esac
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -666,6 +662,7 @@ cross_path_mips(){
   cd $oldpwd
 }
 export PATH=/snap/bin/:${PATH}
+export PATH=/home/wangfuli/.vim/bin/:${PATH}
 #
 # cdp(){
 # local t=$(pwd)
@@ -1338,5 +1335,7 @@ which floaterm  >/dev/null 2>&1 && alias f=floaterm
 #   local dir
 #   dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
 # }
+
+export FZF_DEFAULT_OPTS='--no-height --no-reverse -m --bind="ctrl-a:select-all" --bind="ctrl-d:deselect-all" --bind "space:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled" ' 
 
 # export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS} --bind \"ctrl-a:select-all\" --bind \"ctrl-d:deselect-all\" --bind \"ctrl-v:execute('[ -d {} ] && cd {} || vim {}')\" --bind \"ctrl-o:execute('[ -d {} ] && cd {} || vim {}')\" --bind \"ctrl-e:execute('[ -d {} ] && cd {} || vi {}')\" --preview '[ -d {} ] && tree {} || bat --color always {} ' "
