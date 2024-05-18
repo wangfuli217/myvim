@@ -1,0 +1,2 @@
+[ -e tags ] || ctags -e -R --languages=C --langmap=C:.h.c --c-kinds=+px --extras=+r;
+fzf-ctags
