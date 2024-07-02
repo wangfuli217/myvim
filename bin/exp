@@ -1,0 +1,107 @@
+#!/usr/bin/env perl
+# https://github.com/troydm/exp
+# explainshell.com command line utility
+# written in perl as you can see down below
+# 2014(c) Dmitry Geurkov (d.geurkov@gmail.com)
+#
+
+use warnings;
+use strict;
+use Encode;
+use Term::ANSIColor;
+
+# color used for brackets
+my @colors = qw/blue red green yellow magenta cyan/;
+my $color_prefix = "bright_";
+my $color = "bright_blue";
+# since bright_blue support was added in Perl v5.13.3
+# we need to use blue if we are running on an older version
+if ($] < 5.013003) { 
+    $color = "blue";
+    $color_prefix = "";
+}
+
+binmode STDOUT, ":utf8";
+
+if(@ARGV == 0 || $ARGV[0] eq "--help"){
+    print "exp - explainshell.com command line utility\n";
+    print "usage: exp [flags] [command]\n";
+    print "       --help     display help message\n";
+    print "       --nocolor  disable color output\n";
+    exit(0);
+}
+
+if($ARGV[0] eq "--nocolor"){
+    $ARGV[0] = "";
+    $color = 0;
+}
+
+my $cmd = join(" ",@ARGV);
+$cmd =~ s/(.)/"%".unpack("H*", $1)/eg;
+$cmd = decode("UTF-8", $cmd);
+
+my $content;
+
+open(my $output, "-|:encoding(UTF-8)", "curl -s https://explainshell.com/explain?cmd=".$cmd)
+    or die "can't get data from https://explainshell.com $!";
+{
+    local $/;
+    $content = <$output>;
+}
+close($output);
+
+sub striptags { $_[0] =~ s/<[^>]*>//g; $_[0]; }
+sub decodechars { 
+    $_[0] =~ s/\&#(\d+);/chr($1)/eg;
+    $_[0] =~ s/\&amp;/\&/g;
+    $_[0] =~ s/\&lt;/</g;
+    $_[0] =~ s/\&gt;/>/g;
+    $_[0] =~ s/\&quot;/"/g;
+    $_[0] =~ s/\&nbsp;/ /g;
+    return $_[0]; 
+}
+
+sub parsetag {
+    my ($t,$a) = (@_);
+    if($content =~ /<$t[^>]*$a[^>]*>/i){
+        my $tag = $&;
+        my $vi = $+[0];
+        my $ve = index($content,"</$t>", $vi);
+        my $tagvalue = substr $content, $vi, $ve-$vi;
+        return ($tag, $tagvalue, $vi);
+    }
+    return ();
+}
+
+sub formatdesc {
+    my ($t,$d,$pc) = (@_);
+    if($d =~ /\n/){
+        my $offset = ' ' x (length($t)+6+$pc);
+        $d =~ s/\n\s*/\n$offset/g;
+    }
+    return $d;
+}
+
+my @helprefs = $content =~ /helpref=\"help-(\d+)\"/g;
+my $maxlen = 6;
+
+for my $i (@helprefs){
+    my @t = parsetag("span","help-$i");
+    my @d = parsetag("pre","help-$i");
+    if(@t){
+        my $title = decodechars(striptags $t[1]) if @t;
+        if(length($title)+6 > $maxlen){
+            $maxlen = length($title)+6;
+        }
+        my $prefix_count = $maxlen-(length($title)+6);
+        my $prefix = '-' x $prefix_count;
+        my $desc = formatdesc($title, decodechars(striptags $d[1]),$prefix_count) if @d;
+        if($color){
+            $color = $color_prefix.$colors[$i % @colors];
+            print color("bold"), $title, color("reset"), color($color), " $prefix---[", color("reset")
+                    , " $desc ", color($color), "]", color("reset"), "\n\n";
+        }else{
+            print "$title $prefix---[ $desc ]\n\n";
+        }
+    }
+}

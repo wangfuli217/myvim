@@ -11,71 +11,6 @@ vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>"
 " autocmd TermOpen term://* startinsert
 tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
 
-nmap <leader>dir :cd %:p:h<cr>:pwd<cr>
-
-" Hex read
-nmap <Leader>xxd :%!xxd<CR> :set filetype=xxd<CR>
-" Hex write
-nmap <Leader>xxD :%!xxd -r<CR> :set binary<CR> :set filetype=xxd<CR>
-" sudo
-nmap <Leader>sudo :w !sudo tee >/dev/null %<CR>
-" astyle
-nnoremap <leader>astyle <Esc>:!astyle --style=kr -j -J -s4 -c -xn -xb -xl -xk -xV -xf -xh -S -L -K -N -m0 -p -H -xg -k3 -W3 -xC96 -n -z2 -v -Q --mode=c % <CR>
-" indent
-nnoremap <leader>indent <Esc>:!indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs -bad -bap --ignore-newlines -l96 -nut -npro -brf % <CR>
-
-function! Shfmt_Arg(arg)
-  let l:arg = a:arg
-  if len(l:arg) == 0
-    execute ':!shfmt -l -w -i 2 -ci % '
-  else
-    execute ':!shfmt -l -w -i ' . l:arg . ' -ci % '
-  endif
-endfunction
-" shfmt
-nmap <Leader>shfmt :call Shfmt_Arg(input('shfmt space: '))<CR>
-
-" shellcheck
-nnoremap <leader>shcheck <Esc>:AsyncRun shellcheck "$(VIM_FILEPATH)" <CR>
-" json
-nmap <Leader>json :%!jq '.' <CR>
-
-function! Make_Arg(arg)
-  let l:arg = a:arg
-  if len(l:arg) == 0
-    execute ':AsyncRun make'
-  else
-    execute ':AsyncRun make ' . l:arg
-  endif
-endfunction
-" make
-nmap <Leader>make :call Make_Arg(input('make arg: '))<CR>
-
-function! Bash_Arg(arg)
-  let l:arg = a:arg
-  if len(l:arg) == 0
-    | " execute ":FloatermNew --title=interactive"
-    execute ":call TerminalToggle()"
-  else
-    execute ':AsyncRun bash -i -c ' . l:arg
-  endif
-endfunction
-" make
-nmap <Leader>bash :call Bash_Arg(input('bash arg: '))<CR>
-
-function! Gcc_Arg(arg)
-  let l:arg = a:arg
-  if len(l:arg) == 0
-    execute ":AsyncRun gcc -Wall -Wextra -Wconversion $(VIM_FILEPATH) -std=gnu99 -g -o $(VIM_FILEDIR)/$(VIM_FILENOEXT) -pthread -lrt -lm -ljson-c -O1; $(VIM_FILEDIR)/$(VIM_FILENOEXT)"
-  else
-    execute ":AsyncRun gcc -Wall -Wextra -Wconversion $(VIM_FILEPATH) -std=gnu99 -g -o $(VIM_FILEDIR)/$(VIM_FILENOEXT) -pthread -lrt -lm -ljson-c -O1 " . l:arg . "; $(VIM_FILEDIR)/$(VIM_FILENOEXT)"
-  endif
-endfunction
-" make
-nmap <Leader>gcc :call Gcc_Arg(input('gcc arg: '))<CR>
-
-
-
 let g:which_key_map =  {}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -219,35 +154,7 @@ nnoremap <F11>         <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<C
 nnoremap <F12>         <Esc>:!find . -name "*.h" -o -name "*.c" -o -name "*.cc" > cscope.files; cscope -bkq -i cscope.files<CR>:call g:CscopeUpdate(".", "cscope.out")<cr>
 nnoremap <leader><F12> <Esc>:!find . -name "*.h" -o -name "*.c" -o -name "*.cc" > cscope.files; cscope -bkq -i cscope.files<CR>:call g:CscopeUpdate(".", "cscope.out")<cr>
 
-let g:which_key_map['h'] = {
-            \ 'name' : '+F1-F12' ,
-            \ 'F1' :   ['help', 'vimhelp'],
-            \ 'F2' :   ['set nu!', 'toggle number'],
-            \ 'F3' :   ['set list!', 'toggle list'],
-            \ 'F4' :   ['set relativenumber!', 'toggle relativenumber'],
-            \ 'F5' :   ['Compile', 'compile c/cpp java'] ,
-            \ 'F6' :   [':Autoformat', 'Autoformat'],
-            \ 'F7' :   [':SyntasticToggleMode', 'SyntasticToggleMode'],
-            \ 'F8' :   ['<C-^>', 'last buffer'],
-            \ 'F9' :   ['...', '...'],
-            \ 'F10' :  ['FloatermToggle', 'floaterm toggle'],
-            \ 'F11' :  [':shnote', 'ctags ft=sh add=tags'],
-            \ 'F12' :  [':cscope', 'build cscope'],
-            \ '\F1' :  [':quickfix', 'toggle quickfix'],
-            \ '\F2' :  [':Tagbar', 'better Taglist'],
-            \ '\F3' :  [':NERDTreeToggle', 'NERDTreeToggle'],
-            \ '\F4' :  [':VimRegEdit y', 'edit register y'],
-            \ '\F5' :  ['Run', 'run perl lua bash c/c++ vimscript'],
-            \ '\F6' :  [':Autoformat', 'Autoformat'],
-            \ '\F7' :  [':SyntasticToggleMode', 'SyntasticToggleMode'],
-            \ '\F8' :  [':fzf Windows','Windows'],
-            \ '\F9' :  [':...','...'],
-            \ '\F10' : [':REPLToggle', 'REPLToggle'],
-            \ '\F11' : [':shnote', 'ctags ft=sh add=tags'],
-            \ '\F12' : [':cscope', 'build cscope'],
-            \ }
-nnoremap <silent> <c-x><c-h>    :WhichKey! which_key_map.h<CR>
-nnoremap <silent> <c-x>h        :WhichKey! which_key_map.h<CR>
+
 
 """" 跳转再优化
 " 把下一个查找匹配项所在的行显示在屏幕的最中间
@@ -704,9 +611,13 @@ let g:fzf_action = {
   \ 'ctrl-x': 'split',
   \ 'ctrl-v': 'vsplit' }
 
-let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
+let $FZF_DEFAULT_OPTS='--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
+let $FZF_DEFAULT_OPTS='--no-height --no-reverse -m --bind="ctrl-a:select-all" --bind="ctrl-d:deselect-all" --bind "ctrl-/:toggle-preview" --bind "ctrl-\\:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled" --highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌ '
+let g:fzf_layout = { 'window': { 'width': 1.0, 'height': 1.0 } }
+
+" let g:fzf_vim.preview_window = ['right,50%', 'ctrl-/']
 " let g:fzf_layout = { 'down': '40%' }
-let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
+" let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
@@ -756,8 +667,8 @@ nnoremap <Leader>fd :Fern .<CR>
 nnoremap <Leader>fD :Fern %:h<CR>
 
 " Floaterms
-nnoremap <Leader>fx :Floaterms<CR>
-nnoremap <Leader>fX :FloatermToggle<CR>
+" nnoremap <Leader>fx :Floaterms<CR>
+" nnoremap <Leader>fX :FloatermToggle<CR>
 
 function! s:fzf_neighbouring_files()
   let current_file =expand("%")
@@ -781,7 +692,7 @@ augroup fzf_commands
 augroup end
 
 nnoremap <leader>f] <Plug>(fzf_tags)
-" nnoremap <C-]> <Plug>(fzf_tags)
+nnoremap <C-]> :Tgs<CR>
 
 
 command! FzReadme call fzf#run(fzf#wrap(#{
@@ -834,7 +745,6 @@ Plug 'skywind3000/asyncrun.extra' "
 Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
 " :AsyncTask file-build ; noremap <silent><f5> :AsyncTask file-run<cr>   ; <leader>fe :AsyncTaskFzf
 " :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskLast
-" Plug 'skywind3000/vim-auto-popmenu'
 
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
 Plug 'windwp/vim-floaterm-repl'   " <leader>wr
@@ -897,7 +807,6 @@ Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
-" Plug 'maxbrunsfeld/vim-yankstack'      " yankstack
 Plug 'chengzeyi/fzf-preview.vim'       "
 Plug 'nmaiti/fzf_cscope.vim'             "
 Plug 'brookhong/cscope.vim'              "
@@ -917,7 +826,6 @@ Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Clo
 Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
 
 Plug 'vim-scripts/autopreview'            "
-Plug 'dhruvasagar/vim-table-mode'            "
 
 Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
@@ -925,16 +833,61 @@ Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set 
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
-Plug 'Yggdroot/LeaderF'
-Plug 'skywind3000/Leaderf-snippet'
+Plug 'wenlongche/SrcExpl'              " :SrcExplToggle
 
-" maps
-inoremap <c-x><c-x> <c-\><c-o>:Leaderf snippet<cr>
+" // Set the height of Source Explorer window 
+let g:SrcExpl_winHeight = 8 
+
+" // Set 100 ms for refreshing the Source Explorer 
+let g:SrcExpl_refreshTime = 100 
+
+" // Set "Enter" key to jump into the exact definition context 
+let g:SrcExpl_jumpKey = "<ENTER>" 
+
+" // Set "Space" key for back from the definition context 
+let g:SrcExpl_gobackKey = "<SPACE>" 
+
+" // In order to avoid conflicts, the Source Explorer should know what plugins except
+" // itself are using buffers. And you need add their buffer names into below list
+" // according to the command ":buffers!"
+let g:SrcExpl_pluginList = [
+        \ "__Tag_List__",
+        \ "_NERD_tree_",
+        \ "Source_Explorer"
+    \ ]
+
+" // The color schemes used by Source Explorer. There are five color schemes
+" // supported for now - Red, Cyan, Green, Yellow and Magenta. Source Explorer
+" // will pick up one of them randomly when initialization.
+let g:SrcExpl_colorSchemeList = [
+        \ "Red",
+        \ "Cyan",
+        \ "Green",
+        \ "Yellow",
+        \ "Magenta"
+    \ ]
+
+" // Enable/Disable the local definition searching, and note that this is not 
+" // guaranteed to work, the Source Explorer doesn't check the syntax for now. 
+" // It only searches for a match with the keyword according to command 'gd' 
+let g:SrcExpl_searchLocalDef = 1 
+
+" // Workaround for Vim bug @https://goo.gl/TLPK4K as any plugins using autocmd for
+" // BufReadPre might have conflicts with Source Explorer. e.g. YCM, Syntastic etc.
+let g:SrcExpl_nestedAutoCmd = 1
+
+" // Do not let the Source Explorer update the tags file when opening 
+let g:SrcExpl_isUpdateTags = 0 
+
+" // Use 'Exuberant Ctags' with '--sort=foldcase -R .' or '-L cscope.files' to 
+" // create/update the tags file 
+let g:SrcExpl_updateTagsCmd = "ctags --sort=foldcase -R ." 
 
 " optional: preview
 let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
 let g:Lf_PreviewResult.snippet = 1
 
+Plug 'vim-scripts/netrw.vim' 
 " netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
@@ -968,11 +921,22 @@ let g:limelight_conceal_guifg = '#777777'
 Plug 'junegunn/seoul256.vim'
 set background=dark          " let g:seoul256_background = 236
 " set background=light       " let g:seoul256_background = 256
+
+Plug 'junegunn/vim-slash'
+
+Plug 'sunaku/vim-shortcut'         " like asynctask
+Plug 'tweekmonster/exception.vim'
+
+" Initialize glaive if it's installed.
+if exists('*glaive#Install')
+  call glaive#Install()
+endif
+
 Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
 " z= spelling suggestions via fzf https://github.com/junegunn/fzf/issues/2284
 Plug 'https://gitlab.com/mcepl/vim-fzfspell/'
 Plug 'tknightz/projectile.vim'        " :AddProject; :ListProject; :RemoveProject
-Plug 'zackhsi/fzf-tags'               " nmap <leader>f] <Plug>(fzf_tags)
+Plug 'relastle/vim-tgs'               " :TgsList :Tgs
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
 Plug 'AndrewRadev/quickpeek.vim', {'on': 'Quickfix'}  ":Quickpeek; :QuickpeekStop; :QuickpeekToggle
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
@@ -987,8 +951,9 @@ Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;fr
 
 
 Plug 'azabiong/vim-highlighter'        " HiSet   = 'f<CR>'; HiErase = 'f<BS>'; HiFind  = 'f<Tab>'; HiClear = 'f<C-L>'; # Default key mappings: f Enter, f Backspace, f Ctrl+L, f Tab and t Enter
-
 Plug 'jiangmiao/auto-pairs'            " 括号自动补全
+Plug 'RRethy/vim-illuminate'
+hi illuminatedWord cterm=underline gui=underline
 
 Plug 'vim-airline/vim-airline'         " 状态栏
 Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
@@ -1012,6 +977,7 @@ Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
 " Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
 " Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
 
+Plug 'tweekmonster/exception.vim'        " : call exception#trace()
 
 " Plug 'octol/vim-cpp-enhanced-highlight' " c++ syntax highlighting
 " Plug 'xavierd/clang_complete'          " uses clang for accurately completing C and C++ code
@@ -1028,9 +994,12 @@ Plug 'junegunn/gv.vim'                   " :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|
 
 " Plug 'christoomey/vim-tmux-navigator'  "
 Plug 'dracula/vim', { 'as': 'dracula' }  " Plug 'liuchengxu/space-vim-dark' + colorscheme space-vim-dark
+Plug 'jacoborus/tender.vim'              "
+Plug 'morhetz/gruvbox'
 
+Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
-
+Plug 'vim-scripts/ZoomWin'               " c-w+o
 Plug 'kana/vim-textobj-user'                                            " base text object plugin for below
 Plug 'kana/vim-textobj-indent'                                          " *ai, *ii         for similarly indented to the current line
 Plug 'kana/vim-textobj-fold'                                            " *az, *iz         for fold
@@ -1045,6 +1014,10 @@ Plug 'lambdalisue/suda.vim'
 call plug#end()
 
 colorscheme dracula
+colorscheme gruvbox
+colorscheme tender
+let g:airline_theme = 'tender'
+
 
 " neocompletecache -> neocomplete -> deoplete/neocompletion-manager(下一代通用补全)
 " CtrlP / CommandT -> Unite.vim + vimproc -> denite.vim
@@ -1770,7 +1743,7 @@ let g:NERDTreeNodeDelimiter = '+'
 " imap <c-x><c-k> <plug>(fzf-complete-word)
 " imap <c-x><c-f> <plug>(fzf-complete-path)
 " imap <c-x><c-l> <plug>(fzf-complete-line)
-let $FZF_DEFAULT_OPTS = " --bind ctrl-a:select-all --bind ctrl-d:deselect-all --layout=reverse --inline-info"
+
 " --preview-window 'up:40%'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-syntastic/syntastic
@@ -1943,22 +1916,6 @@ nnoremap <Leader>g? :GV?<CR>
 " O opens a new tab instead
 " gb for :GBrowse
 " q or gq to close
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" liuchengxu/vim-which-key
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" let g:which_key_map =  {}
-let g:which_key_vertical = 0           " show popup vertically
-let g:which_key_position = "botright"  " split a window at the bottom
-let g:which_key_hspace   = 5           " minimum horizontal space between columns
-let g:which_key_centered = 1           " make all keybindings centered in the middle
-let g:which_key_group_dicts = 'start'
-nnoremap <silent> <leader>      :WhichKey      '\'<CR>
-nnoremap <silent> <localleader> :WhichKey      '\'<CR>
-vnoremap <silent> <leader>      :<c-u>WhichKeyVisual '\'<CR>
-vnoremap <silent> <localleader> :<c-u>WhichKeyVisual '\'<CR>
-
-call which_key#register('\', "g:which_key_map")
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " skywind3000/asyncrun.vim
@@ -2443,21 +2400,9 @@ let g:asynctasks_rtp_config = "task_template.ini"
 
 command! -nargs=0 AsyncTaskFzf call s:fzf_task()
 noremap <leader>fe :AsyncTaskFzf<cr>
+noremap ?? :AsyncTaskFzf<cr>
 noremap <leader>fE :AsyncTaskLast<cr>
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" skywind3000/vim-auto-popmenu
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" enable this plugin for filetypes, '*' for all files.
-let g:apc_enable_ft = {'*':1 }
-
-" source for dictionary, current or other loaded buffers, see ':help cpt'
-set cpt=.,k,w,b
-
-" don't select the first item.
-set completeopt=menu,menuone,noselect
-
-" suppress annoy messages.
-set shortmess+=c
+noremap <leader>f! :AsyncTask async-bash-run <cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
@@ -2472,70 +2417,10 @@ command! FZFCd call fzf#run({
 command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" userdefined
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:maximizer_set_default_mapping = 0
-let g:maximizer_set_mapping_with_bang = 0
-let g:maximizer_default_mapping_key = '<F8>'
+let g:fzf_layout = { 'down': '~40%' }
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" dhruvasagar/vim-table-mode
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"==============================================================
-"    file: vim-table-mode.vim
-"   brief: 
-" command:
-"           :TableModeToggle 触发表格模式
-"           :TableModeEnable 开启表格模式
-"           :TableModeDisable 关闭表格模式
-"           :Tablize 格式成表格
-"           :TableModeRealign 表格重排
-"           :TableAddFormula 增加formula
-"           :TableEvalFormulaLine 计算formula
-"           :TableSort[!] [i][u][r][n][x][o] 排序
-"
-"
-"    nmap: <leader>t prefix
-"          <leader>tm 触发table mode
-"          <leader>tt tableize格式化选择行
-"          <leader>T tableize格式化选择行，让用户选择分隔符
-"          <leader>tr 重新对齐表格
-"          <leader>t? 重新输出定义的formulas
-"          [|         移到前一个单元格
-"          ]|         移到后一个单元格
-"          {|         移到上一个单元格
-"          }|         移到下一个单元格
-"          <leader>tdd 删除行
-"          <leader>tdc 删除列
-"          <leader>tfa 请求一个fomula给当前单元格
-"          <leader>tfe 
-"          <leader>ts  排序
-"
-"   imap: | 在table mode下触发创建表格
-"         || 扩展表格头
-" VIM Version: 7.4
-"  author: tenfyzhong
-"   email: tenfy@tenfy.cn
-" created: 2016-06-30 14:18:42
-"==============================================================
-let g:table_mode_corner='|'
-let g:table_mode_corner_corner='+'
-let g:table_mode_header_fillchar='='
+nnoremap <C-]> :Tgs<CR>
 
-" Table mode toggle
-nnoremap <silent> <Leader>tm :TableModeToggle<cr>
 
-function! s:isAtStartOfLine(mapping)
-  let text_before_cursor = getline('.')[0 : col('.')-1]
-  let mapping_pattern = '\V' . escape(a:mapping, '\')
-  let comment_pattern = '\V' . escape(substitute(&l:commentstring, '%s.*$', '', ''), '\')
-  return (text_before_cursor =~? '^' . ('\v(' . comment_pattern . '\v)?') . '\s*\v' . mapping_pattern . '\v$')
-endfunction
-
-inoreabbrev <expr> <bar><bar>
-          \ <SID>isAtStartOfLine('\|\|') ?
-          \ '<c-o>:TableModeEnable<cr><bar><space><bar><left><left>' : '<bar><bar>'
-inoreabbrev <expr> __
-          \ <SID>isAtStartOfLine('__') ?
-          \ '<c-o>:silent! TableModeDisable<cr>' : '__'
+autocmd VimEnter *  so ~/.vim/shortcut.vim
+autocmd VimEnter *  so ~/.vim/which-key.vim
