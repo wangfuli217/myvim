@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# 1. Search for text in files using Ripgrep
+# 2. Interactively narrow down the list using fzf
+# 3. Open the file in Vim
+rg --color=always --line-number --no-heading --smart-case "${*:-}" |
+  fzf --ansi \
+      --color "hl:-1:underline,hl+:-1:underline:reverse" \
+      --delimiter : \
+      --preview 'preview {1}' \
+      --preview-window '+{2}+3/3,~3' \
+      --bind 'enter:become(vim {1} +{2})'
+export FZF_DEFAULT_OPTS="--color=bg+:236,bg:235,border:0,spinner:81,hl:15,fg:255,header:242,info:185,pointer:203,marker:81,fg+:255,prompt:185,hl+:81"

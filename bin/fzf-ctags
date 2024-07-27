@@ -45,7 +45,9 @@ if [[ -z $tags || ! -f $tags ]]; then
     printf "No \e[38;5;208mTAGS\e[0m file found, exiting…\e[0m\n"
     printf "(\`univeral ctags\` is recommended tool to generate one;\n"
     printf "homepage: https://github.com/universal-ctags/ctags).\n"
-    exit 1
+    ctags -e -R --languages=C --langmap=C:.h.c --c-kinds=+px --extras=+r;
+    typeset tags tags_path ptags="/tmp/.TAGS.z-$$"
+    get_tags && tags="$REPLY"
 fi
 
 tags_path="${tags%/TAGS}"

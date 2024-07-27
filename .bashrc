@@ -1130,13 +1130,13 @@ vgd() {
 
 #### fzf + cd ####
 # fd - cd to selected directory
-fd() {
-  local dir
-  dir=$(find ${1:-.} -path '*/\.*' -prune \
-                  -o -type d -print 2> /dev/null | fzf +m) &&
-  cd "$dir"
-  eval xsync
-}
+# fd() {
+#   local dir
+#   dir=$(find ${1:-.} -path '*/\.*' -prune \
+#                   -o -type d -print 2> /dev/null | fzf +m) &&
+#   cd "$dir"
+#   eval xsync
+# }
 # fda - including hidden directories
 fda() {
   local dir
@@ -1438,8 +1438,6 @@ export FZF_ALT_C_OPTS=" \
 export FZF_DEFAULT_OPTS='--no-height --no-reverse --no-mouse --multi --cycle --tabstop=4 --track --select-1 --no-scrollbar
 --bind "ctrl-a:select-all"
 --bind "ctrl-d:deselect-all"
---bind "ctrl-t:transform:for _ in $(seq $FZF_POS $FZF_MATCH_COUNT); do echo -n +toggle+up; done"
---bind "ctrl-b:transform:for _ in $(seq 1 $FZF_POS); do echo -n +toggle+down; done"
 --bind "ctrl-n:next-selected,ctrl-p:prev-selected"
 --bind "ctrl-d:half-page-down" --bind="ctrl-u:half-page-up"
 --bind "alt-up:preview-page-up,alt-down:preview-page-down"
@@ -1558,3 +1556,19 @@ dirdiff(){
 
 # Fig post block. Keep at the bottom of this file.
 # [[ -f "$HOME/.fig/shell/bashrc.post.bash" ]] && builtin source "$HOME/.fig/shell/bashrc.post.bash"
+
+[ -f ~/.vim/bin/zoxide ] && { # https://github.com/ajeetdsouza/zoxide same fzf-marks
+eval "$(zoxide init bash)"
+alias zq='zoxide query --interactive'
+alias za='zoxide add $(pwd)'
+alias zr='zoxide remove '
+
+z() {
+  local dir=$(
+    zoxide query --list --score |
+    fzf --height 40% --layout reverse --info inline \
+        --nth 2.. --tac --no-sort --query "$*" \
+        --bind 'enter:become:echo {2..}'
+  ) && cd "$dir"
+}
+}

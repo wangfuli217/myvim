@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Search with ripgrep, open results in fzf
+# Show only matching files instead of individual matches
+# Preview shows individual matches
+# Usage: frgl <query>
+frgl() {
+  local file
+  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
+  file=$(rg --files-with-matches --no-messages "$1" | fzf +m --preview-window="right:wrap" --preview "preview {} | rg --color always --colors 'match:bg:yellow' --context 10 '$1' || rg --color always --context 10 '$1' {}")
+  if [[ -n "$file" ]]; then
+    $EDITOR "$file"
+  fi
+}
+
+frgl "$@"

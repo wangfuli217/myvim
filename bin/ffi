@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Grepping and Parsing
+# https://github.com/rafi/.config
+# Fuzzy find files and edit selected in vim.
+# Dependencies: fzf, ripgrep, bat
+ffi() {
+	BAT_ENV=BAT_STYLE=changes,header-filename,numbers
+	rg --color=always --line-number --no-heading --smart-case "${*:-}" |
+		fzf --ansi --multi --delimiter : \
+			--color "hl:-1:underline,hl+:-1:underline:reverse" \
+			--preview="$BAT_ENV bat --color=always {1} --highlight-line {2}" \
+			--preview-window 'right,50%,border-left,+{2}+3/3,~1' \
+			--bind 'enter:become(vim {1} +{2})'
+}
+
+ffi "$@"

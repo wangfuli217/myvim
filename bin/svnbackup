@@ -1,0 +1,63 @@
+#!/bin/bash
+
+DEBUG=logger
+debug() {
+  ${DEBUG:-:} -s -t svnbackup "${LINENO:-}: $@"
+}
+
+if [ "$#" -eq 1 ]; then
+    echo  "svnbackup give svn status qsdk/package or package" 2>&1
+    exit 1;
+fi
+
+CURRENT='/ftptmp/project/rsync/curr'
+PREVOUS='/ftptmp/project/rsync/prev'
+
+if [ -d "$CURRENT" -o -d "$PREVOUS" ]; then
+    read -p "[Y/N]remove svnbackup directory: ${CURRENT}/${PREVOUS}" confirm
+    case "$confirm" in 
+        Y | y)
+            rm -rf "${CURRENT}"
+            rm -rf "${PREVOUS}"
+            ;;
+        N | n )
+            echo  "svnbackup $@"
+            ;;
+        *)
+            echo "Usage:[Y/N]"
+            ;;
+    esac
+fi
+
+mkdir -p "$CURRENT"
+mkdir -p "$PREVOUS"
+
+svnroot=
+_svnroot(){
+  svnroot=$(svn info | awk -F ':' '/Repository Root/{print $3}')
+  [ -n "${svnroot}" ] && {
+    svnroot="svn:${svnroot}"
+  }
+}
+
+_svnroot
+
+[ -z "${svnroot}" ] && {
+  echo  "svnbackup $@: svn Repository Root not exist: $svnroot" 2>&1
+  exit 1;
+}
+
+for filename in $@; do
+    rsync -R "${filename}" "${CURRENT}"
+    debug "rsync -R ${filename} ${CURRENT}"
+    rsync -R "${filename}" "${PREVOUS}"
+    debug "rsync -R ${filename} ${PREVOUS}"
+done
+
+for filename in $@; do
+    svn cat "${svnroot}/${filename}" > "${PREVOUS}/${filename}" 2>&1 >/dev/null || {
+        rm -f "${PREVOUS}/${filename}"
+        debug "rm -f ${PREVOUS}/${filename}"
+    }
+    debug "svn cat ${svnroot}/${filename} > ${PREVOUS}/${filename}"
+done
