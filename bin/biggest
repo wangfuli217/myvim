@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+# https://github.com/thingsiplay/biggest
+#
+# biggest *.png   # Give a list of files as arguments to report:
+# biggest         # all files and folders in current working directory
+# find ~/.* -maxdepth 0 -type f | biggest # read newline separated list of paths from stdin
+# biggest -b *    # Show a horizontal bar instead file size numbers with option -b
+# biggest -brt *  # -r to add relative percentage; -t: add a total size for all
+# biggest -x Gaming -x '.steam*' * # -x: exclude files by wildcard pattern
+# biggest.sh -d 2 -n 5  ~/.vim     # -d: max depth -n:max number of output lines
+# biggest -s 10k  # K, M, G, T, P, E, Z, Y, R, Q
+
+app_name='biggest'
+app_version='0.5'
+
+exclude=()
+
+OPTIND=1
+while getopts ':hvutpbrlLd:n:s:x:zZ' OPTION; do
+	case "$OPTION" in
+	h)
+		cat <<EOF
+${app_name} [options] [path...]
+
+List biggest files and folders.
+
+options:
+  -h                show help and exit
+  -v                show version and exit
+  -u                size of disk usage rather than apparent size
+  -p                hide size column and output file path only
+  -b                horizontal bar instead file size number
+  -r                relative percentage instead file size number
+  -t                with total size for all commandline arguments
+  -l                follow symbolic links from commandline arguments only
+  -L                follow all symbolic links
+  -d NUM            max depth of directories to traverse
+  -n NUM            max number of output lines
+  -s SIZE           exclude files by min size threshold, negative for max
+  -x GLOB           exclude files by wildcard pattern
+  -z                ignore reading paths from stdin
+  -Z                ignore list of paths from commandline
+
+Copyright © 2024 Tuncay D. <https://github.com/thingsiplay/${app_name}>
+EOF
+		exit 0
+		;;
+	v)
+		echo "${app_name} v${app_version}"
+		exit 0
+		;;
+	u)
+		disk_usage=true
+		;;
+	t)
+		total_size=true
+		;;
+	p)
+		path_only=true
+		;;
+	b)
+		horizontal_bar=true
+		;;
+	r)
+		relative_perc=true
+		;;
+	l)
+		follow_args_links=true
+		;;
+	L)
+		follow_all_links=true
+		;;
+	d)
+		if ! [[ ${OPTARG} =~ ^[0-9]+$ ]]; then
+			echo "Only digits allowed for -d: '${OPTARG}'" >&2
+			exit 1
+		fi
+		max_depth="${OPTARG}"
+		;;
+	n)
+		if ! [[ ${OPTARG} =~ ^[0-9]+$ ]]; then
+			echo "Only digits allowed for -l: '${OPTARG}'" >&2
+			exit 1
+		fi
+		max_lines="${OPTARG}"
+		;;
+	s)
+		size="${OPTARG^^}"
+		if ! [[ ${size} =~ ^[-+]?[0-9]+([KMGTPEZYRQ][B]?)?$ ]]; then
+			echo "Unrecognized size value for -s: '${OPTARG}'" >&2
+			exit 1
+		fi
+		threshold_size="${size}"
+		;;
+	x)
+		exclude+=("${OPTARG}")
+		;;
+	z)
+		ignore_stdin=true
+		;;
+	Z)
+		ignore_cmdline_paths=true
+		;;
+	?)
+		echo "Error parsing options: '${OPTARG}'" >&2
+		exit 1
+		;;
+	esac
+done
+shift "$((OPTIND - 1))"
+
+files=()
+
+if [ -z "${ignore_cmdline_paths}" ] || [ "${ignore_cmdline_paths}" == false ]; then
+	files+=("${@}")
+fi
+
+if [ -z "${ignore_stdin}" ] || [ "${ignore_stdin}" == false ]; then
+	if ! [ -t 0 ]; then
+		while IFS= read -r -t 5 line; do
+			files+=("${line}")
+		done
+	fi
+fi
+
+if [ "${#files[@]}" -eq 0 ]; then
+	mapfile -t files < <(find ./* -maxdepth 0)
+fi
+
+if [ -z "${max_depth}" ]; then
+	max_depth=0
+fi
+
+du_cmd=(
+	du
+	--all
+	--max-depth
+	"${max_depth}"
+	--one-file-system
+)
+
+if [ -z "${max_lines}" ]; then
+	max_lines="${#files[@]}"
+fi
+
+if [ -n "${total_size}" ] || [ "${total_size}" == true ]; then
+	du_cmd+=(--total)
+	max_lines=$((max_lines + 1))
+fi
+
+if [ -z "${disk_usage}" ] || [ "${disk_usage}" == false ]; then
+	du_cmd+=(--apparent-size)
+fi
+
+if [ -n "${follow_args_links}" ] && [ "${follow_args_links}" == true ]; then
+	du_cmd+=(--dereference-args)
+elif [ -n "${follow_all_links}" ] && [ "${follow_all_links}" == true ]; then
+	du_cmd+=(--dereference)
+fi
+
+if [ -n "${threshold_size}" ] && ! [ "${threshold_size}" == "" ]; then
+	du_cmd+=(--threshold "${threshold_size}")
+fi
+
+for x in "${exclude[@]}"; do
+	du_cmd+=(--exclude "${x}")
+done
+
+sort_cmd=(
+	sort
+	--human-numeric-sort
+	--ignore-leading-blanks
+	--reverse
+)
+
+head_cmd=(
+	head
+	--lines
+	"${max_lines}"
+)
+
+awk_cmd=(
+	awk
+	-F'\t'
+	'{print $2}'
+)
+
+if [ -n "${path_only}" ] && [ "${path_only}" == true ]; then
+	"${du_cmd[@]}" -- "${files[@]}" | "${sort_cmd[@]}" | "${head_cmd[@]}" | "${awk_cmd[@]}"
+else
+	if [ -z "${horizontal_bar}" ] || [ "${horizontal_bar}" == false ] && [ -z "${relative_perc}" ] || [ "${relative_perc}" == false ]; then
+		du_cmd+=(--human-readable)
+		"${du_cmd[@]}" -- "${files[@]}" | "${sort_cmd[@]}" | "${head_cmd[@]}"
+	else
+		output=$("${du_cmd[@]}" -- "${files[@]}" | "${sort_cmd[@]}" | "${head_cmd[@]}")
+
+		# \u2592, \u2584, \u2596
+		barcode="$(printf '\u2592')"
+		sizes="$(printf '%s' "${output}" | awk -F '\t' '{print $1}')"
+		paths="$(printf '%s' "${output}" | awk -F '\t' '{print $2}')"
+		sizes_f="$(printf '%s\n' "${sizes}" | sed "s/[0-9]/${barcode}/g")"
+
+		if [ -n "${relative_perc}" ] && [ "${relative_perc}" == true ]; then
+			biggest="$(printf '%s' "${sizes}" | head -n1)"
+			sizes_r=""
+			for s in ${sizes}; do
+				r=$((s * 100 / biggest))
+				sizes_r="$(echo -ne "${sizes_r}\n${r}%")"
+			done
+			sizes_r="$(printf '%s' "${sizes_r}" | sed -E '/^[[:space:]]*$/d')"
+			if [ -n "${horizontal_bar}" ] && [ "${horizontal_bar}" == true ]; then
+				sizes_f="$(
+					paste \
+						<(printf '%s' "${sizes_f}") \
+						<(printf '%s' "${sizes_r}") \
+						--delimiters '\t' | column -s $'\t' -t
+				)"
+			else
+				sizes_f="${sizes_r}"
+			fi
+		fi
+
+		paste \
+			<(printf '%s' "${sizes_f}") \
+			<(printf '%s' "${paths}") \
+			--delimiters '\t' | column -s $'\t' -t
+
+	fi
+fi

@@ -1,0 +1,28 @@
+# Modified version where you can press
+# - CTRL-O to open with `open` command,
+# - CTRL-E or Enter key to open with the $EDITOR
+# - CTRL-S to search inside files
+# - CTRL-C to copy file path to clipboard
+# - CTRL-D to cd to directory of file
+# - CTRL-N to make a new markdown file.
+fs() {
+  local out file key
+  IFS=$'\n' out=($(fzf -i --preview="pygmentize -g {}" --query="$1" --exit-0 --expect=ctrl-o,ctrl-e,ctrl-s,ctrl-m,ctrl-c,ctrl-d,ctrl-x,ctrl-n --bind '?:toggle-preview'))
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  esfile=$(printf %q "$file")
+  if [ -n "$file" ]; then
+    [ "$key" = ctrl-o ] && open "$file" ||
+    [ "$key" = ctrl-s ] && infile "$1" ||
+    [ "$key" = ctrl-c ] && echo "$file" | pbcopy || 
+    [ "$key" = ctrl-d ] && cd $(dirname "$file") ||
+    [ "$key" = ctrl-n ] && code "$1.md" ||
+    vim "$file"
+  fi
+}
+
+infile() {
+  rg "$1" | fzf --height 40% | sed 's/:.*$//g' | sed 's/ /\\ /g' | sed 's/&/\\&/g' | xargs -0 -I {} /bin/zsh -c 'code {}'
+}
+
+fs

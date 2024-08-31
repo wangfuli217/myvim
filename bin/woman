@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Lookup section meaning in `man man`.
+sections='1,8,6,5,7'
+
+show_manual () {
+    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+    man -- "${1%% *}" 2> /dev/null
+}
+export -f show_manual
+
+if selection=$(man -k . --sections="${sections}" \
+               | sort -t ' ' -k 2,2 -k 1,1 \
+               | fzf -q "${*}" \
+                     --cycle \
+                     --border=none \
+                     --bind change:first \
+                     --bind tab:down \
+                     --bind shift-tab:up \
+                     --bind esc:cancel+clear-selection \
+                     --tiebreak=begin,chunk,length \
+                     --reverse \
+                     --preview='show_manual {}' \
+                     --preview-window=down:70%:wrap:border-rounded)
+then
+    show_manual "${selection}"
+fi
