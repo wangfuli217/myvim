@@ -129,6 +129,9 @@ svnqsdk(){
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
   [ -n $1 ] && eval $@
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
 }
 # eval "$(lua /home/wangfuli/git/z.lua/z.lua  --init bash once enhanced)"   # BASH 初始化
@@ -434,6 +437,9 @@ svnbin(){
     cd $(ls -tld ./images/*-ZHCN* | head -n 1 | awk '{print $NF}')
     OLDPWD=${oldpwd}
   }
+  
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+  
 }
 
 alias cdromfs=svnromfs
@@ -445,6 +451,8 @@ svnromfs(){
   [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
+  
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 alias cduser=svnuser
@@ -456,6 +464,8 @@ svnuser(){
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
+  
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 put_user(){
@@ -506,6 +516,7 @@ _svnproduct(){
   done
   [ -d "$(pwd)/product" ] && cd $(pwd)/product
   OLDPWD=${oldpwd}
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 alias cdroot=svnroot
@@ -516,6 +527,7 @@ svnroot(){
   done
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 _gitroot() {
@@ -524,6 +536,7 @@ _gitroot() {
 cdgit() {
   cd "$(_gitroot)/${1:-}";
   [ -n $1 ] && eval $@
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 
@@ -536,6 +549,7 @@ svnqsdk(){
   [ -d qsdk ] && cd $(pwd)/qsdk
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 alias cdpackage=svnpackage
@@ -549,7 +563,9 @@ svnpackage(){
   [ -d package ] && cd package
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
+
 
 
 alias project='export __project=$(pwd)'
@@ -562,7 +578,11 @@ cdproject(){
       cd $(pwd)/$project_var;
     }
   }
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 export project_user_mk_arg=  # '-j1 V=s'
@@ -662,6 +682,9 @@ cdb(){
   export __last_cdb="$cdb_var"
   export __last_cdp="$cdb_var"
   eval xsync
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
 }
 # default cd to last package feeds
@@ -678,6 +701,9 @@ cdp(){
   export __last_cdp="$cdp_var"
   export __last_cdb="$cdp_var"
   [ -d src ] && { cd src; eval xsync; }
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
 }
 # jump file/directory base path
@@ -697,6 +723,9 @@ cdf() {
   export __last_cdb="$cdp_var"
   [ -d src ] && { cd src; eval xsync; }
   fzfe
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
 }
 
@@ -705,6 +734,9 @@ cdrootfs(){
   [ -d build_dir ] || { svnqsdk; }
   cd build_dir/target-*/linux-*/base-files/ipkg-*/base-files
   [ -n $1 ] && eval $@
+
+  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
+
   OLDPWD=${oldpwd}
 }
 
@@ -1057,7 +1089,7 @@ fzfrun(){  # tmux大量日志情况下,分析日志信息
 alias fzfv='vim $(fzf -m --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
 alias fzfe='fzf --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}"'
 alias fzftmp='find /mnt/hgfs/ftptmp -maxdepth 1 -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat {}"'
-alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat {}"'
+alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat -l sh {}"'
 
 viminfo (){
   local files;
@@ -1232,9 +1264,15 @@ bind -x '"\C-x\C-t":fzftmp'    # fzf + tmp                           ==> tmp
 #bind -x '"\C-x\C-x":fzfcheat'  # fzf + cheat                         ==> cheat
 # bind -x '"\C-x\C-u":eu'        # fzf + ubuntu                        ==> ubuntu
 bind -x '"\C-x\C-m":fman'      # fzf + manual                        ==> manual
-bind -x '"\C-x\C-r":ugit'      # fzf + manual                        ==> revert
+# bind -x '"\C-x\C-r":ugit'      # fzf + manual                        ==> revert
+function pet-select() {
+  BUFFER=$(pet search --query "$READLINE_LINE")
+  READLINE_LINE=$BUFFER
+  READLINE_POINT=${#BUFFER}
+}
+bind -x '"\C-x\C-r": pet-select'
 bind -x '"\C-t":__fzf_cd__'    # fzf + ubuntu
-bind -m emacs-standard '"\C-e": " \C-b\C-k \C-u`__fzf_select__`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
+# bind -m emacs-standard '"\C-e": " \C-b\C-k \C-u`__fzf_select__`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
 
 # export FZF_DEFAULT_COMMAND='fd'
 export FZF_COMPLETION_TRIGGER='\\'
@@ -1553,7 +1591,7 @@ dirdiff(){
 }
 
 [ -f ~/.fzf/fzf_complete.sh  ] && source ~/.fzf/fzf_complete.sh
-[ -f ~/.fzf/fzf_frg_frgi_frgl.sh  ] && source ~/.fzf/fzf_frg_frgi_frgl.sh
+# [ -f ~/.fzf/fzf_frg_frgi_frgl.sh  ] && source ~/.fzf/fzf_frg_frgi_frgl.sh
 
 # Fig post block. Keep at the bottom of this file.
 # [[ -f "$HOME/.fig/shell/bashrc.post.bash" ]] && builtin source "$HOME/.fig/shell/bashrc.post.bash"
@@ -1573,3 +1611,7 @@ z() {
   ) && cd "$dir"
 }
 }
+
+alias upnice="sudo renice -n -15 -p $(ps -o pid,cmd | awk '/bash/{print $1}') "
+alias dnnice="sudo renice -n 0 -p $(ps -o pid,cmd | awk '/bash/{print $1}') "
+

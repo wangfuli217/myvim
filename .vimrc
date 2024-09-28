@@ -749,7 +749,7 @@ Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTas
 Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
 Plug 'windwp/vim-floaterm-repl'   " <leader>wr
 Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
-
+Plug 'jgdavey/tslime.vim'         " 
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
 Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
@@ -908,6 +908,8 @@ Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunk
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
 let g:fzf_history_dir = '~/.local/share/fzf-history'
+
+Plug 'yuki-uthman/vim-fzf-dictionary'
 
 Plug 'junegunn/limelight.vim'
 " Color name (:help cterm-colors) or ANSI code
@@ -2395,14 +2397,19 @@ function! s:fzf_task()
     call fzf#run(opts)
 endfunction
 
-let g:asynctasks_config_name = ['.tasks', '.git/tasks.ini', '~/.vim/task_template.ini']
-let g:asynctasks_rtp_config = "task_template.ini"
+let g:asynctasks_config_name = ['.tasks', '.git/tasks.ini', '~/.vim/task_template.ini', '.asynctask', '.svn/tasks.ini'] " 修改默认 .tasks 配置文件的名称
+let g:asynctasks_rtp_config = "task_template.ini" " 修改 ~/.vim 下面的全局配置文件 tasks.ini 的名称
+let g:asynctasks_extra_config = [ $HOME .. "/.vim/asynctasks.ini", '~/.config/nvim/utils/tasks.ini' ] " 额外全局配置,除了 ~/.vim/task_template.ini 外,你还可以指定更多全局配置
 
 command! -nargs=0 AsyncTaskFzf call s:fzf_task()
 noremap <leader>fe :AsyncTaskFzf<cr>
-noremap ?? :AsyncTaskFzf<cr>
 noremap <leader>fE :AsyncTaskLast<cr>
-noremap <leader>f! :AsyncTask async-bash-run <cr>
+noremap <leader>f1 :AsyncTaskLast<cr>
+noremap <leader>f2 :AsyncTaskEdit<cr>
+noremap <leader>f3 :AsyncTask FZF-neigh-files<cr>
+noremap <leader>f4 :AsyncTask FZF-root-files<cr>
+noremap <leader>f5 :AsyncTask file-build<cr>
+noremap <leader>f6 :AsyncTask file-run<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
@@ -2422,5 +2429,28 @@ let g:fzf_layout = { 'down': '~40%' }
 nnoremap <C-]> :Tgs<CR>
 
 
-autocmd VimEnter *  so ~/.vim/shortcut.vim
-autocmd VimEnter *  so ~/.vim/which-key.vim
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:tslime_always_current_session = 1
+let g:tslime_always_current_window = 1
+
+vmap <silent> <Leader>rs <Plug>SendSelectionToTmux
+nmap <silent> <Leader>rs <Plug>NormalModeSendToTmux
+nmap <silent> <Leader>rv <Plug>SetTmuxVarsZ
+
+vmap <leader>f0 <Plug>SendSelectionToTmux
+nmap <leader>f0 <Plug>NormalModeSendToTmux
+
+
+" change the key bindings to your liking
+imap <C-K> <Plug>(fzf-dictionary-open)
+
+" default values
+let g:fzf_dictionary_options = #{
+    \height :   20,
+    \width  :  40,
+    \down   :   0,
+    \right  :   10,
+    \}
+
+" autocmd VimEnter *  so ~/.vim/shortcut.vim
+" autocmd VimEnter *  so ~/.vim/which-key.vim
