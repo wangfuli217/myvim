@@ -1,0 +1,66 @@
+#!/bin/bash
+
+fcd() {
+   selection=$(
+      fd --type d | fzf --multi \
+         --preview='tree -C {}' --preview-window='border-sharp' \
+         --prompt='Dirs > ' \
+         --bind='del:execute(rm -ri {+})' \
+         --bind='ctrl-p:toggle-preview' \
+         --bind='ctrl-d:change-prompt(Dirs > )' \
+         --bind='ctrl-d:+reload(fd --type d)' \
+         --bind='ctrl-d:+change-preview(tree -C {})' \
+         --bind='ctrl-d:+refresh-preview' \
+         --bind='ctrl-f:change-prompt(Files > )' \
+         --bind='ctrl-f:+reload(fd --type f)' \
+         --bind='ctrl-f:+change-preview(bat -f {})' \
+         --bind='ctrl-f:+refresh-preview' \
+         --bind='ctrl-a:select-all' \
+         --bind='ctrl-x:deselect-all' \
+         --header '
+            CTRL-D to display directories | CTRL-F to display files
+            CTRL-A to select all | CTRL-x to deselect all
+            ENTER to edit | DEL to delete
+            CTRL-P to toggle preview
+         '
+   )
+
+if [ -d "$selection" ]; then
+    cd "$selection"
+else
+    cd "$(dirname $selection)"
+fi
+}
+
+
+fvim() {
+   selection=$(
+      fd --type d | fzf --multi \
+         --preview='tree -C {}' --preview-window='border-sharp' \
+         --prompt='Dirs > ' \
+         --bind='del:execute(rm -ri {+})' \
+         --bind='ctrl-p:toggle-preview' \
+         --bind='ctrl-d:change-prompt(Dirs > )' \
+         --bind='ctrl-d:+reload(fd --type d)' \
+         --bind='ctrl-d:+change-preview(tree -C {})' \
+         --bind='ctrl-d:+refresh-preview' \
+         --bind='ctrl-f:change-prompt(Files > )' \
+         --bind='ctrl-f:+reload(fd --type f)' \
+         --bind='ctrl-f:+change-preview(bat -f {})' \
+         --bind='ctrl-f:+refresh-preview' \
+         --bind='ctrl-a:select-all' \
+         --bind='ctrl-x:deselect-all' \
+         --header '
+            CTRL-D to display directories | CTRL-F to display files
+            CTRL-A to select all | CTRL-x to deselect all
+            ENTER to edit | DEL to delete
+            CTRL-P to toggle preview
+         '
+   )
+
+if [ -d "$selection" ]; then
+    vim "$selection"
+else
+    vim "$(dirname $selection)"
+fi
+}

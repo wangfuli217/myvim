@@ -1,0 +1,740 @@
+#!/bin/bash
+# NAME
+#     snip - CLI to manage shell code snippets.
+#
+# SYNOPSIS
+#     snip [command] [options]
+#
+# DESCRIPTION
+#     The snip utility allows users to easily manage bash code snippets.
+#     Users can save and execute commands directly from the bash command line,
+#     with the provided keybindings. It's also possible to perform operations
+#     on the snippet database directly on the command-line.
+#
+# OPTIONS
+#     The first argument is always a command. Commands may or may not have
+#     options (see below for a summary).
+#
+#     add [-f, --file FILENAME] [-D, --delete] [command]
+#         The add command adds a new entry to the snip database. Command must
+#         be properly quoted and will be added "as-is". The program will ask
+#         for a description from the keyboard.
+#
+#         If used with the `--file` option, snip will read the command to be
+#         saved from a filename. Using `--delete` with the `--file` option
+#         causes the file to be deleted after its contents are added to the
+#         database. This is useful when adding content from temporary files.
+#
+#     edit
+#         Invoke the text editor on the database file. The database is a simple
+#         text file using '|' (pipe) as a delimiter. Every line needs to have
+#         three exact fields: timestamp, description, and command. It is
+#         acceptable for the command to contain pipe characters, but not for
+#         the timestamp or description fields. Please note that you can only
+#         edit the current host database (even though list and find will by
+#         default show the contents of all hosts).
+#
+#     find [-q, --query STRING]
+#         The find command invokes FZF on the database and prints the
+#         command-line for the snippet chosen by the user. The `--query` flag
+#         sets the initial query for FZF, if present.
+#
+#     help
+#         This helpful message. :)
+#
+#     list, ls
+#         The list command issues a formatted listing of the snippet database,
+#         including the snippet creation timestamps.
+#
+#     log
+#         Show a git log --oneline of the database directory.
+#
+#     repo <reponame>
+#         Initializes a git repository and start database sync.  <reponame>
+#         must be an URL pointing to a git repository. TIP: You can create
+#         private repos in github or gitlab for free and use them to sync your
+#         snippets.
+#
+#     setup
+#         This command issues the required commands to setup the bash
+#         command-line bindings to easily add snippets and re-run saved
+#         snippets. To install snip, run this from your `~/.bashrc` file:
+#
+#         eval "$(/path/to/snip setup)"
+#
+#         This will create a few functions in your bash namespace and two
+#         bindings. By default they are:
+#
+#         Ctrl-X Ctrl-N
+#             Add the current line as a new snippet. The program will replace
+#             the text in the command-line with the appropriate `snip add`
+#             command.  All the user needs to do is press the ENTER key to
+#             confirm the action and enter a description.
+#
+#         Ctrl-X Ctrl-R
+#             Find and run a saved snippet. This will open an FZF window and
+#             allow the user to choose a snippet to run. Once selected, snip
+#             will replace the current bash input buffer with the command to
+#             run.
+#
+#     sync
+#         Sync local changes with the git repository. This adds any changes
+#         to your database file, commits it and does a git pull -r (rebase)
+#         followed by a git push. The database name contains the host name
+#         so there should be no conflicts. If anything unusual happen, snip
+#         will abort execution with an error message.
+#
+#     version
+#         Show the program version.
+#
+# SETUP
+#     Just add `eval "$(/path/to/snip setup)"` to your `~/.bashrc`. Depending
+#     on your setup, you may need to add it to `~/.profile` as well).
+#
+# CONFIGURATION FILE
+#     On the first run, snip will create an example configuration file with
+#     default values commented out.
+#
+#     Currently, it is possible to override a few items in the config file.  To
+#     do that, edit `~/.config/snip/config.${HOSTNAME}` and/edit add the
+#     following:
+#
+#     # bash keybindings
+#     #
+#     # The two settings below control the bindings for the add and find
+#     # commands, respectively. C-key means Control+key. Use man bash and
+#     # look for the "bind" command to find the full syntax for the sequence.
+#
+#     SNIP_BIND_ADD='"\C-x\C-n"'
+#     SNIP_BIND_FIND='"\C-x\C-r"'
+#
+#     # bat (aka batcat) theme. If you have batcat installed, snip will
+#     # automatically use it to syntax highlight the snippets in the FZF preview
+#     # window. You can override the theme using the setting below.To see all
+#     # available themes, run `cat --list-themes` (or `batcat --list-themes`
+#     # in some distributions.)
+#
+#     BAT_THEME="gruvbox-dark"
+#
+#     The lines above show the default keybindings to add and run commands.
+#     Please keep in mind that this file is sourced directly by the main
+#     program, so it should be a valid bash file. Look for the the key syntax
+#     for "bind -x" in the bash manpage for details.
+#
+#     # This overrides the default editor (normallly $VISUAL or $EDITOR)
+#     # Common choiceses are nano, nvim, vim, etc.
+#
+#     SNIP_EDITOR="nano"
+#
+# REQUIREMENTS
+#     This program requires FZF to run (https://github.com/junegunn/fzf). Please note that
+#     FZF is very popular and available natively in most Linux distributions.
+#
+#     If installed, snip will use `batcat` (aka bat) to provide syntax highlighting
+#     in the preview window.
+#
+# AUTHOR
+#     (C) Sep/2024 by Marco Paganini <paganini [at] paganini [dot] net>
+
+set -o nounset
+
+# Program version
+readonly VERSION="0.0.3"
+
+# Default variables
+readonly ARGV0="$0"
+readonly PROGRAM="${0##*/}"
+readonly XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
+readonly CONFIG_DIR="${XDG_CONFIG_HOME}/snip"
+readonly CONFIG_FILENAME="config.${HOSTNAME?}"
+readonly CONFIG_FILE="${CONFIG_DIR}/${CONFIG_FILENAME}"
+readonly DB_PREFIX="${CONFIG_DIR}/db"
+readonly DB_FILE="${DB_PREFIX}.${HOSTNAME?}"
+
+# Emojis
+readonly E_RIGHT="➡️"
+readonly E_OK="✅"
+readonly E_BAD="❌"
+
+# Overridable defaults
+BAT_THEME="ansi"
+SNIP_EDITOR="${VISUAL:-${EDITOR:-nano}}"
+SNIP_BIND_ADD='"\C-x\C-n"'
+SNIP_BIND_FIND='"\C-x\C-r"'
+
+# Base column command. Behavior of the last column depends on the command
+# (list/find).
+readonly COLUMN_BASE_CMD=(
+  "column"
+  "--table"
+  "--table-columns-limit=4"
+  "--separator=|"
+  "--output-separator=|"
+  "--table-column=name=HOST"
+  "--table-column=name=TIMESTAMP"
+  "--table-column=name=DESCRIPTION")
+
+readonly COLUMN_LIST_CMD=(
+  "${COLUMN_BASE_CMD[@]}"
+  "--table-column=name=COMMAND,wrap")
+
+readonly COLUMN_FIND_CMD=(
+  "${COLUMN_BASE_CMD[@]}"
+  "--table-column=name=COMMAND")
+
+# End of default variables
+
+# usage - print the program usage from top of file comments and exit with an error
+# code. The first line containing the hashbang is skipped. The rest is printed
+# as the usage. Printing will stop at the end of the first block of comments.
+function usage() {
+  local line
+  local first=1
+  while read -r line; do
+    if ((first)); then
+      first=0
+      continue
+    fi
+    if [[ ! "${line}" =~ ^# ]]; then
+      break
+    fi
+    # Skip '# ' at the beginning of each line.
+    cut -c3- <<<"${line}"
+  done <"${ARGV0}"
+  exit 1
+}
+
+function die() {
+  (echo -e "${E_BAD} ${PROGRAM}: $1" | sed 's/^[ \t]*//g' | fmt -w 78) >&2
+  exit 1
+}
+
+# check_empty_db - Check if the database is empty and dies with an
+# error message.
+function check_empty_db() {
+  [[ -s "${DB_FILE}" ]] ||
+    die "database file is empty. Try add something with \"snip add\""
+}
+
+# save - Save a single entry to the database file.
+#
+# Args:
+#   1) hostname
+#   2) description
+#   3) command
+function save() {
+  local hostname="${1?}"
+  local desc="${2?}"
+  local cmd="${3?}"
+
+  echo "${hostname}|$(date '+%Y-%m-%d %H:%M:%S')|${desc}|${cmd}" >>"${DB_FILE}"
+}
+
+# add - Add a command to the database.
+#
+# Parameters:
+#   -f, --file FNAME
+#       Read the command from the named file. This overrides reading the command
+#       from the first argument (below).
+#
+#   --delete
+#       If using "--file", also delete the file after processing.
+#
+#   COMMAND
+#       Read the command from the first argument.
+#
+function add() {
+  # Check Parameters
+  TEMP=$(getopt -o Df: --long file,delete -n "${PROGRAM}" -- "$@")
+  # shellcheck disable=SC2181
+  if [ $? != 0 ]; then
+    echo "Error processing add command. Use ${PROGRAM} help for details..." >&2
+    exit 2
+  fi
+
+  local cmd=""
+  local cmd_from_file=""
+  local infile=""
+  local delete_file=0
+
+  eval set -- "${TEMP}"
+  while :; do
+    case "$1" in
+    -D | --delete)
+      delete_file=1
+      shift
+      ;;
+    -f | --file)
+      infile="$2"
+      cmd_from_file="$(cat "${infile}")"
+      if [[ -z "${cmd_from_file}" ]]; then
+        echo >&2 "${E_BAD} ${PROGRAM} Called add with --file, but the file \"${infile}\" appears to be empty."
+        return
+      fi
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Internal Error."
+      exit 2
+      ;;
+    esac
+  done
+
+  # If cmd_from_file is set, it means we've read it from a file. Otherwise, use
+  # first parameter passed as the command.
+  if [[ -n "${cmd_from_file}" ]]; then
+    cmd="${cmd_from_file}"
+    echo "Command: ${cmd}"
+  else
+    if [[ "$#" -ne 1 ]]; then
+      die "\"add\" command needs an argument with the command to add."
+    fi
+    cmd="$1"
+  fi
+
+  # Make sure the command does not contain newlines
+  if [[ "${cmd}" =~ $'\n' ]]; then
+    die "command cannot contain newlines\nCommand entered:\n${cmd}"
+  fi
+
+  echo "${E_RIGHT} Adding Snippet: ${cmd}"
+
+  # Read description rejecting invalid chars and blank lines.
+  while :; do
+    read -re -p "${E_RIGHT} Description (one line): " desc
+    if [[ "${desc}" =~ [$'\r'$'\n'\|] ]]; then
+      echo "ERROR: Description cannot contain pipe (\"|\") characters or newlines. Please try again."
+      continue
+    fi
+    if [[ -z "${desc}" ]]; then
+      echo "ERROR: Description cannot be empty. Please try again."
+      continue
+    fi
+    break
+  done
+
+  # Save and delete infile if needed.
+  save "${HOSTNAME}" "${desc}" "${cmd}"
+  if ((delete_file)) && [[ -n "${infile}" ]]; then
+    rm -f "${infile}"
+  fi
+}
+
+# shellcheck disable=SC2120
+function edit() {
+  # Check parameters.
+  if [[ "$#" -ne 0 ]]; then
+    die "invalid syntax. Use: ${PROGRAM} edit"
+  fi
+  "${SNIP_EDITOR}" "${DB_FILE}"
+}
+
+# shellcheck disable=SC2120
+# find - Call fzf on the database and returns the command chosen by the user
+# Also accepts "[-q|--query] string" to start search at a given string.
+function find() {
+  check_empty_db
+
+  # Check Parameters
+  TEMP=$(getopt -o q: --long query: -n "${PROGRAM}" -- "$@")
+  # shellcheck disable=SC2181
+  if [ $? != 0 ]; then
+    echo "Error processing find command. Use ${PROGRAM} help for details..." >&2
+    exit 2
+  fi
+
+  local query=""
+
+  eval set -- "${TEMP}"
+  while :; do
+    case "$1" in
+    -q | --query)
+      query="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Internal Error."
+      exit 2
+      ;;
+    esac
+  done
+
+  if [[ "$#" -ne 0 ]]; then
+    die "invalid syntax. Use ${PROGRAM} find"
+  fi
+
+  local fzfcmd=("${FZF_CMD[@]}")
+  if [[ -n "${query}" ]]; then
+    fzfcmd+=("-q" "${query}")
+  fi
+  cat "${DB_PREFIX}".* | "${COLUMN_FIND_CMD[@]}" | "${fzfcmd[@]}" | cut -d'|' -f4-
+}
+
+# snip_bind_add - Bindings to add the current command-line to the database.
+function snip_bind_add() {
+  if [[ -n "${READLINE_LINE}" ]]; then
+    # Empirically discovered that bind apparently turns off icrnl, icanon, and
+    # echo on the TTY. We need to turn it back on so the user can enter the
+    # description. We also need to turn if back OFF at the end, or strangeness
+    # will result (like not being able to edit the line upon return to the
+    # prompt, etc).
+    stty icrnl icanon echo
+    ${SNIP_PROGRAM:-snip} add "${READLINE_LINE}"
+    READLINE_LINE=""
+    READLINE_POINT="${#READLINE_LINE}"
+    stty -icrnl -icanon -echo
+  fi
+}
+
+# snip_bind_find - Bindings to find a snippet and paste it in the current bash
+# command line.
+function snip_bind_find() {
+  local cmd
+  cmd="$("${SNIP_PROGRAM:-snip}" find)"
+  if [[ -n "${cmd}" ]]; then
+    READLINE_LINE="${cmd}"
+    READLINE_POINT="${#READLINE_LINE}"
+  fi
+}
+
+# list - List all entries in all databases.
+function list() {
+  check_empty_db
+  cat "${DB_PREFIX}".* | "${COLUMN_LIST_CMD[@]}"
+}
+
+# setup - Output code to be evaled from ~/.bashrc. This will install bash
+# binds to call snip add and snip find.
+function setup() {
+  type snip_bind_add | sed 1d
+  type snip_bind_find | sed 1d
+  echo "export -f snip_bind_add"
+  echo "export -f snip_bind_find"
+  echo "export SNIP_PROGRAM='${PROGRAM:-snip}'"
+  echo "bind -x '${SNIP_BIND_ADD}: snip_bind_add'"
+  echo "bind -x '${SNIP_BIND_FIND}: snip_bind_find'"
+}
+
+# create_default_config(config_file) - Create a default config file if it doesn't exist.
+function create_default_config() {
+  local cfile="${1?}"
+
+  rm -f "${cfile}"
+  cat <<END | sed 's/^[ \t]*//g' > "${cfile}"
+    # Overridable settings for snip.
+    #
+    # This file is sourced by snip and must be a valid shell program.
+    # Commented out configuration items below are the defaults,
+    # based on your environment.
+
+    # Shell keybinding to add a snippet
+    # export SNIP_BIND_ADD='"\C-x\C-n"'
+
+    # Shell keybinding to find and run a snippet.
+    # export SNIP_BIND_FIND='"\C-x\C-r"'
+
+    # Preferred editor. If not set snip will try to use the editor
+    # defined in $VISUAL and $EDITOR.
+    # export SNIP_EDITOR='${SNIP_EDITOR}'
+
+    # Theme for bat. Use "bat --list-themes" for the list of themes.
+    # export BAT_THEME='${BAT_THEME}'
+END
+}
+
+# get_snippet_formatter - Return a suitable snippet formatter based on the
+# arguments and environment.
+#
+# Args:
+#   1) name of array that will receive the command.
+
+function get_snippet_formatter() {
+  local -n ret="${1?}"
+
+  # By default, use fold.
+  ret=("fold" "-sw" "\${FZF_PREVIEW_COLUMNS}")
+
+  # Use batcat if present.
+  for sf in "bat" "batcat"; do
+    if type -p "${sf}" >&/dev/null; then
+      # shellcheck disable=SC2034
+      ret=(
+        "${sf}"
+        "--theme=\"${BAT_THEME}\""
+        "--wrap=character"
+        "--terminal-width=\"\${FZF_PREVIEW_COLUMNS}\""
+        "--color=always"
+        "--language=bash"
+      )
+      break
+    fi
+  done
+}
+
+# get_fzf_cmd - Return a suitable fzf command.
+#
+# Args:
+#   1) name of the array that will receive the command.
+#   2) The name of the snippet formatter array.
+function get_fzf_cmd() {
+  local -n fzf_cmd_ref="${1?}"
+  local -n formatter_ref="${2?}"
+
+  # shellcheck disable=SC2034
+  fzf_cmd_ref=(
+    "fzf"
+    "--no-multi"
+    "--ansi"
+    "--header-lines=1"
+    "--preview"
+    "cut -d'|' -f4- <<< {} | ${formatter_ref[*]}"
+  )
+}
+
+# git_local_changes - return true if there are changes to be submitted
+# in the local repo (current directory).
+function git_local_changes() {
+  nlines=$(git status -uno --porcelain=v1 | wc -l)
+  [[ nlines -ne 0 ]]
+}
+
+# git_commit - Issue a "git commit" a standard, timestamped message.
+function git_commit() {
+  local timestamp
+  timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+  git commit -m "Commited by 'snip sync' on ${timestamp}." || die "'git commit' failed."
+}
+
+# git_or_die - Issue a generic git command and die with an error message in case of failure.
+#
+# Args:
+#   git commands...
+function git_or_die() {
+  git "${@}" || die "'git ${*}' failed."
+}
+
+# repo_log - Show a 'git log --oneline' of the repository directory.
+function repo_log() {
+  if [[ ! -d "${CONFIG_DIR}/.git" ]]; then
+    die "repository not initialized. Use 'snip repo repository_url' first."
+  fi
+
+  pushd "${CONFIG_DIR}" >&/dev/null || die "unable to chdir to \"${CONFIG_DIR}\""
+  git_or_die log --oneline
+  popd >&/dev/null || die "unable to chdir to original directory."
+}
+
+# repo_setup - Setup a git repository on the config directory.
+#
+# Arg:
+#   - URL pointing to the git repository.
+function repo_setup() {
+  # Check Parameters
+  TEMP=$(getopt -o f --long force -n "${PROGRAM}" -- "$@")
+  # shellcheck disable=SC2181
+  if [ $? != 0 ]; then
+    echo "Error processing add command. Use ${PROGRAM} help for details..." >&2
+    exit 2
+  fi
+
+  local force=0
+
+  eval set -- "${TEMP}"
+  while :; do
+    case "$1" in
+    -f | --force)
+      force=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Internal Error."
+      exit 2
+      ;;
+    esac
+  done
+
+  if [[ "$#" -ne 1 ]]; then
+    die "invalid syntax. Use ${PROGRAM} repo [--force] repository_url"
+  fi
+  local repo_url="${1?}"
+
+  pushd "${CONFIG_DIR}" >&/dev/null || die "unable to chdir to \"${CONFIG_DIR}\""
+
+  local new_repo=0
+  # Initialize repo, if needed.
+  if [[ ! -d ".git" ]]; then
+    git_or_die init -b main
+    new_repo=1
+  fi
+
+  # Add origin if needed.
+  if ! git remote -v | grep -q "^origin"; then
+    git_or_die remote add origin "${repo_url}"
+  fi
+
+  # If we're dealing with a new repo, push the first version of the database
+  # so we can set the default upstream and branch.
+  if ((new_repo)); then
+    git_or_die pull -r origin main
+    git_or_die add "${CONFIG_FILE}"
+    git_or_die add "${DB_FILE}"
+    git_commit
+
+    if ((force)); then
+      git_or_die push -u origin main --force
+    elif ! git push -u origin main; then
+      echo >&2 "
+        🛑 ATTENTION:
+
+        You probably have a conflict between your local and remote
+        repositories. You may want to investigate this manually by looking at
+        the database directory ($CONFIG_DIR) using git commands. Alternatively,
+        you can use 'snip repo ... --force' to fix this situation, but remember
+        that this will OVERWRITE YOUR REMOTE REPOSITORY WITH THE LOCAL CONTENTS."
+      exit 1
+    fi
+  fi
+
+  popd >&/dev/null || die "unable to chdir to original directory."
+}
+
+# repo_sync - Sync the local repo with the remote repository. This will add any
+# changes to the db.<host> file and commit it using the timestamp as a comment.
+# It will then attempt to pull/merge changes and push back any modifications.
+function repo_sync() {
+  if [[ ! -d "${CONFIG_DIR}/.git" ]]; then
+    die "repository not initialized. Use 'snip repo repository_url' first."
+  fi
+
+  pushd "${CONFIG_DIR}" >&/dev/null || die "unable to chdir to \"${CONFIG_DIR}\""
+
+  if git_local_changes; then
+    git_or_die add "${CONFIG_FILE}"
+    git_or_die add "${DB_FILE}"
+    git_commit
+  fi
+
+  # Try to pull a new version of the repo. In case of problems, try a git
+  # rebase --abort So that we don't end up stuck in the middle of a rebase.
+  # This usually means someone changed the main repo directly and a conflict
+  # now exists.
+  if ! git pull -r origin main; then
+    git rebase --abort >&/dev/null
+    echo >&2 "
+      🛑 ATTENTION:
+
+      The 'git pull -r origin main' command failed to fetch your remote
+      repository and merge (rebase) it with your local copy. The messages from
+      git (above) should provide more information on why. You may want to
+      investigate this manually by looking at the database directory
+      ($CONFIG_DIR) using git commands."
+    exit 1
+  fi
+  git_or_die push origin main
+
+  popd >&/dev/null || die "unable to chdir to original directory."
+}
+
+# migrate_from_v0_0_2 - Migrate the config file and database from v0.0.2.
+# - Config file: Rename bare config name to config.HOSTNAME form.
+# - Database: Add host as the first column, if not present.
+function migrate_from_v0_0_2() {
+  # Old config file == new config file without the .HOSTNAME suffix
+  local old_config="${CONFIG_DIR}/${CONFIG_FILENAME%%.*}"
+  if [[ -s "${old_config}" ]]; then
+    mv "${old_config}" "${CONFIG_FILE}"
+    echo "${E_OK} Configuration migrated from v0.0.2"
+  fi
+
+  # This uses a simple logic: If the first field of the file looks like a date,
+  # we assume it to be using v0.0.2. Keep the regexp as simple as possible to
+  # avoid compatibility issues.
+  if head -1 "${DB_FILE}" | grep -q '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'; then
+    sed -i "s/^/${HOSTNAME}|/" "${DB_FILE}"
+    echo "${E_OK} Database migrated from v0.0.2"
+  fi
+}
+
+function main() {
+  if [[ "$#" -lt 1 ]]; then
+    echo -e >&2 "Use: ${PROGRAM} <command> [arguments].\nFor further information, use \"snip help\""
+    exit 1
+  fi
+
+  # Create database directory if needed.
+  local db_dir="${DB_FILE%/*}"
+  mkdir -p "${db_dir}"
+
+  # Migrate config and DB from v0.0.2 if needed.
+  migrate_from_v0_0_2
+
+  [[ -s "${CONFIG_FILE}" ]] || create_default_config "${CONFIG_FILE}"
+  # shellcheck disable=SC1090
+  source "${CONFIG_FILE}"
+
+  get_snippet_formatter SNIPPET_FORMATTER
+  get_fzf_cmd FZF_CMD SNIPPET_FORMATTER
+
+  local cmd="$1"
+
+  case "${cmd}" in
+  add)
+    shift
+    add "${@}"
+    ;;
+  edit)
+    shift
+    edit
+    ;;
+  help)
+    shift
+    usage
+    ;;
+  find)
+    shift
+    find "${@}"
+    ;;
+  list | ls)
+    shift
+    list
+    ;;
+  repo)
+    shift
+    repo_setup "${@}"
+    ;;
+  log)
+    shift
+    repo_log
+    ;;
+  setup)
+    shift
+    setup
+    ;;
+  sync)
+    shift
+    repo_sync
+    ;;
+  version)
+    shift
+    echo "v${VERSION}"
+    exit 0
+    ;;
+  *)
+    die "unknown command: \"${cmd}\"\nRun \"snip help\" to see the list of commands"
+    ;;
+  esac
+}
+
+main "${@}"
