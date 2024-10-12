@@ -11,21 +11,20 @@ vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>"
 " autocmd TermOpen term://* startinsert
 tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
 
-let g:which_key_map =  {}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" F1-F12 显示方式 和 <Leader>F1-F12 插件窗口  快捷键 F5编译/执行 <Leader>F5执行
+" F1-F12 显示方式; 快捷键 F5编译/执行 <Leader>F5执行
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" F1-F12 快捷键
 " 代码显示
-nnoremap <F2> :set nu!   nu?<CR>
-nnoremap <F3> :set list! list?<CR>
-nnoremap <F4> :set relativenumber! relativenumber?<CR>
+"                                                        <leader>f1 :AsyncTaskLast<cr>              <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
+nnoremap <F2> :set nu!   nu?<CR>                       " <leader>f2 :AsyncTaskEdit<cr>              <leader><F2> :TagbarToggle<CR>
+nnoremap <F3> :set list! list?<CR>                     " <leader>f3 :AsyncTask FZF-neigh-files<cr>  <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
+nnoremap <F4> :set relativenumber! relativenumber?<CR> " <leader>f4 :AsyncTask FZF-root-files<cr>   <leader><F4> :VimRegEdit y<CR><CR>
 
+" ccompile <F5>     <--> <leader>f5 :AsyncTask file-build<cr>
 augroup ccompile
     autocmd!
-"    autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1 <CR>
-"    autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1 <CR>
     autocmd Filetype c      nnoremap   <F5> <Esc>:w<CR>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -ljson-c -O1 <CR>
     autocmd Filetype cpp    nnoremap   <F5> <Esc>:w<CR>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1 -ljson-c <CR>
     autocmd Filetype python nnoremap   <F5> <Esc>:w<CR>:AsyncRun python     "$(VIM_FILEPATH)" <CR>
@@ -39,10 +38,9 @@ augroup END
 
 autocmd FocusLost * :wa  | " 离开Vim编辑器时,自动保存文件
 
+" crun <leader><F5> <--> <leader>f6 :AsyncTask file-run<cr>
 augroup crun
     autocmd!
-"    autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc % -Wall -Wextra -Wconversion -std=gnu99 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
-"    autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ % -std=c++11 -g -o %< -pthread -lrt -lm -O1; ./%< <CR>
     autocmd Filetype c    nnoremap <leader><F5> <Esc>:AsyncRun gcc -Wall -Wextra -Wconversion "$(VIM_FILEPATH)" -std=gnu99 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -ljson-c -O1; "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <CR>
     autocmd Filetype cpp  nnoremap <leader><F5> <Esc>:AsyncRun g++ "$(VIM_FILEPATH)" -std=c++11 -g -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" -pthread -lrt -lm -O1  -ljson-c  <CR>
     autocmd Filetype java nnoremap <leader><F5> <ESC>:AsyncRun javac %; java %< <CR>
@@ -59,12 +57,8 @@ if filereadable(".vimenv")
     nnoremap <c-x><c-k> :CMakeHelpPopup <C-R>=expand("<cword>")<CR><CR>  "<c-c> quit popup
 endif
 
-" +[-ljson-c] + [-O1 -fsanitize=address -fno-omit-frame-pointer]
-" nnoremap   <F5> <Esc>:w<CR>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>
-" nnoremap <leader><F5> <Esc>:!clang % -std=gnu99 -ljson-c -g -o %< -pthread -lrt -lm -O1 -fsanitize=address -fno-omit-frame-pointer <CR>:! ./%< <CR>
-
-
-" 代码格式化
+" 代码格式化 current buffer or all opened buffer
+nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 " npm install --save-dev --save-exact prettier # https://prettier.io/docs/en/install.html
 augroup format
     autocmd!
@@ -90,9 +84,9 @@ augroup format
     autocmd Filetype sh    nnoremap twfl :FixWhitespace<CR>:!dos2unix %<CR>:!shfmt -l -w -i 2 -ci %<CR>:%s/\r//ga<CR>
 augroup END
 
-nnoremap <F6> :FixWhitespace<CR>:Autoformat<CR>:w!<CR>:!dos2unix %<CR>
 
-" 静态代码扫描
+" 静态代码扫描 current buffer or all opened buffer
+" nnoremap <leader><F7> :bufdo SyntasticToggleMode<CR><CR>
 augroup format
     autocmd!
     autocmd Filetype c     nnoremap <F7> :AsyncRun (cppcheck   --std=c99 --enable=warning,style -v %)<CR>
@@ -107,19 +101,29 @@ augroup format
     autocmd Filetype sh    nnoremap <leader><F7> :bufdo AsyncRun shellcheck %<CR>
     autocmd Filetype perl  nnoremap <leader><F7> :bufdo AsyncRun perlcritic %<CR>
 augroup END
-" nnoremap <leader><F7> :bufdo SyntasticToggleMode<CR><CR>
 
-
+" MaximizerToggle Windows or FZF Windows
 nnoremap <silent><F8> :MaximizerToggle<CR>
 vnoremap <silent><F8> :MaximizerToggle<CR>gv
 inoremap <silent><F8> <C-o>:MaximizerToggle<CR>
 
+" FloatermNext or FloatermPrev
 nnoremap <F9> :FloatermNext<CR>
 tnoremap <F9> <C-\><C-n>:FloatermNext<CR>
 
+nnoremap <leader><F9> :FloatermPrev<CR>
+tnoremap <leader><F9> <C-\><C-n>:FloatermPrev<CR>
+
+" FloatermToggle or vim-terminal-help
 nnoremap <F10> :FloatermToggle<CR>
 tnoremap <F10> <C-\><C-n>:FloatermToggle<CR>
 
+nnoremap <leader><F10> :call TerminalToggle()<CR><CR>
+tnoremap <leader><F10> :<c-\><c-n>:call TerminalToggle()<CR><CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" <Leader>F1-F12 插件窗口 快捷键 F5编译/执行 <Leader>F5执行
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 自说明帮助
 nnoremap <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 " 扩展窗口
@@ -127,14 +131,15 @@ nnoremap <leader><F2>  :TagbarToggle<CR>                           " :TagbarTogg
 nnoremap <leader><F3>  :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR> " :WMToggle; :ToggleBufExplorer; :NERDTreeToggle
 nnoremap <leader><F4>  :VimRegEdit y<CR><CR>                       " Edit register
 
+" F5 AsyncRun run
+" F6 bufdo: format
+" F7 static-analysis
+
 tnoremap <leader><F8> <C-\><C-n>:Windows<CR>
 nnoremap <leader><F8> :Windows<CR>
 
-nnoremap <leader><F10> :REPLToggle<CR>
-tnoremap <leader><F10> <C-\><C-n>:REPLToggle<CR>
-
+" project tags or file tags
 nnoremap <leader><F11> :call Gutentags()<cr>
-
 function! g:CscopeDone()
 	exec "cs add ".fnameescape(g:asyncrun_text)
 endfunc
@@ -149,70 +154,40 @@ function! g:CscopeUpdate(workdir, cscopeout)
 				\ "-cwd=".fnameescape(l:workdir)." ".
 				\ "cscope -b -R -f -q ".l:cscopeout
 endfunc
-
 nnoremap <F11>         <Esc>:w<CR>:!ctags --language-force=sh % <CR>:set ft=sh<CR>:set tags=./tags<CR>
+
+" cscope generate
 nnoremap <F12>         <Esc>:!find . -name "*.h" -o -name "*.c" -o -name "*.cc" > cscope.files; cscope -bkq -i cscope.files<CR>:call g:CscopeUpdate(".", "cscope.out")<cr>
 nnoremap <leader><F12> <Esc>:!find . -name "*.h" -o -name "*.c" -o -name "*.cc" > cscope.files; cscope -bkq -i cscope.files<CR>:call g:CscopeUpdate(".", "cscope.out")<cr>
 
-
-
-"""" 跳转再优化
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 跳转再优化
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 把下一个查找匹配项所在的行显示在屏幕的最中间
-nnoremap <silent> n nzz
-nnoremap <silent> N Nzz
-nnoremap <silent> * *zz
-nnoremap <silent> # #zz
+nnoremap <silent> n nzz         " 正向重复上一次搜索并居中显示结果
+nnoremap <silent> N Nzz         " 反向重复上一次搜索并居中显示结果
+nnoremap <silent> * *zz         " 向后搜索光标所在的单词并居中显示结果
+nnoremap <silent> # #zz         " 向前搜索光标所在的单词并居中显示结果
 nnoremap <silent> g* g*zz
+" Format Jump
+nnoremap <silent> g; g;zz
+nnoremap <silent> g, g,zz
+
+nnoremap }   }zz                " 向前移动一个段落并居中显示
+nnoremap {   {zz                " 向后移动一个段落并居中显示
+nnoremap ]]  ]]zz               " 跳转到下一个顶层函数并居中显示
+nnoremap [[  [[zz               " 跳转到上一个顶层函数并居中显示
+nnoremap []  []zz               " 跳转到上一个第一列的 } 并居中显示
+nnoremap ][  ][zz               " 跳转到下一个第一列的 } 并居中显示
+
 " 代码跳转后居中 + 多选择跳转:nmap <c-]> g<c-]>
-" nnoremap <silent> <c-]> g<c-]>zz
-" nnoremap <silent> <c-o> g<c-o>zz
-" nnoremap <silent> <c-i> g<c-i>zz
-" 执行删除<silent> 操作时插入断点 Ctrl-G u (类似commit的操作)
-inoremap <silent> <silent> <c-u> <c-g>u<c-u>
-inoremap <silent> <c-w> <c-g>u<c-w>
-inoremap <silent> , ,<c-g>u
-inoremap <silent> . .<c-g>u
-inoremap <silent> / /<c-g>u
-inoremap <silent> \ \<c-g>u
-inoremap <silent> ; ;<c-g>u
-inoremap <silent> : :<c-g>u
-inoremap <silent> ' '<c-g>u
-inoremap <silent> " "<c-g>u
-inoremap <silent> [ [<c-g>u
-inoremap <silent> ] ]<c-g>u
-inoremap <silent> { {<c-g>u
-inoremap <silent> } }<c-g>u
-
-" Movement in insert mode
-inoremap <C-^> <C-o><C-^>
-
-" 编辑copy paste
-vnoremap < <gv                  " > 用于增加缩进
-vnoremap > >gv                  " < 用于减少缩进
-vnoremap <leader>y "+           | " Linux粘贴板
-" vnoremap <leader>y "*         | " Windows粘贴板
-nnoremap <leader>v "+p          | " Linux粘贴板 粘贴
-inoremap <leader>v <esc>"+p     | " Linux粘贴板 粘贴
-vnoremap <leader>v "+p          | " Linux粘贴板 粘贴
-nnoremap <leader>c "+y          | " Linux粘贴板 复制
-vnoremap <leader>c "+y          | " Linux粘贴板 复制
-""" Some shortcuts for system clipboards
-noremap <leader>d "+d
-noremap <leader>D "*d
-noremap <leader>p "+p
-noremap <leader>P "*p
-noremap <leader>y "+y
-noremap <leader>Y "*y
-"" END editing keybindings
-
-" Yank from the cursor to the end of the line, to be consistent with C and D.
-nnoremap Y y$
-xnoremap Y <Esc>y$gv
+nnoremap <silent> <c-]> g<c-]>zz
+nnoremap <silent> <c-o> g<c-o>zz
+nnoremap <silent> <c-i> g<c-i>zz
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" cnoremap and inoremap simulate readline
+" cnoremap simulate readline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" cnoremap
 " Ctrl + p 和 Ctrl + n 来跳转到上一个/下一个条目
 cnoremap <c-n> <down>
 cnoremap <c-p> <up>
@@ -228,26 +203,34 @@ cnoremap :: <c-r>=expand('%:p:h')<cr>/
 
 cnoremap w!! w !sudo tee >/dev/null %   " w! save changes even if file is read-only, provided user has appropriate permissions
 
-" inoremap
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" inoremap simulate readline
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 inoremap <c-a> <home>
 inoremap <c-e> <end>
 inoremap <c-b> <left>
 inoremap <c-f> <right>
 inoremap <c-z> <Esc>zza
+inoremap <c-_> <c-k>       " insert mode as emacs
+inoremap <c-x><c-a> <c-a>  " insert mode as emacs
+inoremap <c-x><c-b> <c-e>  " insert mode as emacs
 
 " Insert mode navigation similar to <C-g>j and <C-g>k
 inoremap <silent> <C-g>l     <right>
 inoremap <silent> <C-g>h     <left>
 inoremap <silent> <C-g><C-l> <right>
 inoremap <silent> <C-g><C-h> <left>
+inoremap <C-^> <C-o><C-^>       " movement in insert mode
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vimrc macros
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " /usr/share/vim/vim81/pack/dist/opt/matchit/autoload
 packadd! matchit    " 扩展了%命令的功能,支持if/else/endif语法结构;支持HTML标签.
-
 set clipboard+=unnamed        " 与windows共享剪切板
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vimrc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -258,19 +241,9 @@ endif
 let mapleader="\\"
 let localleader="\\"
 
-nnoremap s% :source %<cr>     " vim script source
-nnoremap r% :read! %<cr>      " vim script reload
-
-" vimrc defaults file
-source $VIMRUNTIME/defaults.vim
-" Fast reloading of the .vimrc
-nnoremap ss :source $MYVIMRC<cr>
-" Fast editing of .vimrc
-nnoremap ee :tabe $MYVIMRC<cr>
-" When .vimrc is edited, reload it
-nnoremap rr :e %<cr>
-
-" autocmd BufWritePost $MYVIMRC source $MYVIMRC
+source $VIMRUNTIME/defaults.vim     " vimrc defaults file
+nnoremap ss :source $MYVIMRC<cr>    " Fast reloading of the .vimrc
+nnoremap ee :tabe $MYVIMRC<cr>      " Fast editing of .vimrc
 
 augroup enableAutoReloadVimrc
     autocmd!
@@ -278,11 +251,14 @@ augroup enableAutoReloadVimrc
     autocmd BufWritePost *gvimrc if has('gui_running') source source ${MYVIMRC}
 augroup END
 
-augroup enableAutoSaveSession
-    autocmd!
-    autocmd VimLeave * AsyncTask auto-vimleave-mksession
-"  autocmd VimEnter *  AsyncTask auto-vimenter-sosession
-augroup END
+" augroup enableAutoSaveSession
+"     autocmd!
+"     autocmd VimLeave * AsyncTask auto-vimleave-mksession
+"     autocmd VimEnter *  AsyncTask auto-vimenter-sosession
+" augroup END
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 基本配置
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -294,7 +270,6 @@ set splitright              " Open vertical splits on the right
 
 " 高亮显示匹配的括号
 set showmatch           " set show matching parenthesis
-"set paste              " 粘贴保持格式
 
 " 启用鼠标
 " set mouse=a
@@ -310,12 +285,11 @@ language message en_US.UTF-8
 set helplang=cn
 
 " term 与 t_Co 有的颜色主题可能还与终端与终端色数量有关
-" 启用256色
-set t_Co=256
+set t_Co=256    " 启用256色
 " 颜色主题 是放在运行时各路径的 colors/ 子目录的 *.vim 文件
 " colorscheme这是个单独的命令,不是 set 选项.选择一个颜色主题
 " :colorscheme + 主题名 -> :colorscheme helloworld -> colors/helloworld.vim
-colorscheme desert " darkblue
+" colorscheme desert " darkblue
 " background 背景是深色 dark 或浅色 light, 有的 colorscheme 只适于深色或 浅色背景，有的则分别为不同背景色定义不同的颜色主题
 " set background=dark
 
@@ -331,8 +305,10 @@ set history=1000           " 最大历史记录 (default is 20)
 syntax enable
 " 允许用指定语法高亮配色方案替换默认方案 | " Enable syntax highlighting.
 syntax on
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"设置行号 + 行号的列宽
+"""" 设置行号 + 行号的列宽
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set number
 " set numberwidth=4
 " set numberwidth?
@@ -358,7 +334,7 @@ set whichwrap-=<,>,h,l              " 设置光标键不跨行
 "             | | | | +-- <Left> Normal and Visual
 "             | | | +-- "l" Normal and Visual (not recommended)
 "             | | +-- "h" Normal and Visual (not recommended)
-"             | +-- <Space> Normal and Visual
+"             | +-- <leader> Normal and Visual
 "             +-- <BS> Normal and Visual
 set virtualedit-=block,onemore      " 不允许光标出现在最后一个字符的后面
 set wrapscan                        " Searches wrap around end-of-file.
@@ -370,8 +346,10 @@ set shortmess-=S                    " display number of search matches & index o
 set backspace=indent,eol,start      " allow backspacing over everything in insert mode
 set confirm                         " Show confirm dialog
 set hidden                          " Switch between buffers without having to save first
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 显示状态栏
+"""" 显示状态栏
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set laststatus=2
 " 底部显示
 " 在底部显示当前模式
@@ -419,7 +397,8 @@ set modelines=4
 " 如果末行被截短,显示 @@@ 而不是隐藏整行
 set display=truncate
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 空格和tab键
+"""" 空格和tab键
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set nolist
 set listchars=tab:>-,trail:-
 if has('multi_byte') && &encoding ==# 'utf-8'
@@ -429,13 +408,15 @@ else
 endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"禁用错误报警声音和图标
+"""" 禁用错误报警声音和图标
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set noerrorbells
 set novisualbell
 set t_vb=
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"禁止生成临时文件
+"""" 禁止生成临时文件
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set nobackup
 set noswapfile
 
@@ -468,7 +449,7 @@ set viminfo=<100,'100,/50,:100,h,r$TEMP:,s10
 "           |    + 保存最近100个文件中的标记
 "           + 每个寄存器中保存的行数
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 格式控制
+"""" 格式控制
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """" 自动探测
 " 开启文件类型侦测
@@ -513,13 +494,13 @@ set smarttab        " insert tabs on the start of a line according to shiftwidth
 "c文件自动缩进
 set cindent
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 拼写
+"""" 拼写
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "拼写检查
 set nospell
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 搜索
+"""" 搜索
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 高亮搜索结果
 set hlsearch        " Keep matches highlighted.
@@ -545,58 +526,10 @@ set fdm=manual                            "手动折叠
 set foldmethod=indent                     "基于缩进进行代码折叠
 set foldlevel=99
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""
+"""" FZF config
+""""""""""""""""""""""""""""""""""""""""
 let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -f -g ""'
-
-" fzf
-" Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
-nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
-nnoremap <leader>fA :Ag! <C-R><C-A><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) WORD
-nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) word
-nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) WORD
-" or xnoremap <Leader>* "sy:Rg! <C-r>s
-xnoremap <leader>fa y:Ag! <C-R>"<CR>
-xnoremap <leader>fA y:Ag! <C-R>"<CR>
-xnoremap <leader>fr y:Rg! <C-R>"<CR>
-xnoremap <leader>fR y:Rg! <C-R>"<CR>
-
-" :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
-nnoremap <leader>fz :FZF<CR>       | "
-nnoremap <leader>ff :FZF<CR>       | " Files (runs $FZF_DEFAULT_COMMAND if defined)
-nnoremap <leader>fg :FZFFzm<CR>    | " fzf-marks
-nnoremap <leader>fG :GFiles?<CR>   | " Git files (git status)
-nnoremap <leader>fb :Buffers<CR>   | " Open buffers
-nnoremap <leader>fB :GFiles<CR>    | " Git files (git ls-files)
-nnoremap <leader>fl :BLines<CR>    | " Lines in the current buffer
-nnoremap <leader>fL :Lines<CR>     | " Lines in loaded buffers
-nnoremap <leader>ft :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
-nnoremap <leader>fT :Tags<CR>      | " Tags in the project (ctags -R); Tags and Helptags require Perl
-let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --c-kinds=+px --fields=+niazS --extra=+r'
-nnoremap <leader>fm :Marks<CR>     | " Marks
-nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
-nnoremap <leader>fj :Jumps<CR>     | " Jumps
-nnoremap <leader>fw :Windows<CR>   | " Windows
-nnoremap <leader>fh :History<CR>   | " Open buffers history
-nnoremap <leader>f: :History:<CR>  | " Command history
-nnoremap <leader>f/ :History/<CR>  | " Search history
-nnoremap <leader>f? :Helptags<CR>  | " Help tags
-nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
-nnoremap <leader>fS :call fzf#sonictemplate#run()<CR>   | " sonictemplate
-nnoremap <leader>fc :Commits<CR>   | " Git commits (requires fugitive.vim)
-nnoremap <leader>fC :BCommits<CR>  | " Git commits (requires fugitive.vim)
-nnoremap <leader>f; :Commands<CR>  | " Commands
-
-" :Ag [PATTERN]  Ag! open fzf in fullscreen
-" :Rg [PATTERN]  Rg! open fzf in fullscreen
-inoremap <expr> <c-x><c-k> fzf#complete('cat /usr/share/dict/words')      | " cat可以多个文件
-inoremap <expr> <c-x><c-l> fzf#vim#complete#line()                        | " line
-inoremap <expr> <c-x><c-b> fzf#vim#complete#buffer_line()                 | " buffer_line
-" Path completion with custom source command
-inoremap <expr> <c-x><c-f> fzf#vim#complete#path('rg --files')
-
-nmap <leader><tab> <plug>(fzf-maps-n)
-xmap <leader><tab> <plug>(fzf-maps-x)
-omap <leader><tab> <plug>(fzf-maps-o)
 
 " CTRL-A CTRL-Q to select all and build quickfix list
 function! s:build_quickfix_list(lines)
@@ -618,6 +551,65 @@ let g:fzf_layout = { 'window': { 'width': 1.0, 'height': 1.0 } }
 " let g:fzf_vim.preview_window = ['right,50%', 'ctrl-/']
 " let g:fzf_layout = { 'down': '40%' }
 " let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
+
+inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'window': { 'width': 0.2, 'height': 0.9, 'xoffset': 1 }})
+inoremap <expr> <c-x><c-f> fzf#vim#complete("find -print0 <Bar> xargs --null realpath --relative-to " . expand("%:h"))
+inoremap <expr> <c-x><c-l> fzf#vim#complete#line()
+
+" inoremap <c-x><c-k> <plug>(fzf-complete-word)
+" inoremap <c-x><c-f> <plug>(fzf-complete-path)
+" inoremap <c-x><c-l> <plug>(fzf-complete-line)
+
+" show mapping on all modes with <leader><tab>
+nmap <leader><tab> <plug>(fzf-maps-n)
+xmap <leader><tab> <plug>(fzf-maps-x)
+omap <leader><tab> <plug>(fzf-maps-o)
+
+let g:fzf_history_dir = '~/.local/share/fzf-history'
+
+""""""""""""""""""""""""""""""""""""""""
+"""" FZF map
+""""""""""""""""""""""""""""""""""""""""
+" fzf
+" :Ag [PATTERN]  Ag! open fzf in fullscreen
+" :Rg [PATTERN]  Rg! open fzf in fullscreen
+" Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
+nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fA :Ag! <C-R><C-A><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) WORD
+nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) WORD
+" or xnoremap <Leader>* "sy:Rg! <C-r>s
+xnoremap <leader>fa y:Ag! <C-R>"<CR>
+xnoremap <leader>fA y:Ag! <C-R>"<CR>
+xnoremap <leader>fr y:Rg! <C-R>"<CR>
+xnoremap <leader>fR y:Rg! <C-R>"<CR>
+
+
+" :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
+nnoremap <leader>ff :execute 'Files! ' expand('%:h')<CR>       | " Files (runs $FZF_DEFAULT_COMMAND if defined)
+nnoremap <leader>fg :FZFFzm<CR>    | " fzf-marks
+nnoremap <leader>fG :GFiles?!<CR>   | " Git files (git status)
+nnoremap <leader>fb :Buffers!<CR>   | " Open buffers
+nnoremap <leader>fB :execute 'GFiles! ' expand('%:h')<CR>    | " Git files (git ls-files)
+nnoremap <leader>fl :BLines!<CR>    | " Lines in the current buffer
+nnoremap <leader>fL :Lines!<CR>     | " Lines in loaded buffers
+nnoremap <leader>ft :execute "Tags '" . expand('<cword>')<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
+nnoremap <leader>fT :execute "BTags '" . expand('<cword>')<CR>    | " Tags in the project (ctags -R); Tags and Helptags require Perl
+let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --c-kinds=+px --fields=+niazS --extra=+r'
+nnoremap <leader>fm :Marks<CR>     | " Marks
+nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
+nnoremap <leader>fj :Jumps<CR>     | " Jumps
+nnoremap <leader>fw :Windows!<CR>   | " Windows
+nnoremap <leader>fh :History!<CR>   | " Open buffers history
+nnoremap <leader>H :execute ":help " . expand("<cword>")<cr>
+nnoremap <leader>f: :History:<CR>  | " Command history
+nnoremap <leader>f/ :History/<CR>  | " Search history
+nnoremap <leader>f? :Helptags<CR>  | " Help tags
+nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
+nnoremap <leader>fS :call fzf#sonictemplate#run()<CR>   | " sonictemplate
+nnoremap <leader>fc :Commits!<CR>   | " Git commits (requires fugitive.vim)
+nnoremap <leader>fC :BCommits!<CR>  | " Git commits (requires fugitive.vim)
+nnoremap <leader>f; :Commands<CR>  | " Commands
 
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
@@ -644,13 +636,13 @@ let g:vimreg_window_size_edit = 15
 
 let g:fzf_files_command  = 'rg --color=never --hidden --files -g "!.git/"'
 let g:fzf_afiles_command = 'rg --color=never --no-ignore --hidden --files'
-nnoremap <leader>fF :AFiles<CR>     | " include .git
-nnoremap <leader>fu :Mru<CR>        | " MRU files like History
-nnoremap <leader>fU :MruCwd<CR>     | " MRU files like History in current dir
-" nnoremap <leader>fu :MruInCwd<CR> | " MRU files like History in current dir
-nnoremap <leader>fo :BOutline<CR>   | " Outline like BTag
-nnoremap <Leader>fO :Messages<CR>   | " :echomsg output
-nnoremap <Leader>f" :Registers<CR>  | " like junegunn/vim-peekaboo
+nnoremap <leader>fF :AFiles<CR>       | " include .git
+nnoremap <leader>fu :Mru<CR>          | " MRU files like History
+nnoremap <leader>fU :MruCwd<CR>       | " MRU files like History in current dir
+" nnoremap <leader>fu :MruInCwd<CR>   | " MRU files like History in current dir
+nnoremap <leader>fo :BOutline<CR>     | " Outline like BTag
+nnoremap <Leader>fO :Messages<CR>     | " :echomsg output
+nnoremap <Leader>f" :Registers<CR>    | " like junegunn/vim-peekaboo
 nnoremap <Leader>fq :Quickfix<CR>     | " getqflist
 nnoremap <Leader>fQ :LocationList<CR> | " getloclist
 
@@ -661,10 +653,6 @@ nnoremap <Leader>f} :execute 'FzfFunky ' . expand('<cword>')<Cr>
 " Tig revision
 nnoremap <leader>fk :TigOpenCurrentFile<CR>
 nnoremap <leader>fK :TigOpenProjectRootDir<CR>
-
-" ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
-nnoremap <Leader>fd :Fern .<CR>
-nnoremap <Leader>fD :Fern %:h<CR>
 
 " Floaterms
 " nnoremap <Leader>fx :Floaterms<CR>
@@ -702,12 +690,11 @@ command! FzReadme call fzf#run(fzf#wrap(#{
 function s:PlugReadmeFzf(name_and_path) abort
   execute 'PlugReadme' substitute(a:name_and_path, ' .*', '', '')
 endfunction
-
-
 nnoremap <Leader>fP :FzReadme<cr>
 
-let g:any_jump_preview_lines_count = 5
-
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" pechorin/any-jump.vim
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:any_jump_window_width_ratio  = 1.0
 let g:any_jump_window_height_ratio = 1.0
 let g:any_jump_window_top_offset   = 10
@@ -716,15 +703,10 @@ let g:any_jump_max_search_results = 28
 let g:any_jump_preview_lines_count = 10
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" jiangmiao/auto-pairs
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:AutoPairsMapCR = 0
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " .vim/autoload/plug.vim 自动载入脚本 PlugInstall/PlugUpdate/PlugClean/PlugUpgrade/
 " :help packages
-" https://github.com/shiqf/dotfiles TODO Read
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Install vim-plug if it isn't already
 if empty(glob('~/.vim/autoload/plug.vim'))
@@ -734,82 +716,79 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 " mkdir -p ~/.vim/pack/plugins/start 创建一个存储插件的目录
+
 packloadall             "加载所有插件
 silent! helptags ALL    "为所有插件加载帮助文档
-" https://zhuanlan.zhihu.com/p/58816187 插件说明 vim-rainbow 插件
-" https://github.com/yyq123/learn-vim   帮助文档
+
 call plug#begin('~/.vim/plugged')
-Plug 'skywind3000/asyncrun.vim'   " HH/HS/HR
-Plug 'skywind3000/vim-terminal-help'  " \wt; drop abc.txt; <c-\><c-n>; <c-_>"0; :H {shell command}
-Plug 'skywind3000/asyncrun.extra' "
-Plug 'skywind3000/asynctasks.vim' " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
+" Plug 'skywind3000/vim-dict'           " VIM 词表收集
+Plug 'skywind3000/asyncrun.vim'         " hook (AsyncRunPre AsyncRunStart AsyncRunStop) cmd(AsyncRun AsyncStop AsyncReset)
+Plug 'skywind3000/vim-terminal-help'    " (toggle)\wt; drop abc.txt(bash -> vim); :H {shell command}; command H to send:(vim -> bash)
+Plug 'skywind3000/asynctasks.vim'       " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
 " :AsyncTask file-build ; noremap <silent><f5> :AsyncTask file-run<cr>   ; <leader>fe :AsyncTaskFzf
 " :AsyncTask file-run   ; noremap <silent><f9> :AsyncTask file-build<cr> ; <leader>fe :AsyncTaskLast
+" cmd(AsyncTask AsyncTaskEdit AsyncTaskList AsyncTaskMacro AsyncTaskProfile AsyncTaskLast AsyncTaskEnviron)
+Plug 'skywind3000/vim-preview'         " 预览tags中的函数
+Plug 'skywind3000/vim-text-process'    " Text Filter Manager for Vim/NeoVim !!
 
-Plug 'voldikss/vim-floaterm'      " FF/FS FK FT FP/FN/FL/FF
-Plug 'windwp/vim-floaterm-repl'   " <leader>wr
-Plug 'sillybun/vim-repl'          " R/RS https://spacevim.org/use-vim-as-a-perl-ide/   Read–Eval–Print Loop (REPL)
-Plug 'jgdavey/tslime.vim'         " 
+Plug 'voldikss/vim-floaterm'      " cmd(FloatermNew, FloatermPrev, FloatermNext, FloatermFirst, FloatermLast, FloatermUpdate, FloatermToggle FloatermKill FloatermShow FloatermHide FloatermSend)
+Plug 'jgdavey/tslime.vim'         " <Plug>SendSelectionToTmux; <Plug>NormalModeSendToTmux; <Plug>SetTmuxVars(reset the session, window, and pane info)
+
 Plug 'vim-scripts/vim-addon-mw-utils'  " 代码片段提示/函数库
 Plug 'tomtom/tlib_vim'                 " 代码片段提示/函数库
 Plug 'SirVer/ultisnips'                " 代码片段提示/替换引擎
 Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snippets
-" Plug 'skywind3000/vim-dict'            " VIM 词表收集
+
 
 " Plug 'Valloric/YouCompleteMe'          " 代码补全 sudo apt-get install build-essential cmake python-dev python3-dev; ./install.py --clang-completer
 " YCM 的高性能 + coc.nvim 的富交互 + vim-lsp 的 API 设计 = EasyComplete 的极简和纯粹
 " Plug 'nvie/vim-nox'
 " Plug 'Shougo/neocomplete.vim'
-Plug 'jayli/vim-easycomplete'          " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
+Plug 'jayli/vim-easycomplete'            " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 " Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
-Plug 'ervandew/supertab'               " 
+Plug 'ervandew/supertab'               "
 " let g:SuperTabDefaultCompletionType = <c-n>
 " let g:SuperTabContextDefaultCompletionType = <c-n>
 
-Plug 'mattn/webapi-vim'                " Gist 代码段 API
-Plug 'mattn/vim-gist'                  " Gist 代码段 命令
 Plug 'bronson/vim-trailing-whitespace' " 去除文档多余的空白符 ws
 Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
-Plug 'rhysd/vim-clang-format'          " apt install clang-format;
 
-Plug 'easymotion/vim-easymotion'       " \\w
+Plug 'easymotion/vim-easymotion'       " \\w (quick motion)
 Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
 Plug 'vim-scripts/VisIncr'             " :I [#]; :II [# [zfill]]; :IO [#]; :IIO [# [zfill]]; :IX [#]; :IIX [# [zfill]]; :IYMD [#]; :IMDY [#]; :IDMY [#]; :ID [#]
 
 Plug 'tpope/vim-surround'              " cs]{  ds{ds)  ysiw<em>
-Plug 'gcmt/wildfire.vim'               " in Visual mode, type k' to select all text in '', or type k) k] k} kp
 Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
-Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释DF DL DA DB
+
 Plug 'tpope/vim-rsi'                   " readline key
 Plug 'tpope/vim-endwise'               " helps to end certain structures automatically.
-Plug 'tpope/vim-obsession'             " :Obsess  :Obsess!
-
 Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
+Plug 'tpope/vim-fugitive'              " Git
+
+Plug 'vim-scripts/DoxygenToolkit.vim', {'for': ['c', 'cpp']}  " 注释DF DL DA DB
+Plug 'gcmt/wildfire.vim'               " in Visual mode, type k' to select all text in '', or type k) k] k} kp
 
 Plug 'rhysd/clever-f.vim'              " fFtT
-" Plug 'mtth/scratch.vim'                " :Scratch; gs/gS
-" Plug 'metakirby5/codi.vim'             " Codi [filetype]; Codi!;
-" Plug 'alok/notational-fzf-vim'          " :NV :NV! :NV python
-Plug 'jclsn/glow.vim'                    " :Glow  :Glowsplit :Glowpop
-
-Plug 'jiazhoulvke/jianfan'           " 简繁转换 Tcn, Scn
-Plug 'roxma/vim-paste-easy'          " auto paste && nopaste
-Plug 'christoomey/vim-system-copy'   " cp for copying; cv for pasting; cP for line copying; cV for line pasting
+Plug 'roxma/vim-paste-easy'            " auto paste && nopaste
+Plug 'christoomey/vim-system-copy'     " cp for copying; cv for pasting; cP for line copying; cV for line pasting
 " let g:system_copy#copy_command='xclip -sel clipboard'
 " let g:system_copy#paste_command='xclip -sel clipboard -o'
 
+Plug 'rjungemann/registers-everywhere'    " ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
+Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Close) ab;  vrs(Resize) 5 :vrr(Refresh)
+Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
+
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
 Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
-" Plug 'inkarkat/vim-mark'               " '`        multi highlight mark ; <leader>m;
-" Plug 'mbbill/undotree'               " 可视化管理内容变更历史记录的插件
 Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
 Plug 'tenfyzhong/fzf-bookmarks.vim'    " bookmarks <leader>fo
+
 Plug 'chengzeyi/fzf-preview.vim'       "
-Plug 'nmaiti/fzf_cscope.vim'             "
-Plug 'brookhong/cscope.vim'              "
+Plug 'nmaiti/fzf_cscope.vim'           "
+Plug 'brookhong/cscope.vim'            "
 " 's'   symbol: find all references to the token under cursor.
 " 'g'   global: find global definition(s) of the token under cursor
 " 'c'   calls:  find all calls to the function name under cursor.
@@ -819,83 +798,22 @@ Plug 'brookhong/cscope.vim'              "
 " 'i'   includes: find files that include the filename under cursor.
 " 'd'   called: find functions that function under cursor calls.
 " 'a'   Assigned: Assigned to this symbol.
+
 Plug 'tracyone/fzf-funky'                "
-
-Plug 'rjungemann/registers-everywhere'    " ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
-Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Close) ab;  vrs(Resize) 5 :vrr(Refresh)
-Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
-
 Plug 'vim-scripts/autopreview'            "
 
-Plug 'voldikss/vim-translator'         "
 Plug 'ludovicchabant/vim-gutentags'    " 管理tag文件 | ctags索引生成,方便变量,函数的跳转查询  ~/.cache/tags/mnt-d-cygwin64-home-wangfuli-openwrt-netifd-.tags
 Plug 'vim-scripts/taglist.vim'         " 浏览tags,文件内跳转 Tlist   set tags=tags;
 Plug 'preservim/tagbar'                " 浏览tags,文件内跳转 Tagbar  set tags=tags;
-Plug 'skywind3000/vim-preview'         " 预览tags中的函数       F11
+
 Plug 'vim-scripts/a.vim'               " 源文件/头文件之间跳转 :A :AS :AV :AN
-Plug 'wenlongche/SrcExpl'              " :SrcExplToggle
 
-" // Set the height of Source Explorer window 
-let g:SrcExpl_winHeight = 8 
-
-" // Set 100 ms for refreshing the Source Explorer 
-let g:SrcExpl_refreshTime = 100 
-
-" // Set "Enter" key to jump into the exact definition context 
-let g:SrcExpl_jumpKey = "<ENTER>" 
-
-" // Set "Space" key for back from the definition context 
-let g:SrcExpl_gobackKey = "<SPACE>" 
-
-" // In order to avoid conflicts, the Source Explorer should know what plugins except
-" // itself are using buffers. And you need add their buffer names into below list
-" // according to the command ":buffers!"
-let g:SrcExpl_pluginList = [
-        \ "__Tag_List__",
-        \ "_NERD_tree_",
-        \ "Source_Explorer"
-    \ ]
-
-" // The color schemes used by Source Explorer. There are five color schemes
-" // supported for now - Red, Cyan, Green, Yellow and Magenta. Source Explorer
-" // will pick up one of them randomly when initialization.
-let g:SrcExpl_colorSchemeList = [
-        \ "Red",
-        \ "Cyan",
-        \ "Green",
-        \ "Yellow",
-        \ "Magenta"
-    \ ]
-
-" // Enable/Disable the local definition searching, and note that this is not 
-" // guaranteed to work, the Source Explorer doesn't check the syntax for now. 
-" // It only searches for a match with the keyword according to command 'gd' 
-let g:SrcExpl_searchLocalDef = 1 
-
-" // Workaround for Vim bug @https://goo.gl/TLPK4K as any plugins using autocmd for
-" // BufReadPre might have conflicts with Source Explorer. e.g. YCM, Syntastic etc.
-let g:SrcExpl_nestedAutoCmd = 1
-
-" // Do not let the Source Explorer update the tags file when opening 
-let g:SrcExpl_isUpdateTags = 0 
-
-" // Use 'Exuberant Ctags' with '--sort=foldcase -R .' or '-L cscope.files' to 
-" // create/update the tags file 
-let g:SrcExpl_updateTagsCmd = "ctags --sort=foldcase -R ." 
-
-" optional: preview
-let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
-let g:Lf_PreviewResult.snippet = 1
-
-Plug 'vim-scripts/netrw.vim' 
+Plug 'vim-scripts/netrw.vim'
 " netrw Ex/Sex/Vex/Lex 左右分割方式,当前Netrw窗口位于最左边,且高度占满整个屏幕 :Ex sftp://<domain>/<directory> 列出目录内容, :e scp://<domain>/<directory>/<file> 编辑文件
 Plug 'vim-scripts/winmanager'          " 文件系统管理 WMToggle/wm
 Plug 'jlanzarotta/bufexplorer'         " opened buffer管理 \bs \bv \bt \be
 Plug 'preservim/nerdtree'              " directory管理 NERDTreeToggle/tree; :Bookmark命令来收藏当前光标在NERDTree中选择的目录; B列出所以书签
-" Plug 'bagrat/vim-buffet'             " buffer管理
 
-
-" Plug 'kien/ctrlp.vim'                  " 1.<c-f> <c-b> 翻搜索模式 2.<c-n> <c-p> 翻历史 3.<c-r> 可以使用正则搜索文件 4.<c-d> 只能搜索全路径文件; :CtrlP {path} 或 :CtrlPBuffer 或 :CtrlPMRU 或 :CtrlPMixed
 Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunky ' . expand('<cword>')<Cr>
 " <Leader>vv 搜索光标所在单词,并匹配出所有结果 <Leader>vV 搜索光标所在单词,全词匹配
 " <Leader>va vv结果添加到之前的搜索列表        <Leader>vA vV把结果添加到之前的搜索列表
@@ -907,50 +825,36 @@ Plug 'vim-scripts/ctrlp-funky'         " nnoremap <Leader>fu :execute 'CtrlPFunk
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }  " 模糊搜索
 Plug 'junegunn/fzf.vim'
-let g:fzf_history_dir = '~/.local/share/fzf-history'
-
-Plug 'yuki-uthman/vim-fzf-dictionary'
-
 Plug 'junegunn/limelight.vim'
 " Color name (:help cterm-colors) or ANSI code
 let g:limelight_conceal_ctermfg = 'gray'
 let g:limelight_conceal_ctermfg = 240
-
 " Color name (:help gui-colors) or RGB color
 let g:limelight_conceal_guifg = 'DarkGray'
-let g:limelight_conceal_guifg = '#777777'  
+let g:limelight_conceal_guifg = '#777777'
 
-Plug 'junegunn/seoul256.vim'
-set background=dark          " let g:seoul256_background = 236
-" set background=light       " let g:seoul256_background = 256
+Plug 'junegunn/seoul256.vim'    " a low-contrast Vim color scheme based on Seoul Colors.
+set background=dark             " let g:seoul256_background = 236
+Plug 'junegunn/vim-slash'       " provides a set of mappings for enhancing in-buffer search experience in Vim.
+Plug 'junegunn/gv.vim'          " A git commit browser. # :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|<cr>/O
+Plug 'junegunn/goyo.vim'        " :Goyo; :Goyo [dimension]; :Goyo! # Distraction-free writing in Vim.
+Plug 'sunaku/vim-shortcut'      " Shortcut!; Shortcut; :Shortcuts
 
-Plug 'junegunn/vim-slash'
-
-Plug 'sunaku/vim-shortcut'         " like asynctask
-Plug 'tweekmonster/exception.vim'
-
-" Initialize glaive if it's installed.
-if exists('*glaive#Install')
-  call glaive#Install()
-endif
-
-Plug 'phongnh/fzf-settings.vim'                      " Quickfix/Registers/Messages/BOutline
+Plug 'phongnh/fzf-settings.vim' " Quickfix/Registers/Messages/BOutline
 " z= spelling suggestions via fzf https://github.com/junegunn/fzf/issues/2284
-Plug 'https://gitlab.com/mcepl/vim-fzfspell/'
 Plug 'tknightz/projectile.vim'        " :AddProject; :ListProject; :RemoveProject
 Plug 'relastle/vim-tgs'               " :TgsList :Tgs
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}  " fq/fQ
 Plug 'AndrewRadev/quickpeek.vim', {'on': 'Quickfix'}  ":Quickpeek; :QuickpeekStop; :QuickpeekToggle
 Plug 'mattn/vim-sonictemplate'        " Template <TAB>
 Plug 'voldikss/fzf-floaterm'          " :Floaterms
-Plug 'tenfyzhong/fzf-marks.vim'       "
-Plug 'pechorin/any-jump.vim'       " <leader>j :AnyJump; <leader>ab :AnyJumpBack; <leader>al :AnyJumpLastResult
-Plug '4513ECHO/vim-readme-viewer'       " :PlugHelp or :FzReadme
+Plug 'tenfyzhong/fzf-marks.vim'       " fzf-marker
+Plug 'pechorin/any-jump.vim'          " <leader>j :AnyJump; <leader>ab :AnyJumpBack; <leader>al :AnyJumpLastResult
+Plug '4513ECHO/vim-readme-viewer'     " :PlugHelp or :FzReadme
 
 Plug 'liuchengxu/vista.vim/'            " Vista!! Toggle vista view window
 Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}] [-reveal={reveal}] [-stay] [-wait]
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
-
 
 Plug 'azabiong/vim-highlighter'        " HiSet   = 'f<CR>'; HiErase = 'f<BS>'; HiFind  = 'f<Tab>'; HiClear = 'f<C-L>'; # Default key mappings: f Enter, f Backspace, f Ctrl+L, f Tab and t Enter
 Plug 'jiangmiao/auto-pairs'            " 括号自动补全
@@ -965,64 +869,27 @@ Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
 Plug 'hotchpotch/perldoc-vim'          " apt-get install perl-doc; K hotkey
 Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg} / :CMakeHelpOnline [{arg}]
-" markdown + firefox
-" Plug 'iamcco/mathjax-support-for-mkdp' " 实时通过浏览器预览 markdown 文件
-" Plug 'iamcco/markdown-preview.vim'     " 实时通过浏览器预览 markdown 文件 MarkdownPreview MarkdownPreviewStop
 
-" Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
-" Plug 'skywind3000/vim-quickui'
-
-Plug 'embear/vim-localvimrc'
-
-Plug 'vim-syntastic/syntastic'           " ALE 异步语法检查引擎
-" Plug 'yegappan/mru'                    " Most Recently opened/edited files
-" Plug 'yegappan/bufselect'              " access to jump to a buffer from the Vim buffer list
-" Plug 'yegappan/borland'                " Classic borland IDE like Vim color scheme
-
-Plug 'tweekmonster/exception.vim'        " : call exception#trace()
-
-" Plug 'octol/vim-cpp-enhanced-highlight' " c++ syntax highlighting
-" Plug 'xavierd/clang_complete'          " uses clang for accurately completing C and C++ code
-
-Plug 'liuchengxu/vim-which-key'          " c-xc-x hotkey help
-
-Plug 'tpope/vim-fugitive'
+Plug 'vim-syntastic/syntastic'         " ALE 异步语法检查引擎
 Plug 'iberianpig/tig-explorer.vim'
-Plug 'junegunn/gv.vim'                   " :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|<cr>/O
-" Plug 'xolox/vim-lua-ftplugin'          " Lua file type
-" Plug 'tbastos/vim-lua', {'for': 'lua'} " lua的高亮和缩进
-" Plug 'xolox/vim-lua-inspect'           " uses the [LuaInspect] lua-inspect tool to (automatically) perform semantic highlighting of variables in Lua source code
 
-
-" Plug 'christoomey/vim-tmux-navigator'  "
 Plug 'dracula/vim', { 'as': 'dracula' }  " Plug 'liuchengxu/space-vim-dark' + colorscheme space-vim-dark
-Plug 'jacoborus/tender.vim'              "
-Plug 'morhetz/gruvbox'
+Plug 'jacoborus/tender.vim'              " colorscheme
+Plug 'morhetz/gruvbox'                   " colorscheme
 
 Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
-Plug 'vim-scripts/ZoomWin'               " c-w+o
-Plug 'kana/vim-textobj-user'                                            " base text object plugin for below
-Plug 'kana/vim-textobj-indent'                                          " *ai, *ii         for similarly indented to the current line
-Plug 'kana/vim-textobj-fold'                                            " *az, *iz         for fold
-Plug 'kana/vim-textobj-line'                                            " *al, *il         for line : like "^vg_" or "0v$h"
-Plug 'kana/vim-textobj-syntax'                                          " *ay, *iy         for syntax highlighted
-Plug 'kana/vim-textobj-entire'                                          " *ae, *ie         for entire content
-Plug 'kana/vim-textobj-function', { 'for':['c', 'cpp', 'vim', 'java'] } " daf/vif yaF/viF  for functions
-Plug 'sgur/vim-textobj-parameter'                                       " i,/a, function(param_a, param_b, param_c)   function(param_a, param_b, param_c)
-                                                                        "                |<--->|  |<--->|  |<--->|             |<----->|
-Plug 'gaving/vim-textobj-argument'                                      " daa cia        function(int arg1,    ch<press 'daa' here>ar* arg2="a,b,c(d,e)")
-Plug 'lambdalisue/suda.vim'
+Plug 'lambdalisue/suda.vim'                                             " sudo
 call plug#end()
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" colorscheme
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 colorscheme dracula
 colorscheme gruvbox
 colorscheme tender
 let g:airline_theme = 'tender'
 
-
-" neocompletecache -> neocomplete -> deoplete/neocompletion-manager(下一代通用补全)
-" CtrlP / CommandT -> Unite.vim + vimproc -> denite.vim
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'SirVer/ultisnips' + 'honza/vim-snippets'
@@ -1051,9 +918,26 @@ let g:easycomplete_tab_trigger="<tab>"    " 唤醒补全按键:默认 Tab 键
 let g:easycomplete_scheme="sharp"             " 菜单样式可以使用插件自带的四种样式(dark, light, rider, sharp)
 let g:easycomplete_diagnostics_next = "<C-n>"
 let g:easycomplete_diagnostics_prev = "<C-p>"
-let g:easycomplete_diagnostics_enable = 0
-let g:easycomplete_lsp_checking = 0
-let g:easycomplete_signature_enable = 1
+let g:easycomplete_diagnostics_enable = 1
+
+let g:easycomplete_lsp_checking = 0      " check LSP server 是否安装
+let g:easycomplete_signature_enable = 0  " lsp signature checking
+let g:easycomplete_tabnine_enable = 0         " disaable TabNine
+let g:easycomplete_tabnine_config = {
+            \ 'line_limit': 1000,
+            \ 'max_num_result' : 3,
+            \ }
+
+let g:easycomplete_cursor_word_hl = 0         " Highlight the symbol when holding the cursor
+let g:easycomplete_nerd_font = 0              " Using nerdfont is highly recommended
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" supertab
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:SuperTabRetainCompletionType = 2 " 0 不记录上次的补全方式 1 记住上次的补全方式,直到用其他的补全命令改变它 2 记住上次的补全方式,直到按ESC退出插入模式为止
+let g:SuperTabDefaultCompletionType = "context"
+let g:SuperTabContextDefaultCompletionType = "<c-x><c-x>"
+let g:SuperTabCompleteCase = 'match'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'skywind3000/vim-dict'
@@ -1069,134 +953,13 @@ let g:vim_dict_config = {
   \ }
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 'mattn/vim-gist'
-" https://www.5axxw.com/wiki/content/8sjzz7
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:gist_clip_command = 'xclip -selection clipboard' | " Linux
-" let g:gist_clip_command = 'putclip'                  | " cygwin
-let g:gist_detect_filetype = 1
-let g:gist_open_browser_after_post = 1
-let g:gist_show_privates = 1
-let g:gist_post_private = 1
-
-let github_user = 'wangfuli217'
-" 命令小结
-" :Gist       发布Gist
-" :Gist -p    发布私有Gist
-" :Gist -P    发布公开Gist
-" :Gist -e    更新Gist文件名
-" :Gist -s    更新Gist描述
-" :Gist -d    删除Gist
-" :Gist -f    克隆Gist
-" :Gist +1    星标Gist
-" :Gist -1    取消星标Gist
-" :Gist -l    列示Gist
-" :Gist -b    在浏览器中查看Gist
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'bronson/vim-trailing-whitespace'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nnoremap trailingwhite :FixWhitespace<cr>
 nnoremap tw :FixWhitespace<cr>
-
-" Strip whitespace - trailing whitespace - with (,ss)
-function! StripWhitespace()
-    let save_cursor = getpos(".")
-    let old_query = getreg('/')
-    :%s/\s\+$//e
-    call setpos('.', save_cursor)
-    call setreg('/', old_query)
-endfunction
-" nnoremap <Leader>ss :call StripWhitespace()<cr>
-
-" Strip annoying windows newline characters ^M
-function! StripWinLineBreaks()
-    let save_cursor = getpos(".")
-    let old_query = getreg('/')
-    :%s///g
-    call setpos('.', save_cursor)
-    call setreg('/', old_query)
-endfunction
-" nnoremap <Leader>sn :call StripWinLineBreaks()<cr>
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 'rhysd/vim-clang-format'
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" http://clang.llvm.org/docs/ClangFormatStyleOptions.html
-let g:clang_format#style_options = {
-            \ 'BasedOnStyle' : 'Google',
-            \ 'ColumnLimit' : 160,
-            \ 'MaxEmptyLinesToKeep' : 2,
-            \ 'SortIncludes' : 'false',
-            \ 'AllowShortLoopsOnASingleLine' : 'false',
-            \ 'AllowShortLambdasOnASingleLine ' : 'false',
-            \ 'AllowShortBlocksOnASingleLine' : 'false',
-            \ 'AllowShortFunctionsOnASingleLine' : 'false',
-            \ 'AllowShortCaseLabelsOnASingleLine' : 'false',
-            \ 'AllowShortIfStatementsOnASingleLine' : 'false',
-            \ 'KeepEmptyLinesAtTheStartOfBlocks': 'false',
-            \ }
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 'tpope/vim-commentary'
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"为python和shell等添加注释
-autocmd FileType python,shell,coffee set commentstring=#\ %s
-"修改注释风格
-autocmd FileType java,c,cpp set commentstring=//\ %s
-
-" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
-" gcc: 注释或反注释
-" gcap: 注释一段
-" gc: visual 模式下直接注释所有已选择的行
-" gcc{motion}            Comment or uncomment lines that {motion} moves over.
-" gcc                    Comment or uncomment [count] lines.
-" {Visual}gc             Comment or uncomment the highlighted lines.
-" gc                     Text object for a comment (operator pending mode only.)
-" gcgc                   Uncomment the current and adjacent commented lines.
-" :[range]Commentary     Comment or uncomment [range] lines
-
-let g:which_key_map.d = {
-            \ 'name' : '+commentary/DoxygenToolkit',
-            \ }
-let g:which_key_map.d.gc = ['gcc{motion}', 'gcc{motion} motion moves over lines']
-let g:which_key_map.d.gm = ['[count]gcc',  '[count]gcc [count] lines']
-let g:which_key_map.d.gv = ['{Visual}gc',  '{Visual}gc highlighted lines']
-let g:which_key_map.d.gr = ['[count]gcc',  ':[range]Commentary']
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'tpope/vim-unimpaired'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:which_key_map['u'] = {
-            \ 'name' : '+unimpaired' ,
-            \ 'a' :   ['[]a', 'previous/next'],
-            \ 'A' :   ['[]A', 'first/last'],
-            \ 'b' :   ['[]b', 'bprevious/bnext'],
-            \ 'B' :   ['[]B', 'bfirst/blast'],
-            \ 'l' :   ['[]l', 'lprevious/lnext'],
-            \ 'L' :   ['[]L', 'lfirst/llast'],
-            \ 'q' :   ['[]q', 'cprevious/cnext'],
-            \ 'Q' :   ['[]Q', 'cfirst/clast'],
-            \ 't' :   ['[]t', 'tabprevious/tabnext'],
-            \ 'T' :   ['[]T', 'tabfirst/tablast'],
-            \ 'f' :   ['[]f', 'f prev/next in dir'],
-            \ 'n' :   ['[]n', 'SCM conflict prev/next'],
-            \ 'Space' : [ '[]<Space>', 'n<Space> line prev/next'],
-            \ 'yob'   : [ 'ob', 'background'],
-            \ 'yoc'   : [ 'oc', 'cursorline'],
-            \ 'yod'   : [ 'od', 'diff'],
-            \ 'yoh'   : [ 'oh', 'hlsearch'],
-            \ 'yoi'   : [ 'oi', 'ignorecase'],
-            \ 'yol'   : [ 'ol', 'list'],
-            \ 'yon'   : [ 'on', 'number'],
-            \ 'yor'   : [ 'or', 'relativenumber'],
-            \ 'you'   : [ 'ou', 'cursorcolumn'],
-            \ 'yov'   : [ 'ov', 'virtualedit'],
-            \ 'yow'   : [ 'ow', 'wrap'],
-            \ 'yox'   : [ 'ox', 'cursorline/cursorcolumn' ],
-            \ 'yoz'   : [ 'oz', 'spell'],
-            \ }
-nnoremap <silent> <c-x><c-u> :WhichKey! which_key_map.u<CR>
-nnoremap <silent> <c-x>u     :WhichKey! which_key_map.u<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'vim-scripts/DoxygenToolkit.vim'
@@ -1216,11 +979,6 @@ let g:DoxygenToolkit_dateTag            = "@modify   "
 let g:DoxygenToolkit_classTag           = "@class    "
 let g:DoxygenToolkit_paramTag_pre       = "@param    "
 let g:DoxygenToolkit_returnTag          = "@return   "
-" let g:DoxygenToolkit_blockHeader  = '/*********************************************************************'
-" let g:DoxygenToolkit_blockFooter  = '********************************************************************/'
-" let g:DoxygenToolkit_startCommentTag='/*********************************************************************'
-" let g:DoxygenToolkit_endCommentTag = '********************************************************************/'
-
 let g:DoxygenToolkit_commentType = "C"
 
 nnoremap <Leader>df :Dox<CR>               | " 生成函数或者类声明
@@ -1228,14 +986,6 @@ nnoremap <Leader>da :DoxAuthor<CR>         | " 生成作者信息
 nnoremap <Leader>db :DoxBlock<CR>          | " 在后面的行中插入一个doxygen块
 nnoremap <Leader>dl :DoxLic<CR>            | " 生成授权说明
 nnoremap <Leader>du :DoxUndoc(DEBUG)!<CR>  | " 用于忽略代码块
-
-let g:which_key_map.d.df = [':Dox',         'function/class declare']
-let g:which_key_map.d.da = [':DoxAuthor',   'author declare']
-let g:which_key_map.d.db = [':DoxBlock',    'block commentary']
-let g:which_key_map.d.dl = [':DoxLic',      'license declare']
-let g:which_key_map.d.du = [':DoxUndoc(DEBUG)!',  'ignore block']
-nnoremap <silent> <c-x><c-d>    :WhichKey! which_key_map.d<CR>
-nnoremap <silent> <c-x>d        :WhichKey! which_key_map.d<CR>
 
 let s:year = strftime("%Y")
 let s:gplv3 = "\<enter>"
@@ -1258,6 +1008,24 @@ let s:gplv3 = s:gplv3 . "\<enter>"
 let s:gplv3 = s:gplv3 . "wangfuli <wangfl217@126.com>"
 let g:DoxygenToolkit_licenseTag  = s:gplv3
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 'tpope/vim-commentary'
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"为python和shell等添加注释
+autocmd FileType python,shell,coffee set commentstring=#\ %s
+"修改注释风格
+autocmd FileType java,c,cpp set commentstring=//\ %s
+
+" 单行注释用 gcc，多行注释先进入可视模式再 gc，取消注释用 gcu
+" gcc: 注释或反注释
+" gcap: 注释一段
+" gc: visual 模式下直接注释所有已选择的行
+" gcc{motion}            Comment or uncomment lines that {motion} moves over.
+" gcc                    Comment or uncomment [count] lines.
+" {Visual}gc             Comment or uncomment the highlighted lines.
+" gc                     Text object for a comment (operator pending mode only.)
+" gcgc                   Uncomment the current and adjacent commented lines.
+" :[range]Commentary     Comment or uncomment [range] lines
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ludovicchabant/vim-gutentags setting
@@ -1354,15 +1122,6 @@ nnoremap tagbar :TagbarToggle<CR>           " 将开启tagbar的快捷键设置�
 let g:tagbar_ctags_bin='/usr/bin/ctags'     " 设置ctags所在路径
 let g:tagbar_sort = 0                       " 设置标签不排序,默认排序
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" bfrg/vim-qf-preview setting
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:qfpreview = {'height': '40', 'offset': '10', 'sign': {'text': '>>', 'texthl': 'Search'}}
-
-augroup qfpreview
-    autocmd!
-    autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
-augroup END
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " winmanager setting
@@ -1371,6 +1130,29 @@ let g:winManagerWindowLayout = "BufExplorer,FileExplorer|TagList"
 let g:winManagerWidth = 30
 let g:defaultExplorer = 0
 nnoremap wm :WMToggle<cr>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" netrw setting
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 1 用水平拆分窗口打开文件
+" 2 用垂直拆分窗口打开文件
+" 3 用新建标签页打开文件
+" 4 用前一个窗口打开文件
+let g:netrw_browse_split = 0   "控制 <CR> 直接在当前窗口打开光标下文件
+let g:netrw_sort_by = 'time'
+let g:netrw_sort_direction = 'reverse'
+let g:netrw_liststyle = 3       " tree 模式显示风格
+let g:netrw_banner = 0          " 显示帮助信息
+let g:netrw_winsize = 25        " 占用宽度
+let g:netrw_list_hide= '\(^\|\s\s\)\zs\.\S\+' " 需要隐藏的文件
+let g:netrw_preview = 1         " 默认是水平分割, 此项设置使之垂直分割
+let g:netrw_alto = 0            " 控制预览窗口位于左侧或右侧, 与 netrw_preview 共同作用
+
+" :Hexplore 在下边分屏浏览目录  Hexplore! 在上边分屏浏览目录
+" :Vexplore 在左边分屏浏览目录  Vexplore! 在右边分屏浏览目录
+" :Ex   全屏进入 netrw, 全称是 :Explorer 或者 :E
+" :Sex> 水平分割进入 netrw
+" :Vex> 垂直分割进入 netrw
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " cscope setting
@@ -1424,7 +1206,8 @@ endif
 
 
 nnoremap <leader>fi :call CscopeFindInteractive(expand('<cword>'))<CR>
-nnoremap <leader>fI :call ToggleLocationList()<CR> 
+nnoremap <leader>fI :call ToggleLocationList()<CR>
+
 " ----------------------------------------------------------------------------
 " :CSBuild
 " ----------------------------------------------------------------------------
@@ -1482,43 +1265,6 @@ augroup cscope
 augroup END
 
 nnoremap <C-\>A :cs add cscope.out<CR><CR>
-let g:which_key_map['f'] = {
-            \ 'name' : '+cscope' ,
-            \ 's' :   [':cs find s', 'C symbol'],
-            \ 'g' :   [':cs find g', 'C definition'],
-            \ 'c' :   [':cs find c', 'functions calling this function'],
-            \ 't' :   [':cs find t', 'this text string'],
-            \ 'e' :   [':cs find e', 'this egrep pattern'],
-            \ 'f' :   [':cs find f', 'this file'],
-            \ 'i' :   [':cs find i', 'files #including this file'],
-            \ 'd' :   [':cs find d', 'functions called by this function'],
-            \ 'C' :   ['create cscope', 'create cscope'],
-            \ 'I' :   ['import cscope', 'import cscope'],
-            \ }
-nnoremap <silent> <c-x><c-f> :WhichKey! which_key_map.f<CR>
-nnoremap <silent> <c-x>f     :WhichKey! which_key_map.f<CR>
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" netrw setting
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" 1 用水平拆分窗口打开文件
-" 2 用垂直拆分窗口打开文件
-" 3 用新建标签页打开文件
-" 4 用前一个窗口打开文件
-let g:netrw_browse_split = 0   "控制 <CR> 直接在当前窗口打开光标下文件
-let g:netrw_sort_by = 'time'
-let g:netrw_sort_direction = 'reverse'
-let g:netrw_liststyle = 3       " tree 模式显示风格
-let g:netrw_banner = 0          " 显示帮助信息
-let g:netrw_winsize = 25        " 占用宽度
-let g:netrw_list_hide= '\(^\|\s\s\)\zs\.\S\+' " 需要隐藏的文件
-let g:netrw_preview = 1         " 默认是水平分割, 此项设置使之垂直分割
-let g:netrw_alto = 0            " 控制预览窗口位于左侧或右侧, 与 netrw_preview 共同作用
-
-" :Hexplore 在下边分屏浏览目录  Hexplore! 在上边分屏浏览目录
-" :Vexplore 在左边分屏浏览目录  Vexplore! 在右边分屏浏览目录
-" :Ex   全屏进入 netrw, 全称是 :Explorer 或者 :E
-" :Sex> 水平分割进入 netrw
-" :Vex> 垂直分割进入 netrw
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " MattesGroeger/vim-bookmarks
@@ -1633,120 +1379,13 @@ let g:cmakehelp = {
         \ 'top': "\<c-t>",
         \ 'bottom': "\<c-g>"
         \ }
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " preservim/nerdtree
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Add spaces after comment delimiters by default
-let g:NERDSpaceDelims = 1
-
-" Use compact syntax for prettified multi-line comments
-let g:NERDCompactSexyComs = 1
-
-" Align line-wise comment delimiters flush left instead of following code indentation
-let g:NERDDefaultAlign = 'left'
-
-" Set a language to use its alternate delimiters by default
-let g:NERDAltDelims_java = 1
-
-" Add your own custom formats or override the defaults
-" let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' }
-
-" Allow commenting and inverting empty lines (useful when commenting a region)
-let g:NERDCommentEmptyLines = 1
-
-" Enable trimming of trailing whitespace when uncommenting
-let g:NERDTrimTrailingWhitespace = 1
-
-" Enable NERDCommenterToggle to check all selected lines is commented or not
-let g:NERDToggleCheckAllLines = 1
-
 "NERDTree 配置:tree快捷键显示当前目录树
 nnoremap tree :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
-let NERDTreeWinSize=25
-" autocmd VimEnter * NERDTree                      " 自动开启Nerdtree
-" let g:nerdtree_tabs_open_on_console_startup = 1  " 打开vim后自动开启目录树
-" 忽略一下文件显示
-let NERDTreeIgnore=['\.pyc','\~$','\.swp','\.o','\.out','\.fcgi','\.cgi','\.a','\.so','\.svn','\.vscode','\.git','\.project','.\root']
-" 显示标记
-let g:NERDTreeIndicatorMapCustom = {
-            \ "Modified"  : "✹",
-            \ "Staged"    : "✚",
-            \ "Untracked" : "✭",
-            \ "Renamed"   : "➜",
-            \ "Unmerged"  : "═",
-            \ "Deleted"   : "✖",
-            \ "Dirty"     : "✗",
-            \ "Clean"     : "✔︎",
-            \ 'Ignored'   : '☒',
-            \ "Unknown"   : "?"
-            \ }
-""修改树的显示图标
-let g:NERDTreeDirArrowExpandable = '►'
-let g:NERDTreeDirArrowCollapsible = '▼'
-let NERDTreeAutoCenter=1
 
-" 是否默认显示书签列表
-let NERDTreeShowBookmarks = 1
-" 是否默认显示隐藏文件
-let NERDTreeShowHidden = 1
-
-" 不知道是什么含义，再开发机上，含有+的字符打不开，文件名不可能含有+
-" 因此设置为+，不设置的话，第一个字符都是虚的。
-let g:NERDTreeNodeDelimiter = '+'
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" kien/ctrlp.vim
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" <c-o> - 打开被 <c-z> 标记的文件 1. t - 在新标签页中打开; 2. v - 在一个竖直分割窗口中; 3. h - 在一个水平分割窗口中; 4. r - 在当前窗口中打开.
-" <c-n> 提示符面板历史里的下一个字符串; <c-p> 提示符面板历史里的上一个字符串.
-" let g:ctrlp_working_path_mode = 'ra'
-" let g:ctrlp_map = '<c-p>'
-" let g:ctrlp_cmd = 'CtrlP'
-" let g:ctrlp_custom_ignore = {
-"             \ 'file': '\v\.(exe|so|dll|fcgi|cgi|\.o|\.a|\.git|\.svn|\.project|\.root)$',
-"             \ 'link': 'some_bad_symbolic_links',
-"             \ }
-" let g:ctrlp_by_filename = 1
-" let g:ctrlp_regexp = 1
-" let g:ctrlp_match_window_bottom = 1
-" let g:ctrlp_max_height = 15
-" let g:ctrlp_match_window_reversed = 0
-" let g:ctrlp_mruf_max = 500
-" let g:ctrlp_follow_symlinks = 1
-" let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:10,results:20'
-" let g:ctrlp_user_command = 'find -L %s -type f'        " MacOSX/Linux
-" let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" junegunn/fzf.vim (above)
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" ^ 表示前缀精确匹配。要搜索一个以"welcome"开头的短语：^welcom。
-" $ 表示后缀精确匹配。要搜索一个以"my friends"结尾的短语：friends$。
-" ' 表示精确匹配。要搜索短语"welcom my friends"：'welcom my friends。
-" | 表示"或者"匹配。要搜索"friends"或"foes"：friends | foes。
-" ! 表示反向匹配。要搜索一个包含"welcome"但不包含"friends"的短语：welcome !friends
-"
-" function! s:fzf_statusline()
-"   " Override statusline as you like
-"   highlight fzf1 ctermfg=161 ctermbg=251
-"   highlight fzf2 ctermfg=23 ctermbg=251
-"   highlight fzf3 ctermfg=237 ctermbg=251
-"   setlocal statusline=%#fzf1#\ >\ %#fzf2#fz%#fzf3#f
-" endfunction
-"
-" autocmd! User FzfStatusLine call <SID>fzf_statusline()
-"
-" " Mapping selecting mappings
-" nmap <leader><tab> <plug>(fzf-maps-n)
-" xmap <leader><tab> <plug>(fzf-maps-x)
-" omap <leader><tab> <plug>(fzf-maps-o)
-"
-" " Insert mode completion
-" imap <c-x><c-k> <plug>(fzf-complete-word)
-" imap <c-x><c-f> <plug>(fzf-complete-path)
-" imap <c-x><c-l> <plug>(fzf-complete-line)
-
-" --preview-window 'up:40%'
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-syntastic/syntastic
 " :help syntastic-commands
@@ -1869,19 +1508,6 @@ nmap              <Leader>gg :Git<CR>gg<c-n>
 nnoremap <silent> <leader>gt :TigOpenCurrentFile<CR>
 nnoremap <silent> <leader>gT :TigOpenProjectRootDir<CR>
 
-" ----------------------------------------------------------------------------
-" :Root | Change directory to the root of the Git repository
-" ----------------------------------------------------------------------------
-function! s:root()
-  let root = systemlist('git rev-parse --show-toplevel')[0]
-  if v:shell_error
-    echo 'Not in git repo'
-  else
-    execute 'lcd' root
-    echo 'Changed directory to: '.root
-  endif
-endfunction
-command! Root call s:root()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " iberianpig/tig-explorer.vim (git-tig)
@@ -1936,11 +1562,79 @@ command! -bang -nargs=+ -range=0 -complete=file HH call asyncrun#run('<bang>', '
 command! -bar  -bang -nargs=0                   HS call asyncrun#stop('<bang>')
 command! -nargs=0                               HR call asyncrun#reset()
 
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" skywind3000/vim-text-process
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" text-processor search path, a comma separated string
+let g:textproc_root = '~/.vim/text'
+
+" preview window split method: auto/vert/horizon
+let g:textproc_split = "vert"
+
+" filter runner
+let g:textproc_runner = {
+    \ 'py': 'python',
+    \ 'sh': '/usr/bin/bash',
+    \ 'awk': '/usr/bin/gawk -f',
+    \ }
+
+" g:textproc_home    - sub-directory name, default to "text"
+" g:textproc_root    - a list of script search path.
+" b:textproc_root    - local list of script search path.
+" g:textproc_split   - preview split mode: "auto", "vert" or ""
+" g:textproc_runner  - a dictionary of filter runners
+
+" $VIM_ENCODING      # value of &encoding in vim.
+" $VIM_FILEPATH      # file name of current buffer with full path
+" $VIM_FILENAME      # file name of current buffer without path
+" $VIM_FILEDIR       # full path of current buffer without the file name
+" $VIM_SCRIPT        # file name of the filter program
+" $VIM_SCRIPTDIR     # directory of filter program
+" $VIM_FILETYPE      # file type of current buffer
+" $VIM_LINE1         # start line of the given {range}
+" $VIM_LINE2         # last line of the given {range}
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " junegunn/vim-easy-align
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:easy_align_ignore_groups = ['Comment', 'String']
 let g:ignore_unmatched  = 1
+
+xmap <Leader>ga <Plug>(EasyAlign)   " Start interactive EasyAlign in visual mode           (e.g. vipga)
+nmap <Leader>ga <Plug>(EasyAlign)   " Start interactive EasyAlign for a motion/text object (e.g. gaip)
+" Align = signs
+vmap <Leader>g=  :EasyAlign =<cr>gv
+vmap <Leader>g== :EasyAlign *=<cr>gv
+" Align hashrockets
+vmap <Leader>g> :EasyAlign =><cr>gv
+
+" Align words and fix indentation
+vmap <Leader>g<Space>         :EasyAlign \ <cr>gv
+vmap <Leader>g<Space><Space>  :EasyAlign *\ <cr>gv
+" Align comments
+vmap <Leader>g#  :EasyAlign /\#/ <cr>gv
+vmap <Leader>g## :EasyAlign /\#/ <cr>gv
+
+" Align comments
+vmap <Leader>g/  :EasyAlign /\// <cr>gv
+vmap <Leader>g// :EasyAlign /\// <cr>gv
+" Align continue
+vmap <Leader>g\  :EasyAlign /\\/ <cr>gv
+vmap <Leader>g\\ :EasyAlign */\\/ <cr>gv
+
+" Align blocks
+vmap <Leader>g{ :EasyAlign {<cr>gv
+
+" Align commas
+vmap <Leader>g,  :EasyAlign ,<cr>gv
+vmap <Leader>g,, :EasyAlign *,<cr>gv
+" Align :
+vmap <Leader>g:  :EasyAlign :<cr>gv
+vmap <Leader>g:: :EasyAlign *:<cr>gv
+" Align ;
+vmap <Leader>g; :EasyAlign ;<cr>gv
+vmap <Leader>g;; :EasyAlign *;<cr>gv
 
 vnoremap gb <Plug>(EasyAlign)       " Visual 模式下快捷键
 vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
@@ -1951,16 +1645,14 @@ vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
 " **=     Left/Right alternating alignment around all occurrences
 " <Enter> Switching between left/right/center alignment modes
 
-" <Space>                Around the 1st occurrences of whitespaces
-" 2<Space>               Around the 2nd occurrences
-" -<Space>               Around the last occurrences
-" <Enter><Enter>2<Space> Center-alignment around the 2nd occurrences
-
-command! -nargs=* -range -bang E <line1>,<line2>call easy_align#align(<bang>0, 0, 'command', <q-args>)
-" <Space>     Around 1st whitespaces              :'<,'>EasyAlign\
-" 2<Space>    Around 2nd whitespaces              :'<,'>EasyAlign2\
-" -<Space>    Around the last whitespaces         :'<,'>EasyAlign-\ 
-" -2<Space>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
+" <leader>                Around the 1st occurrences of whitespaces
+" 2<leader>               Around the 2nd occurrences
+" -<leader>               Around the last occurrences
+" <Enter><Enter>2<leader> Center-alignment around the 2nd occurrences
+" <leader>     Around 1st whitespaces              :'<,'>EasyAlign\
+" 2<leader>    Around 2nd whitespaces              :'<,'>EasyAlign2\
+" -<leader>    Around the last whitespaces         :'<,'>EasyAlign-\ 
+" -2<leader>   Around the 2nd to last whitespaces  :'<,'>EasyAlign-2\
 " :           Around 1st colon (key:  value)      :'<,'>EasyAlign:
 " <Right>:    Around 1st colon (key : value)      :'<,'>EasyAlign:>l1
 " =           Around 1st operators with =         :'<,'>EasyAlign=
@@ -2014,8 +1706,8 @@ let HiSet   = 'f<CR>'
 let HiErase = 'f<BS>'
 let HiClear = '<leader>f<BS>'
 let HiFind  = 'f<Tab>'
-nnoremap f<Space>         :Hi><CR>
-nnoremap <leader>f<Space> :Hi<<CR>
+nnoremap f<leader>         :Hi><CR>
+nnoremap <leader>f<leader> :Hi<<CR>
 
 " :Hi/Find  [options]  expression  [directories_or_files]
 " :Hi/Find  red|blue
@@ -2036,45 +1728,6 @@ nnoremap <leader>f<Space> :Hi<<CR>
 " let HiFindTool = 'sift --no-color --line-number --column --binary-skip --git --smart-case'
 " let HiFindTool = 'ggrep -H -EnrI --exclude-dir=.git'
 " let HiFindTool = 'git grep -EnI --no-color --column'
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" sillybun/vim-repl (active repl) Python Perl(perlconsole, reply and re.pl) Vimscript(vim -e) by default support
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-command! -range         RS <line1>,<line2>call repl#SendChunkLines()
-
-nnoremap <leader>wR :REPLToggle<CR>
-vnoremap <leader>wR :REPLToggle<CR>
-" <C-W><C-w>
-let g:repl_program = {
-    \   "python": "python",
-    \   'lua': 'lua',
-    \   "gnuplot": "gnuplot",
-    \   "matlab": "matlab -nodesktop -nosplash",
-    \   "cpp.root": "root -l",
-    \   "cpp": "cling -std=c++14",
-    \   "mma": "MathematicaScript",
-    \   "zsh": "zsh",
-    \   "javascript": "node",
-    \   "js": "node",
-    \   "default": "bash",
-    \   }
-
-let g:repl_height = 15
-let g:repl_width = 100
-let g:repl_position = 3                     " 0表示出现在下方，1表示出现在上方，2在左边，3在右边
-let g:sendtorepl_invoke_key = "<leader>wg"  " 传送代码快捷键，默认为<leader>w
-let g:repl_stayatrepl_when_open = 0         " 打开REPL时是回到原文件（1）还是停留在REPL窗口中（0）
-let g:repl_exit_commands = {
-    \   "/usr/local/bin/python": "exit()",
-    \   "bash": "exit",
-    \   "root": ".q",
-    \   "zsh": "exit",
-    \   "default": "exit",
-    \   }
-
-" autocmd Filetype python nnoremap <F12> <Esc>:REPLDebugStopAtCurrentLine<Cr> F12: 在当前行设置断点并运行
-" autocmd Filetype python nnoremap <F10> <Esc>:REPLPDBN<Cr>                   F10: 运行一行（不进入函数）
-" autocmd Filetype python nnoremap <F11> <Esc>:REPLPDBS<Cr>                   F10: 运行一行（进入函数）
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " skywind3000/vim-terminal-help : drop filename.txt(vim)  H (bash)
@@ -2195,13 +1848,6 @@ nnoremap <Leader>wx :Floaterms<CR>
 nnoremap <Leader>wX :FloatermToggle<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" windwp/vim-floaterm-repl (batch repl)
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nnoremap <leader>wr :FloatermRepl<CR>
-vnoremap <leader>wr :FloatermRepl<CR>
-" .vim/plugged/vim-floaterm-repl/autoload/terminal_preview.sh
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " fzf#wrap vimrc nocompatible @ github
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! FzfGetQuickFixList(cmdstr)
@@ -2228,7 +1874,7 @@ function! FzfGetQuickFixList(cmdstr)
             endif
             let nums = subItem
         endfor
-        if nums != "" 
+        if nums != ""
             call add(l:newQuickfixHistoryList, nums . ':' . itemInfo[1])
         endif
     endfor
@@ -2237,7 +1883,7 @@ function! FzfGetQuickFixList(cmdstr)
 endfunction
 
 function! s:FzfQuickfixOpen(line)
-    if a:line == "" 
+    if a:line == ""
         return
     endif
     let lineInfo = split(a:line, ":")
@@ -2247,7 +1893,7 @@ function! s:FzfQuickfixOpen(line)
 endfunction
 
 function! s:FzfQuickfixLocalOpen(line)
-    if a:line == "" 
+    if a:line == ""
         return
     endif
     let lineInfo = split(a:line, ":")
@@ -2284,10 +1930,6 @@ command! PlugHelp call fzf#run(fzf#wrap({
 
 nnoremap <leader>fp :PlugHelp<cr>
 
-command! -bang Zoxide call fzf#run(fzf#wrap('zoxide',
-    \ {'source': 'zoxide query -l', 'sink': 'cd'}, <bang>0))
-    
-
 noremap <leader>f^ :call SwitchToHeaderOrSource()<CR>
 function! SwitchToHeaderOrSource()
     let extn="cpp"
@@ -2303,10 +1945,8 @@ function! SwitchToHeaderOrSource()
     :call fzf#vim#files('.', {'options':['--query', expand("%:t:r").' '.expand(extn)]})<CR>
 endfunction
 
-" nnoremap <F10> :call asyncrun#quickfix_toggle(6)<cr>
-" nnoremap <leader>q :call QuickfixToggle()<cr>
-let g:quickfix_is_open = 0
 
+let g:quickfix_is_open = 0
 function! QuickfixToggle()
     if g:quickfix_is_open
         cclose
@@ -2316,7 +1956,6 @@ function! QuickfixToggle()
         let g:quickfix_is_open = 1
     endif
 endfunction
-
 
 function s:GoTo(jumpline)
   let values = split(a:jumpline, ":")
@@ -2410,6 +2049,11 @@ noremap <leader>f3 :AsyncTask FZF-neigh-files<cr>
 noremap <leader>f4 :AsyncTask FZF-root-files<cr>
 noremap <leader>f5 :AsyncTask file-build<cr>
 noremap <leader>f6 :AsyncTask file-run<cr>
+noremap <leader>f7 :AsyncTaskFzf<cr>
+noremap <leader>f8 :Shortcuts<cr>
+noremap <leader>f9 :Actions<cr>
+noremap <leader>fd :Actions<cr>
+noremap <leader>fz :Shortcuts<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
@@ -2424,33 +2068,273 @@ command! FZFCd call fzf#run({
 command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 
-let g:fzf_layout = { 'down': '~40%' }
 
-nnoremap <C-]> :Tgs<CR>
-
-
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:tslime_always_current_session = 1
 let g:tslime_always_current_window = 1
 
-vmap <silent> <Leader>rs <Plug>SendSelectionToTmux
-nmap <silent> <Leader>rs <Plug>NormalModeSendToTmux
-nmap <silent> <Leader>rv <Plug>SetTmuxVarsZ
-
 vmap <leader>f0 <Plug>SendSelectionToTmux
 nmap <leader>f0 <Plug>NormalModeSendToTmux
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-shortcut
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+runtime plugin/shortcut.vim
 
-" change the key bindings to your liking
-imap <C-K> <Plug>(fzf-dictionary-open)
+" at least execute map if vim-shortcut is not available
+if !exists(':Shortcut')
+  command! -bang -nargs=+ Shortcut call s:null_shortcut(<q-args>, <bang>0)
 
-" default values
-let g:fzf_dictionary_options = #{
-    \height :   20,
-    \width  :  40,
-    \down   :   0,
-    \right  :   10,
-    \}
+  function! s:null_shortcut_parse(input) abort
+    let parts = split(a:input, '\s*\ze\<[nvxsoilct]\?\%(nore\)\?map\>')
+    if len(parts) < 2
+      throw 'expected "<description> <map-command>" but got ' . string(a:input)
+    endif
+    let [description; rest] = parts
+    let definition = join(rest, '')
+    return [description, definition]
+  endfunction
 
-" autocmd VimEnter *  so ~/.vim/shortcut.vim
-" autocmd VimEnter *  so ~/.vim/which-key.vim
+  function! s:null_shortcut(qargs, bang) abort
+    if !a:bang
+      let [description, definition] = s:null_shortcut_parse(a:qargs)
+      execute definition
+    endif
+  endfunction
+endif
+
+Shortcut show shortcut menu and run chosen shortcut
+    \ nnoremap  <leader>fx  :Shortcuts<CR>
+
+
+"-----------------------------------------------------------------------------
+"-----------------------------------------------------------------------------
+Shortcut! <F2>          (FF)   number
+Shortcut! <F3>          (FF)   list
+Shortcut! <F4>          (FF)   relativenumber
+Shortcut! <F5>          (FF)   ccompile
+Shortcut! <F6>          (FF)   format
+Shortcut! <F7>          (FF)   SyntasticToggleMode(lint)
+Shortcut! <F8>          (FF)   MaximizerToggle
+Shortcut! <F9>          (FF)   FloatermNext
+Shortcut! <F10>         (FF)   FloatermToggle
+Shortcut! <F11>         (FF)   single file tags
+Shortcut! <F12>         (FF)   project cscope build
+
+Shortcut! <leader><F1>  (FF)   quickfix_toggle
+Shortcut! <leader><F2>  (FF)   TagbarToggle
+Shortcut! <leader><F3>  (FF)   NERDTreeRefreshRoot
+Shortcut! <leader><F4>  (FF)   VimRegEdit
+Shortcut! <leader><F5>  (FF)   crun
+Shortcut! <leader><F6>  (FF)   all buffer file format
+Shortcut! <leader><F7>  (FF)   all buffer file SyntasticToggleMode(lint)
+Shortcut! <leader><F8>  (FF)   Windows
+Shortcut! <leader><F9>  (FF)   FloatermPrev
+Shortcut! <leader><F10> (FF)   TerminalToggle
+Shortcut! <leader><F11> (FF)   Gutentags
+Shortcut! <leader><F12> (FF)   project cscope build
+
+Shortcut! <leader>f0    (FF)   SendSelectionToTmux
+Shortcut! <leader>f1    (FF)   AsyncTaskLast
+Shortcut! <leader>f2    (FF)   AsyncTaskEdit
+Shortcut! <leader>f3    (FF)   FZF-neigh-files
+Shortcut! <leader>f4    (FF)   FZF-root-files
+Shortcut! <leader>f5    (FF)   AsyncTask file-build
+Shortcut! <leader>f6    (FF)   AsyncTask file-run
+Shortcut! <leader>f7    (FF)   AsyncTaskFzf
+Shortcut! <leader>f8    (FF)   Shortcuts
+Shortcut! <leader>f9    (FF)   Actions
+
+"-----------------------------------------------------------------------------
+"                                *fzf.vim*
+"-----------------------------------------------------------------------------
+" :Ag! <C-R><C-W><CR>  [PATH] preview
+Shortcut! <leader>fa   (fzf.vim)   :Ag [PATTERN]  (ctrl-A to select all, ctrl-D to deselect all) word + with preview
+" :Ag! <C-R><C-A><CR>  [PATH] preview
+Shortcut! <leader>fA   (fzf.vim)   :Ag [PATTERN]  (ctrl-A to select all, ctrl-D to deselect all) WORD + with preview
+
+" :Buffers<CR>         [PATH] preview
+Shortcut! <leader>fb   (fzf.vim)   Open buffers                    open buffer
+" :GFiles<CR>          [OPTS] preview
+Shortcut! <leader>fB   (fzf.vim)   Git files (git ls-files)        open git file (tracked by git)
+
+" :Commits?<CR>                 preview
+Shortcut! <leader>fc   (fzf.vim)  " Git commits  (requires fugitive.vim)
+" :BCommits?<CR>                preview
+Shortcut! <leader>fC   (fzf.vim)  " Git BCommits (requires fugitive.vim)
+
+"""" d/D """"
+Shortcut! <leader>fe  (asynctasks.vim) " AsyncTaskFzf
+Shortcut! <leader>fE  (asynctasks.vim) " AsyncTaskLast
+
+"""" F """"
+" :FZF<CR>             [PATH]
+Shortcut! <leader>ff   (fzf.vim)   Files Look for files under current directory
+
+
+" :FZFFzm<CR>
+Shortcut! <leader>fg   (fzf-marks.vim)   jump to specify directory by fzf-marks ==> urbainvaes/fzf-marks + tenfyzhong/fzf-marks.vim
+" :GFiles?<CR>                preview
+Shortcut! <leader>fG   (fzf.vim)   Git files (git status)          open git file that has changes
+
+"""" H """"
+" :History<CR>                preview
+Shortcut! <leader>fh   (fzf.vim)   Open buffers history            reopen file from history
+
+" :CscopeFindInteractive(expand('<cword>'))
+Shortcut! <leader>fi   (cscope.vim)   search by cscope
+" ToggleLocationList
+Shortcut! <leader>fI   (cscope.vim)   search by cscope
+
+"""" J """"
+" :Jumps<CR>
+Shortcut! <leader>fj   (fzf.vim)   Jumps                           Jumps
+
+Shortcut! <leader>fk   (tig-explorer.vim)   TigOpenCurrentFile
+Shortcut! <leader>fK   (tig-explorer.vim)   TigOpenProjectRootDir
+
+" :BLines<CR>         [QUERY]
+Shortcut! <leader>fl   (fzf.vim)   Lines in the current buffer     expose line in buffer
+" :Lines<CR>          [QUERY]
+Shortcut! <leader>fL   (fzf.vim)   Lines in loaded buffers         expose line in any buffer
+
+" :Marks<CR>
+Shortcut! <leader>fm   (fzf.vim)   Marks                           expose mark in buffer
+" :Maps<CR>
+Shortcut! <leader>fM   (fzf.vim)   Normal mode mappings            trigger mapping / keybinding / shortcut
+
+Shortcut!  <leader>fn   (fzf#run)  FzfQuiclfixHistory<cr>
+Shortcut!  <leader>fN   (fzf#run)  FzfQuiclfixLocalHistory<cr>
+
+" :BTags<CR>          [QUERY] preview
+Shortcut! <leader>ft   (fzf.vim)   Tags in the current buffer    ; expose tag in buffer
+" :Tags<CR>           [QUERY] preview
+Shortcut! <leader>fT   (fzf.vim)   Tags in the project (ctags -R); expose tag in any buffer
+
+Shortcut! <leader>fo (fzf.vim)    BOutline<CR>     | " Outline like BTag
+
+" :Windows<CR>
+Shortcut! <leader>fw   (fzf.vim)   Windows                         expose window in any tab
+
+Shortcut! <leader>fp  (vim-readme-viewer) PlugHelp<cr>
+Shortcut! <leader>fP  (vim-readme-viewer) FzReadme<cr>
+
+Shortcut!  <Leader>fq (fzf-quickfix) Quickfix<CR>         | " getqflist
+Shortcut!  <Leader>fQ (fzf-quickfix) LocationList<CR>     | " getloclist
+
+" :Rg! <C-R><C-W><CR>  [PATH]
+Shortcut! <leader>fr   (fzf.vim)   :Rg [PATTERN]  (ctrl-A to select all, ctrl-D to deselect all) word + without preview
+" :Rg! <C-R><C-A><CR>  [PATH]
+Shortcut! <leader>fR   (fzf.vim)   :Rg [PATTERN]  (ctrl-A to select all, ctrl-D to deselect all) WORD + without preview
+
+" :Snippets<CR>
+Shortcut! <leader>fs   (fzf.vim)   Snippets (UltiSnips)            snippets
+" :call fzf#sonictemplate#run()<CR>
+Shortcut! <leader>fS   (fzf.vim)   template (sonictemplate) ==> mattn/vim-sonictemplate
+
+Shortcut! <leader>ft  (fzf.vim)     :BTags<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
+Shortcut! <leader>fT  (fzf.vim)     :Tags<CR>      | " Tags in the project (ctags -R); Tags and Helptags require Perl
+
+Shortcut! <leader>fu :Mru<CR>          | " MRU files like History
+Shortcut! <leader>fU :MruCwd<CR>       | " MRU files like History in current dir
+
+" :Commands<CR>
+Shortcut! <leader>f;   (fzf.vim)   Commands                            run command from menu
+
+Shortcut! <leader>fw   (fzf.vim)  :Windows<CR>   | " Windows
+
+" rjungemann/registers-everywhere ay(register a) \ca(a.txt) \va(register a) ap(buffer)
+Shortcut! <leader>fy    (fzf.vim) :FZFYankHistory<CR>
+
+
+" MattesGroeger/vim-bookmarks + tenfyzhong/fzf-bookmarks.vim
+Shortcut! <leader>f'   (fzf.vim)  :FZFBookmarks<CR>
+" MattesGroeger/vim-bookmarks + tenfyzhong/fzf-bookmarks.vim
+Shortcut! <leader>f`   (fzf.vim)  :FZFBookmarks<CR>
+
+" :History:<CR>
+Shortcut! <leader>f:   (fzf.vim)   Command history                 repeat command from history
+" :History/<CR>
+Shortcut! <leader>f/   (fzf.vim)   Search history                  repeat search from history
+" :Helptags<CR>
+Shortcut! <leader>f?   (fzf.vim)   Help tags                       open help topic
+" :FZFNeigh<CR>
+Shortcut! <leader>f.   (fzf.vim)   open file under buffer's directory
+
+Shortcut (fzf) apply colorscheme
+      \ nnoremap <silent> <leader>f+ :Colors<CR>
+Shortcut (fzf) apply filetype
+      \ nnoremap <silent> <leader>f- :Filetypes<CR>
+
+"-----------------------------------------------------------------------------
+" pabsan-0/vim-actions
+"-----------------------------------------------------------------------------
+" Quick access list default
+" - Left side of separator is (Action) Name
+" - Right side of separator is Target
+let g:actions_list = [
+    \ ["source local rc            | :source ~/.vimrc "],
+    \ ["edit local rc              | :edit ~/.vimrc   "],
+    \ ["                                            "],
+    \ ["hexdump do                 | :%!xxd"],
+    \ ["hexdump re                 | :%!xxd -r "],
+    \ ["                                                 "],
+    \ ["json format                | :%!jq ."],
+    \ ["                                            "],
+    \ ["file-build                 | :AsyncTask file-build"],
+    \ ["file-run                   | :AsyncTask file-run"],
+    \ ["                                            "],
+    \ ["sudo-write                 | :w !sudo tee % > /dev/null"],
+    \ ["                                            "],
+    \ ["open commit browser        | :GV"],
+    \ ["list current commit file   | :GV!"],
+    \ ["current file location list | :GV?"],
+    \ ]
+
+
+" Entrypoint. Loads action list and feeds into FZF
+command! Actions call fzf#run(fzf#wrap({
+    \ 'source': map(copy(g:actions_list), 'v:val[0]'),
+    \ 'sink*': function('ActionsFZFHandle')
+    \ }))
+
+
+" Sink function for FZF. Actions after selection is made
+function! ActionsFZFHandle(selected)
+
+    " Check that separator is present between action name and target
+    if a:selected[0]!~'|'
+        return
+    endif
+
+    " Discard action name through separator, keep target only
+    let l:target = split(a:selected[0], "|")[-1]
+
+    " Remove trailing/leading whitespace and expand for chars like ~
+    let l:target = substitute(l:target, '\s*$', '', '')
+    let l:target = substitute(l:target, '^\s*', '', '')
+    let l:target = expand(l:target)
+
+    " Handle target by type: may be a command, file or directory
+    if l:target =~ ':'
+        echom "Executing command: " . l:target
+        execute l:target
+    elseif isdirectory(l:target)
+        tabnew
+        execute 'cd ' . fnameescape(l:target)
+        execute 'Explore'
+    elseif filereadable(l:target)
+        tabnew
+        execute 'edit ' . fnameescape(l:target)
+    else
+        let l:create = confirm("File " . l:target . " does not exist. Create it?", "&Yes\n&No", 1)
+        if l:create == 1
+            tabnew
+            execute 'edit ' . fnameescape(l:target)
+        endif
+    endif
+endfunction
+
+Shortcut show shortcut menu and run chosen shortcut
+    \ nnoremap  <leader>fX  :Actions<CR>
