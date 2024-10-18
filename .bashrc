@@ -605,6 +605,31 @@ mklastv(){
   cd $oldpwd
 }
 
+# s: stdout+stderr        (equal to the old V=99) V=99 OPENWRT_VERBOSE:=s
+# c: commands (for build systems that suppress commands by default,e.g. kbuild,cmake)
+# w: warnings/errors only (equal to the old V=1)  V=1  OPENWRT_VERBOSE:=w
+mklaste(){
+  local oldpwd=$(pwd)
+  [ -d build_dir ] || cdqsdk;
+  __last_cdp=$1
+  shift
+  method=$(echo -e "compile\nprepare\nconfigure\ninstall\nclean\nrefresh\nupdate\ndownload\ncheck\nkernel_menuconfig\nmenuconfig\nclean\ntargetclean\ndirclean\n" | fzf)
+  if [ "$method" = "kernel_menuconfig" ]; then
+    make kernel_menuconfig
+  elif [ "$method" = "menuconfig" ]; then
+     make menuconfig
+  elif [ "$method" = "clean" ]; then
+     make clean
+  elif [ "$method" = "targetclean" ]; then
+     make targetclean
+  elif [ "$method" = "dirclean" ]; then
+     make dirclean
+  else
+    make package/$__last_cdp/$method -j1 V=scw "$@"
+  fi
+  cd $oldpwd
+}
+
 project_env(){
   local makecmd=$(grep PRODUCT_DIR mkall.sh)
   makecmd=${makecmd#*PRODUCT_DIR}
@@ -1199,6 +1224,22 @@ fdf() {
   eval xsync
 }
 
+# fdf - cd into the directory of the selected file
+fdf1() {
+  local file
+  local dir
+  file=$(find -maxdepth 1 -type d | fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  eval xsync
+}
+
+# fdf - cd into the directory of the selected file
+fdf2() {
+  local file
+  local dir
+  file=$(find -maxdepth 2 -type d | fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  eval xsync
+}
+
 # fdp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
 fdp () {
   local file
@@ -1433,6 +1474,7 @@ testprogs() (
 )
 which drop      >/dev/null 2>&1 && alias f=drop
 which floaterm  >/dev/null 2>&1 && alias f=floaterm
+alias task='asynctask -f'
 
 # z() {
 #   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0

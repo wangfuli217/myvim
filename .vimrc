@@ -530,6 +530,8 @@ set foldlevel=99
 """" FZF config
 """"""""""""""""""""""""""""""""""""""""
 let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -f -g ""'
+" let $FZF_DEFAULT_COMMAND = 'fd --type f --color=always'
+" let $FZF_DEFAULT_COMMAND = 'fd --type f --color=always' --exclude .git --ignore-file ~/.gitignore'
 
 " CTRL-A CTRL-Q to select all and build quickfix list
 function! s:build_quickfix_list(lines)
@@ -545,7 +547,7 @@ let g:fzf_action = {
   \ 'ctrl-v': 'vsplit' }
 
 let $FZF_DEFAULT_OPTS='--bind ctrl-a:select-all --bind ctrl-d:deselect-all'
-let $FZF_DEFAULT_OPTS='--no-height --no-reverse -m --bind="ctrl-a:select-all" --bind="ctrl-d:deselect-all" --bind "ctrl-/:toggle-preview" --bind "ctrl-\\:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled" --highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌ '
+let $FZF_DEFAULT_OPTS='--no-height --no-reverse -m --bind="ctrl-a:select-all" --bind="ctrl-d:deselect-all" --bind "ctrl-/:toggle-preview" --bind "ctrl-\\:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled" --highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌ --bind "start:show-header"'
 let g:fzf_layout = { 'window': { 'width': 1.0, 'height': 1.0 } }
 
 " let g:fzf_vim.preview_window = ['right,50%', 'ctrl-/']
@@ -1574,8 +1576,9 @@ let g:textproc_split = "vert"
 
 " filter runner
 let g:textproc_runner = {
-    \ 'py': 'python',
-    \ 'sh': '/usr/bin/bash',
+    \ 'py': '/usr/bin/python3',
+    \ 'sh': '/bin/bash',
+    \ 'pl': '/usr/bin/perl',
     \ 'awk': '/usr/bin/gawk -f',
     \ }
 
