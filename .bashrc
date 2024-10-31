@@ -1224,19 +1224,24 @@ fdf() {
   eval xsync
 }
 
+# fdf0 - cd into the directory of the selected file
+fdf0() {
+  local file
+  file=$(find -type d | fzf +m -q "$1") && cd "$file"
+  eval xsync
+}
+
 # fdf - cd into the directory of the selected file
 fdf1() {
   local file
-  local dir
-  file=$(find -maxdepth 1 -type d | fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  file=$(find -maxdepth 1 -type d | fzf +m -q "$1") && cd "$file"
   eval xsync
 }
 
 # fdf - cd into the directory of the selected file
 fdf2() {
   local file
-  local dir
-  file=$(find -maxdepth 2 -type d | fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  file=$(find -maxdepth 2 -type d | fzf +m -q "$1") && cd "$file"
   eval xsync
 }
 

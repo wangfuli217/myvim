@@ -1,3 +1,6 @@
+https://gist.github.com/junegunn
+
+
 #!/bin/bash
 
 fcd() {
@@ -13,6 +16,7 @@ fcd() {
          --bind='ctrl-d:+refresh-preview' \
          --bind='ctrl-f:change-prompt(Files > )' \
          --bind='ctrl-f:+reload(fd --type f)' \
+         --bind 'ctrl-h:change-prompt(Hide Files > )+reload(fd --type=f --color=always --follow)'
          --bind='ctrl-f:+change-preview(bat -f {})' \
          --bind='ctrl-f:+refresh-preview' \
          --bind='ctrl-a:select-all' \
@@ -33,6 +37,102 @@ fi
 }
 
 
+# Modified version where you can press
+#   - CTRL-O to open with `open` command,
+#   - CTRL-E or Enter key to open with the $EDITOR
+#   - anything else, cd to that file
+fo() {
+  local out file key
+  IFS=$'\n' out=$(fzf --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  if [ -n "$file" ]; then
+      [ "$key" = ctrl-o ] && open "$file" || [ "$key" = ctrl-e ] && ${EDITOR:-vim} "$file" || cd -- $(dirname "$file")
+  fi
+}
+
+# fo - Modified version of fe() where you can press
+#   - CTRL-O to open with $OPENER,
+#   - CTRL-E or Enter key to open with $EDITOR
+fo() {
+  local IFS=$'\n'
+  local out=()
+  local key
+  local file
+
+  out=(
+    "$(
+        fzf-tmux \
+          --query="$1" \
+          --exit-0 \
+          --expect=ctrl-o,ctrl-e
+    )"
+  )
+  key="$(head -1 <<< "${out[@]}")"
+  file="$(head -2 <<< "${out[@]}" | tail -1)" || return
+
+  if [[ "$key" == ctrl-o ]]; then
+    "${OPENER:-xdg-open}" "$file"
+  else
+    "${EDITOR:-vim}" "$file"
+  fi
+}
+
+# Modified version where you can press
+#   - CTRL-O to open with `open` command,
+#   - CTRL-E or Enter key to open with the $EDITOR
+fo() {
+    local out file key
+    if git rev-parse > /dev/null 2>&1; then
+        cd $(git rev-parse --show-toplevel)
+        out=$(git ls-files -co --exclude-standard | fzf --query="$1" \
+              --exit-0 --expect=ctrl-o,ctrl-e)
+    else
+        out=$(fzf --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)
+    fi
+    key=$(head -1 <<< "$out")
+    file=$(head -2 <<< "$out" | tail -1)
+    if [ -n "$file" ]; then
+        [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
+    fi
+}
+
+# Modified version where you can press
+#   - CTRL-O to open with `xdg-open` command,
+#   - CTRL-E or Enter key to open with the $EDITOR
+#   - CTRL-R to get caja for the folder
+#   - CTRL-P to print path to file
+#   - anything else, cd to that file
+ff() {
+  local i out file files key
+  IFS=$'\n' out=$(fzf --query="$1" --exit-0 --expect=ctrl-o,ctrl-e,ctrl-p,ctrl-r)
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  files=$(tail -$i <<< "$out")
+
+  if [ -n "$file" ]; then
+    case $key in
+        ctrl-e )
+            ${EDITOR:-vim} "$file"
+            ;;
+        ctrl-p )
+            echo "$file"
+            ;;
+        ctrl-r )
+            caja $(dirname "$file") 1>/dev/null 2>/dev/null&
+            ;;
+        ctrl-o )
+            xdg-open "$file"
+            ;;
+        *)
+            cd -- $(dirname "$file")
+            ;;
+
+    esac
+  fi
+}
+
+
 fvim() {
    selection=$(
       fd --type d | fzf --multi \
@@ -46,6 +146,7 @@ fvim() {
          --bind='ctrl-d:+refresh-preview' \
          --bind='ctrl-f:change-prompt(Files > )' \
          --bind='ctrl-f:+reload(fd --type f)' \
+         --bind 'ctrl-h:change-prompt(Hide Files > )+reload(fd --type=f --color=always --follow)'
          --bind='ctrl-f:+change-preview(bat -f {})' \
          --bind='ctrl-f:+refresh-preview' \
          --bind='ctrl-a:select-all' \
@@ -61,6 +162,233 @@ fvim() {
 if [ -d "$selection" ]; then
     vim "$selection"
 else
-    vim "$(dirname $selection)"
+    vim "$selection"
 fi
+}
+
+gstash() {
+  local out k reflog
+  out=(
+    $(git stash list --pretty='%C(yellow)%gd %>(14)%Cgreen%cr %C(blue)%gs' |
+      fzf --ansi --no-sort --header='enter:show, ctrl-d:diff, ctrl-o:pop, ctrl-y:apply, ctrl-x:drop' \
+          --preview='git stash show --color=always -p $(cut -d" " -f1 <<< {}) | head -'$LINES \
+          --preview-window=down:50% --reverse \
+          --bind='enter:execute(git stash show --color=always -p $(cut -d" " -f1 <<< {}) | less -r > /dev/tty)' \
+          --bind='ctrl-d:execute(git diff --color=always $(cut -d" " -f1 <<< {}) | less -r > /dev/tty)' \
+          --expect=ctrl-o,ctrl-y,ctrl-x))
+  k=${out[0]}
+  reflog=${out[1]}
+  [ -n "$reflog" ] && case "$k" in
+    ctrl-o) git stash pop $reflog ;;
+    ctrl-y) git stash apply $reflog ;;
+    ctrl-x) git stash drop $reflog ;;
+  esac
+}
+
+# q = quit
+# j = down
+# k = up
+# alt-k = preview up
+# alt-j = preview down
+# ctrl-f = preview page down
+# ctrl-b = preview page up
+git-commit-show () 
+{
+  git log --graph --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr"  | \
+   fzf --ansi --no-sort --reverse --tiebreak=index --preview \
+   'f() { set -- $(echo -- "$@" | grep -o "[a-f0-9]\{7\}"); [ $# -eq 0 ] || git show --color=always $1 ; }; f {}' \
+   --bind "j:down,k:up,alt-j:preview-down,alt-k:preview-up,ctrl-f:preview-page-down,ctrl-b:preview-page-up,q:abort,ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF" --preview-window=right:60%
+}
+
+
+[core]
+	pager = delta --line-numbers
+[alias]
+    fzf = !"                                                                                                                                                                              \
+        function gfzf() {                                                                                                                                                                 \
+            local filter;                                                                                                                                                                 \
+            if [ -n $@ ] && [ -e $@ ]; then                                                                                                                                               \
+                filter=\"-- $@\";                                                                                                                                                         \
+            fi;                                                                                                                                                                           \
+            export LESS='-R'                                                                                                                                                              \
+            export BAT_PAGER='less -S -R -M -i';                                                                                                                                          \
+            git log                                                                                                                                                                       \
+                --graph --color=always --abbrev=7                                                                                                                                         \
+                --format=format:\"%C(bold blue)%h%C(reset) %C(dim white)%an%C(reset)%C(bold yellow)%d%C(reset) %C(white)%s%C(reset) %C(bold green)(%ar)%C(reset)\" $@ |                   \
+                    fzf --ansi --no-sort --layout=reverse --tiebreak=index                                                                                                                \
+                        --preview=\"f() { set -- \\$(echo -- \\$@ | rg -o '\\b[a-f0-9]{7,}\\b'); [ \\$# -eq 0 ] || git show --color=always \\$1 $filter | delta --line-numbers; }; f {}\" \
+                        --bind=\"ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-j:preview-down,ctrl-k:preview-up,ctrl-f:preview-page-down,ctrl-b:preview-page-up\"                        \
+                        --bind=\"ctrl-m:execute:                                                                                                                                          \
+                                (rg -o '\\b[a-f0-9]{7,}\\b' | head -1 |                                                                                                                   \
+                                xargs -I % -- git show --color=always %) << 'FZFEOF'\n                                                                                                    \
+                                {}                                                                                                                                                        \
+                                \nFZFEOF\"                                                                                                                                                \
+                        --bind=\"ctrl-y:execute-silent:                                                                                                                                   \
+                                (rg -o '\\b[a-f0-9]{7,}\\b' | head -1 | tr -d \\$'\\n' | clipboard) << 'FZFEOF'\n                                                                         \
+                                {}                                                                                                                                                        \
+                                \nFZFEOF\"                                                                                                                                                \
+                        --preview-window=right:60%;                                                                                                                                       \
+        };                                                                                                                                                                                \
+        gfzf                                                                                                                                                                              \
+    "
+[interactive]
+    diffFilter = delta --color-only --line-numbers
+
+
+GIT_FZF_DEFAULT_OPTS="
+	$FZF_DEFAULT_OPTS
+	--ansi
+	--reverse
+	--height=100%
+	--bind shift-down:preview-down
+	--bind shift-up:preview-up
+	--bind pgdn:preview-page-down
+	--bind pgup:preview-page-up
+	--bind q:abort
+	$GIT_FZF_DEFAULT_OPTS
+"
+
+git-fuzzy-diff ()
+{
+	PREVIEW_PAGER="less --tabs=4 -Rc"
+	ENTER_PAGER=${PREVIEW_PAGER}
+	if [ -x "$(command -v diff-so-fancy)" ]; then
+		PREVIEW_PAGER="diff-so-fancy | ${PREVIEW_PAGER}"
+		ENTER_PAGER="diff-so-fancy | sed -e '1,4d' | ${ENTER_PAGER}"
+	fi
+
+	# Don't just diff the selected file alone, get related files first using
+	# '--name-status -R' in order to include moves and renames in the diff.
+	# See for reference: https://stackoverflow.com/q/71268388/3018229
+	PREVIEW_COMMAND='git diff --color=always '$@' -- \
+		$(echo $(git diff --name-status -R '$@' | grep {}) | cut -d" " -f 2-) \
+		| '$PREVIEW_PAGER
+
+	# Show additional context compared to preview
+	ENTER_COMMAND='git diff --color=always '$@' -U10000 -- \
+		$(echo $(git diff --name-status -R '$@' | grep {}) | cut -d" " -f 2-) \
+		| '$ENTER_PAGER
+
+	git diff --name-only $@ | \
+		fzf ${GIT_FZF_DEFAULT_OPTS} --exit-0 --preview "${PREVIEW_COMMAND}" \
+		--preview-window=top:85% --bind "enter:execute:${ENTER_COMMAND}"
+}
+
+git-fuzzy-log ()
+{
+	PREVIEW_COMMAND='f() {
+		set -- $(echo -- "$@" | grep -o "[a-f0-9]\{7\}")
+		[ $# -eq 0 ] || (
+			git show --no-patch --color=always $1
+			echo
+			git show --stat --format="" --color=always $1 |
+			while read line; do
+				tput dim
+				echo " $line" | sed "s/\x1B\[m/\x1B\[2m/g"
+				tput sgr0
+			done |
+			tac | sed "1 a \ " | tac
+		)
+	}; f {}'
+
+	ENTER_COMMAND='(grep -o "[a-f0-9]\{7\}" | head -1 |
+		xargs -I % bash -ic "git-fuzzy-diff %^1 %") <<- "FZF-EOF"
+		{}
+		FZF-EOF'
+
+	git log --graph --color=always --format="%C(auto)%h %s%d " | \
+		fzf ${GIT_FZF_DEFAULT_OPTS} --no-sort --tiebreak=index \
+		--preview "${PREVIEW_COMMAND}" --preview-window=top:15 \
+		--bind "enter:execute:${ENTER_COMMAND}"
+}
+
+#!/usr/bin/env bash
+
+# Store the STDOUT of fzf in a variable
+selection=$(find . -type d | fzf --multi --height=80% --border=sharp \
+--preview='tree -C {}' --preview-window='45%,border-sharp' \
+--prompt='Dirs > ' \
+--bind='del:execute(rm -ri {+})' \
+--bind='ctrl-p:toggle-preview' \
+--bind='ctrl-d:change-prompt(Dirs > )' \
+--bind='ctrl-d:+reload(find . -type d)' \
+--bind='ctrl-d:+change-preview(tree -C {})' \
+--bind='ctrl-d:+refresh-preview' \
+--bind='ctrl-f:change-prompt(Files > )' \
+--bind='ctrl-f:+reload(find . -type f)' \
+--bind='ctrl-f:+change-preview(cat {})' \
+--bind='ctrl-f:+refresh-preview' \
+--bind='ctrl-a:select-all' \
+--bind='ctrl-x:deselect-all' \
+--header '
+CTRL-D to display directories | CTRL-F to display files
+CTRL-A to select all | CTRL-x to deselect all
+ENTER to edit | DEL to delete
+CTRL-P to toggle preview
+'
+)
+
+# Determine what to do depending on the selection
+if [ -d "$selection" ]; then
+    cd "$selection" || exit
+else
+    eval "$EDITOR $selection"
+fi
+
+
+fman() {
+    man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
+}
+
+alias apt-fzf='apt-cache pkgnames | fzf --multi --color=border:#FFFFFF  --cycle --reverse --preview "apt-cache show {1}"'
+
+
+# Display apt packages available for update and prompt user to selectively select for install 
+function apt_fuzzy_upgrade() {
+  # Check for apt updates
+  sudo apt update
+
+  # Get list of packages, pass to fzf, update selected
+  sudo apt list --upgradable 2>/dev/null | sed '1d' | \
+    sed -E -e 's/^([^\/]+)\/[^0-9]*([0-9\.\-]+)[^\[]*\[[^0-9]*([^\+]+).*$/\1@\3@➤@\2/g' | column -t -s@ | \
+    fzf --tac -m -0 | sed -E -e 's/^([^ ]+).*/\1/g' | sudo xargs apt install -y
+}
+
+
+# Allow user to interactively select packages to be installed based on input
+# TODO: allow for a parameter that switches modes from "contains" to "starts-with" to "exact"
+function apt_fuzzy_install() {
+  # Check input
+  if [[ -z "$1" ]]; then
+    printf "Error: No package to search the apt package repo was specified.\n\nUSAGE: afi [package_name]\n"
+    return 1
+  fi
+
+  # Check for apt updates
+  sudo apt update
+
+  # Search apt for packages matching input, display with fuzzy finder with full preview, install selected
+  sudo apt search $1 2>/dev/null | sed '1,2d' | egrep '^([^ ].*)$' | \
+    sed -E -e 's/([^/]+)\/.* (\[[a-z,\])/\1@\2/g' -e 's/([^/]+)\/.*/\1/g' | column -t -s@ | \
+    fzf -0 -m --tac --preview="echo {} | awk '{print \$1}' | xargs apt-cache show --no-all-versions |
+    sed -E -e 's/^Description-en: (.*)$/\fDescription: \1\n/' -e 's/^Description-md5.*/\f/' |
+    awk 'BEGIN{RS=\"\f\"}/Description/{print}' | sed -E -e 's/^\W*\.$//g' -e 's/^\W*(.*)$/\1/g'" | sudo xargs apt install -y
+}
+
+
+function apt_fuzzy_uninstall() {
+  # Check dependencies
+  [[ -x "$(type -fP fzf)"    ]] || { printf "fzf is required but not installed.\n";   return 1; }
+  [[ -x "$(type -fP column)" ]] || { printf "column is required but not installed\n"; return 1; }
+
+  sudo apt list --installed 2>/dev/null | sed '1d' | grep -v ',automatic]' | \
+    sed -E -e 's/([^\/]+)\/.* ([0-9\.\-]+).*/\1@\2/g' | column -t -s@ | \
+    fzf -0 -m --tac --preview="echo {} | awk '{print \$1}' | xargs apt-cache show --no-all-versions |
+    sed -E -e 's/^Description-en: (.*)$/\fDescription: \1\n/' -e 's/^Description-md5.*/\f/' |
+    awk 'BEGIN{RS=\"\f\"}/Description/{print}' | sed -E -e 's/^\W*\.$//g' -e 's/^\W*(.*)$/\1/g'" | \
+    awk '{print $1'} | sudo xargs apt remove -y
 }

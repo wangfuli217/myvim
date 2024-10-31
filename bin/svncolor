@@ -1,0 +1,1 @@
+svn diff $1 | bat --style=full --color=always

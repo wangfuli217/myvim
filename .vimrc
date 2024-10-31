@@ -748,7 +748,7 @@ Plug 'honza/vim-snippets'              " 代码片段提示/各种各样的snipp
 " Plug 'Shougo/neocomplete.vim'
 Plug 'jayli/vim-easycomplete'            " 余杭区最好用的vim补全插件(vim 8.2及以上,nvim 0.4.4 及以上版本) :EasyCompleteGotoDefinition :EasyCompleteCheck :EasyCompleteInstallServer ${Plugin_Name} set dictionary=${Your_Dictionary_File}
 " Plug 'williamboman/nvim-lsp-installer' " :InstallLspServer lua
-Plug 'ervandew/supertab'               "
+" Plug 'ervandew/supertab'               "
 " let g:SuperTabDefaultCompletionType = <c-n>
 " let g:SuperTabContextDefaultCompletionType = <c-n>
 
@@ -764,7 +764,7 @@ Plug 'tpope/vim-commentary'            " 注释 gcc {count}gc gcap
 Plug 'tpope/vim-unimpaired'            " ]b和[b循环遍历缓冲区; ]f和[f循环遍历同一目录中的文件,并打开为当前缓冲区; ]l和[l遍历位置列表; ]q和[q遍历快速修复列表; ]t和[t遍历标签列表; yos切换拼写检查,或yoc切换光标行高亮显示
 
 Plug 'tpope/vim-rsi'                   " readline key
-Plug 'tpope/vim-endwise'               " helps to end certain structures automatically.
+" Plug 'tpope/vim-endwise'              helps to end certain structures automatically.
 Plug 'tpope/vim-scriptease'            " tool for script expert; :PP/:Runtime/:Disarm/:Scriptnames/:Messages/:Verbose/:Time
 Plug 'tpope/vim-fugitive'              " Git
 
@@ -782,7 +782,7 @@ Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Clo
 Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
 
 Plug 'junegunn/vim-peekaboo'           " \" Ctrl+R 显示寄存器内容
-Plug 'Yilin-Yang/vim-markbar'          " '`        显示mark的内容
+" Plug 'Yilin-Yang/vim-markbar'           '`        显示mark的内容
 Plug 'simnalamburt/vim-mundo'          " 可视化管理内容变更历史记录的插件 :MundoToggle -> Gundo
 Plug 'kshenoy/vim-signature'           " mark 记录标注;  m[a-zA-Z]:打标签,打两次就撤除/ m,:自动设定下一个可用书签名; mda:删除当前文件中所有独立书签
 Plug 'MattesGroeger/vim-bookmarks'     " bookmarks Ctrl-M
