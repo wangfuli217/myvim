@@ -1,0 +1,33 @@
+#!/bin/bash
+KEEP_ONLY_GIT_HASH='sed "s/^[*|\\\\/ ]*\\([^ ]*\\) .*/\\1/"'
+
+GIT_LOG=(
+    git log
+    --color=always
+    --graph
+    --pretty=format:'%Creset%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+    --abbrev-commit
+    --date=relative
+)
+
+FZF=(
+    fzf
+    --layout=reverse
+    --no-sort
+    --ansi
+    --height=60%
+    --min-height=30
+    --preview='hash="$(echo {} | '"$KEEP_ONLY_GIT_HASH"')"; [ -z "$hash" ] || git show --color "$hash"'
+)
+
+"${GIT_LOG[@]}" | "${FZF[@]}" | eval "$KEEP_ONLY_GIT_HASH"
+exit $?
+
+# bash readline adapter:
+_get_fzf_git_hash() {
+    local hash="$(bash fzf-git-hash.sh)"
+    # insert hash at cursor
+    READLINE_LINE="${READLINE_LINE:0:${READLINE_POINT}}${hash}${READLINE_LINE:${READLINE_POINT}}"
+    # move cursor to end of inserted hash
+    READLINE_POINT=$((READLINE_POINT + ${#hash}))
+}

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+cheat='curl -s cheat.sh'
+menu='fzf --reverse'
+pager='less -R -c'
+cachefile_max_age_hours=6
+
+# Path to temporary cache file. If your Linux system does not support /dev/shm
+# or if you are on MacOS, then change the path to your liking:
+cachefile='/dev/shm/cheatlist'      # GNU+LINUX
+# cachefile="${TMPDIR}/cheatlist"   # MacOS/Darwin
+
+# Download list file and cache it.
+listing () {
+    if [ -f "${cachefile}" ]
+    then
+        local filedate=$(stat -c %Y -- "${cachefile}")
+        local now=$(date +%s)
+        local age_hours=$(( (now - filedate) / 60 / 60 ))
+        if [[ "${age_hours}" > "${cachefile_max_age_hours}" ]]
+        then
+            ${cheat}/:list > "${cachefile}"
+        fi
+    else
+        ${cheat}/:list > "${cachefile}"
+    fi
+    cat -- "${cachefile}"
+}
+
+case "${1}" in
+    '')
+        if selection=$(listing | ${menu})
+        then
+            ${cheat}/"${selection}" | ${pager}
+        fi
+        ;;
+    '-h')
+        ${cheat}/:help | ${pager}
+        ;;
+    '-l')
+        listing
+        ;;
+    *)
+        ${cheat}/${@} | ${pager}
+        ;;
+esac

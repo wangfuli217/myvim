@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Switch between Ripgrep launcher mode (CTRL-R) and fzf filtering mode (CTRL-F)
+rm -f /tmp/fd-fzf-{r,f}
+export FD_PREFIX="fd -s -g "
+INITIAL_QUERY="${*:-}"
+: | fzf --ansi --disabled --query "$INITIAL_QUERY" \
+    --bind 'start:reload($FD_PREFIX {q} )+unbind(ctrl-r)' \
+    --bind 'change:reload:sleep 0.1; $FD_PREFIX {q} || true' \
+    --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/fd-fzf-r; cat /tmp/fd-fzf-f)" \
+    --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. fd> )+disable-search+reload($FD_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > /tmp/fd-fzf-f; cat /tmp/fd-fzf-r)" \
+    --color "hl:-1:underline,hl+:-1:underline:reverse" \
+    --prompt '1. fd> ' \
+    --delimiter : \
+    --header '╱ CTRL-R (fd mode) ╱ CTRL-F (fzf mode) ╱' \
+    --preview 'bat --color=always {1}' \
+    --bind 'enter:become(vim {1} )' \
+    --bind "ctrl-o:execute(open {1})" \
+    --bind "ctrl-e:execute(vim {1})"

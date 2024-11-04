@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# Memo for the commands in common use
+
+read -r -d '' commands << EOF
+fzf                     : Fuzzy file finder
+find . -type f | fzf    : Search for a file in the current directory, preview or edit by binding hotkey
+frg                     : search with ripgrep and live query reload enabled, open results in fzf using srcipt(frg/fgr) # preview rg
+fgr                     : search with ripgrep and live query reload enabled, open results in fzf using srcipt(frg/fgr) # preview rg
+ffi                     : search with ripgrep, open results in fzf using srcipt(ffi/fif/rfv)                    # preview rg
+fpv                     : search with ripgrep, in **paragraph** mode                                            # preview rg
+woman / fman                 : lookup section meaning in 'man man'                                              # manual
+fzf-ctags               : browse ctags-generated index of symbols in the sources                                # ctags
+fzf-cheatsheets-widget  : paste the selected commands from self cheatsheets using ctrl-x ctrl-p shortcut        # cheat from self noted
+ls $FZF_CHEATSHEETS_DIR/cheatsheets | fzf : selected command sniipet, next using ctrl-x ctrl-p shortcut         # cheat from self noted
+chtfzf                  : search the selected commands from cheatsheets using ctrl-x ctrl-l shortcut or script: chtfzf/cht-fzf/cheat-fzf # cheat from internet
+fzcheat                 : search the selected commands from cheatsheets using bash script fzcheat               # cheat community|personal from cached internet
+__fzf_history__         : paste the selected command from history onto the command-line using ctrl-r shortcut   # bash history
+vim ./**<tab>           : edit filename to selected by filename name using vim(fzf) completion                  # filename  search
+viminfo                 : edit filename to selected by vim session                                              # filename  search
+__fzf_cd__              : change directory to selected by directory name using ctrl-t shortcut                  # directory search
+cd ./**<tab>            : change directory to selected by directory name using cd(fzf) completion               # directory search
+fda                     : cd to selected directory; including hidden directories                                # directory search
+fdr                     : cd to selected parent directory                                                       # directory search
+fdf                     : change directory to selected by file      name using bash function                    # filename  search
+fdf0                    : change directory to selected by directory name using bash function: level all         # directory search
+fdf1                    : change directory to selected by directory name using bash function: level1            # directory search
+fdf2                    : change directory to selected by directory name using bash function: level2            # directory search
+z                       : track of the directories and uses a ranking algorithm to navigate using bash function # directory rank marks
+marks                   : be used to 'create' marked directory using bash function                              # directory bookmarks
+fzm                     : be used to 'create', delete, 'navigate' marked directory using ctrl-x ctrl-g shortcut # directory bookmarks
+vim ${HOME}/.fzf-marks  : 'edit' bookmarks in bash; more fzf-marks                                              # directory bookmarks
+fzf-bookmarks           : quickly 'access' bookmarked directories and files using ctrl-x ctrl-j shortcut        # directory bookmarks
+fzf-bookmarks -a name [file/dir]      : 'add' a file or directory to bookmarks in bash                          # directory bookmarks
+vim ~/.config/fzf-bookmarks/bookmarks : 'edit' bookmarks in bash; more fzf-bookmarks                            # directory bookmarks
+mkpkg                   : compile openwrt userland package selectd by directory
+mkmod                   : compile openwrt kernel   package selectd by directory
+mklaste                 : compile openwrt userland package selectd by command
+cdproduct               : change directory to selected by product name
+put_opkg                : put     openwrt opkg package to directory /ftptmp/
+try                     : eval commandline
+pm                      : install apt-get/apt-cyg/yum ... package
+EOF
+
+cmd=$(echo "$commands" | fzf \
+    --height 100% \
+    --no-multi \
+    --preview "echo {} | awk -F: '{gsub(\" \", \"\", \$1); printf \"%s:%s\",\$1,\$2}'" \
+    --preview-window down:3:wrap:nohidden \
+    --bind "alt-y:execute-silent(echo -n {} | awk -F: '{gsub(\" \", \"\", \$1); print \$1}' | tr -d '\n' | pbcopy)" \
+    --header "Alt-Y (Copy the command)" | awk -F ':' '{print $1}') |tr -d  '[:space:]'
+
+if [ -n "$cmd" ]; then
+  echo ${cmd% }
+fi

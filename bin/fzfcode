@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# rfzf: A general function that uses rg to filter files and fzf to fuzzy search them.
+# Usage:
+#   rfzf [OPTIONS] [-- ADDITIONAL_RG_OPTS]
+# Options:
+#   -n: Search filenames.
+#   -c: Search inside files (content).
+#   -p PATTERN: File pattern to match (e.g., '*.md'). Default is '*' (all files).
+#   -h, --help: Show help message and exit.
+
+show_help() {
+  echo "rfzf: A tool for fuzzy searching filenames or file contents using fzf and ripgrep."
+  echo "Usage: rfzf [-c] [-n] [-p PATTERN]"
+  echo "Options:"
+  echo "  -n: Search filenames."
+  echo "  -c: Search inside files (content)."
+  echo "  -p PATTERN: File pattern to match (e.g., '*.md'). Default is '*' (all files)."
+  echo "  -h, --help: Show this help message and exit."
+  echo "Examples:"
+  echo "  rfzf -n -p '*.md'                # Search for filenames matching '*.md'."
+  echo "  rfzf -c -p '*.md'                # Search inside '*.md' files."
+}
+
+rfzf() {
+  local mode="name"  # Default mode is "name"
+  local pattern="*"  # Default pattern is "*" (all files)
+
+  # Reset OPTIND to ensure getopts works properly on multiple invocations
+  OPTIND=1
+
+  # Parse flags for mode (-n for name, -c for content), pattern (-p), and help (-h or --help)
+  while getopts "ncp:h" opt; do
+    case ${opt} in
+      n )
+        mode="name"
+        ;;
+      c )
+        mode="content"
+        ;;
+      p )
+        pattern="$OPTARG"
+        ;;
+      h )
+        show_help
+        return 0
+        ;;
+      \? )
+        echo "Invalid option: $OPTARG" 1>&2
+        show_help
+        return 1
+        ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))  # Shift to remove the processed options
+
+  # Check if there's a "--" separator, meaning additional rg options are passed
+  local rg_opts=()
+  if [ "$1" = "--" ]; then
+    shift  # Remove the "--" from the arguments
+    rg_opts=("$@")  # Store the remaining arguments as rg options
+  fi
+
+  # Handle content and name modes
+  if [ "$mode" = "name" ]; then
+    rg --files --glob "$pattern" "${rg_opts[@]}" | \
+    fzf --preview 'bat --style=numbers --color=always {}' --bind 'enter:execute(code -n {})'
+  elif [ "$mode" = "content" ]; then
+    rg --no-heading --line-number --color=never ".*" --glob "$pattern" "${rg_opts[@]}" | \
+    fzf --ansi --delimiter : --preview 'bat --style=numbers --color=always {1}' --bind 'enter:execute(code -n {1})'
+  else
+    echo "Invalid mode. Use '-n' for name search or '-c' for content search."
+    return 1
+  fi
+}
+
+# fzfcode: A tool for fuzzy searching filenames or file contents using fzf and ripgrep,
+# excluding node_modules and .snakemake directories.
+fzfcode() {
+  rfzf "$@" -- --iglob '!**/node_modules/**' --iglob '!**/.snakemake/**'
+}
+fzfcode
