@@ -603,7 +603,7 @@ mklast() {
   [ -d build_dir ] || cdqsdk
   [ -n "$1" ] && { __last_cdp="$1"; __last_cdb="$1"; }
   eval ${project_mk_arg} ${project_user_mk_arg}
-
+  
   [[ -n $fuzzysel ]] && { mklaste $__last_cdp; cd $oldpwd; return; }
   [ -n "$__last_cdp" ] && {
     if [[ -n $cmd ]] ; then
@@ -1107,6 +1107,14 @@ viminfo (){
     done | fzf -d -m -q "$*" -1) && vim ${files//\~/$HOME}
 }
 
+vimdir () {
+    local files;
+    files=$(grep '^>' ~/.viminfo | cut -c3- |
+    while read line; do
+    [ -f "${line/\~/$HOME}" ] && echo "$line"
+    done | fzf -d -m -q "$*" -1) && cd $(dirname $files)
+}
+
 # Modified version where you can press
 #   - CTRL-O to open with `open` command,
 #   - CTRL-E or Enter key to open with the $EDITOR
@@ -1225,18 +1233,25 @@ fdf() {
   [[ -n $searchdir  ]] && FD_PREFIX="$FD_PREFIX -type d "
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
 
-  file=$($FD_PREFIX | fzf +m -q "$1") && dir=$(dirname "$file") && cd "$dir"
+  file=$($FD_PREFIX | fzf +m -q "$1" ) && dir=$(dirname "$file") && cd "$dir"
   eval xsync
 }
 
 # fdf0 - cd into the directory of the selected file
 fdf0() {
   local file
-  file=$(find -type d | fzf +m -q "$1") && cd "$file"
+  local dir
+  file=$(find * | fzf +m -q "$1" --prompt 'All> ' \
+             --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files ' \
+             --bind 'ctrl-t:change-prompt(All> )+reload(find *)' \
+             --bind 'ctrl-d:change-prompt(Dirs> )+reload(find * -type d)' \
+             --bind 'f9:change-prompt(Dirs1> )+reload(find * -maxdepth 1 -type d)' \
+             --bind 'f10:change-prompt(Dirs2> )+reload(find * -maxdepth 2 -type d)' \
+             --bind 'ctrl-f:change-prompt(Files> )+reload(find * -type f)') && dir=$(dirname "$file") && cd "$dir"
   eval xsync
 }
 
-# fdf - cd into the directory of the selected file
+# fdf1 - cd into the directory of the selected file
 fdf1() {
   local file
   local dir
@@ -1257,7 +1272,7 @@ fdf1() {
   SORT_PREFIX="sort"
   [[ -n $sortreverse ]] && SORT_PREFIX="$SORT_PREFIX -r "
   if [[ -n $sorttime ]] ; then
-    file=$(find -type f -printf '%T+ %p\n' | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1")
+    file=$(find -type f -printf '%T+ %p\n' | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1" --preview 'ls -hl {} ; ls -l {} ; stat {}')
     if [[ -n $file ]]; then
       if [[ -n $jumpdir ]] ; then
         dir=$(dirname "$file") && cd $dir
@@ -1268,7 +1283,7 @@ fdf1() {
   fi
 
   if [[ -n $sortsize ]] ; then
-    file=$(find -type f -printf "%12s\t%p\n"  | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1")
+    file=$(find -type f -printf "%12s\t%p\n"  | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1" --preview 'ls -hl {} ; stat {}')
     if [[ -n $file ]]; then
       if [[ -n $jumpdir ]] ; then
         dir=$(dirname "$file") && cd $dir
@@ -1278,7 +1293,7 @@ fdf1() {
     fi
   fi
 
-  file=$(find -type f -printf '%T+ %p\n' | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1")
+  file=$(find -type f -printf '%T+ %p\n' | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1" --preview 'ls -hl {} ; ls -l {} ; stat {}')
   if [[ -n $file ]]; then
     if [[ -n $jumpdir ]] ; then
       dir=$(dirname "$file") && cd $dir

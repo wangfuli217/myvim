@@ -777,7 +777,7 @@ Plug 'christoomey/vim-system-copy'     " cp for copying; cv for pasting; cP for 
 " let g:system_copy#copy_command='xclip -sel clipboard'
 " let g:system_copy#paste_command='xclip -sel clipboard -o'
 
-Plug 'rjungemann/registers-everywhere'    " ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
+" Plug 'rjungemann/registers-everywhere'    ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
 Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Close) ab;  vrs(Resize) 5 :vrr(Refresh)
 Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
 
@@ -868,6 +868,7 @@ Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
 Plug 'asins/vimcdoc'                   " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
+Plug 'powerman/vim-plugin-viewdoc'     " K
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
 Plug 'hotchpotch/perldoc-vim'          " apt-get install perl-doc; K hotkey
 Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg} / :CMakeHelpOnline [{arg}]
