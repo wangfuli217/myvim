@@ -14,21 +14,24 @@ fi
 usage() {
   cat <<HEREDOC
    usage: frg -l -i -f filetype -s -S -w
-   optional arguments:
-     -h     show this help message and exit
-     -l     files-with-matches
-     -i     ignore-case
-     -s     case-sensitive
-     -S     smart-case
-     -w     word-regexp
-     -f     filetype: rg --type-list
-     -d     
+   optional   arguments:
+     -h       show this help message and exit
+     -e       exact-match(fzf)
+     -l       files-with-matches
+     -i       ignore-case
+     -s       case-sensitive
+     -S       smart-case
+     -w       word-regexp
+     -F       fixed-strings
+     -f <opt> filetype: rg --type-list
+     -d <opt> maxdepth
 HEREDOC
 }
 
 while getopts ':hlifd:FsSw' x; do
     case "$x" in
         h) usage; exit 0;;
+        e) exactmatch=1;;
         l) list_files=1
             preview='bat --color=always --style=header,numbers {1}' ;;
         i) ignorecase="1" ;;
@@ -48,16 +51,16 @@ unset x OPTARG OPTIND
 rm -f /tmp/rg-fzf-{r,f}
 RG_PREFIX="rg --column --line-number --no-heading --color=always ${list_files:+-l}"
 
-[[ -n $filetype      ]] && RG_PREFIX="$RG_PREFIX --type=$filetype"
-[[ -n $maxdepth      ]] && RG_PREFIX="$RG_PREFIX --max-depth=$maxdepth"
-[[ -n $ignorecase    ]] && RG_PREFIX="$RG_PREFIX --fixed-strings"
-[[ -n $fixedstrings    ]] && RG_PREFIX="$RG_PREFIX --ignore-case"
-[[ -n $casesensitive ]] && RG_PREFIX="$RG_PREFIX --case-sensitive"
-[[ -n $smartcase     ]] && RG_PREFIX="$RG_PREFIX --smart-case"
-[[ -n $wordregexp     ]] && RG_PREFIX="$RG_PREFIX --word-regexp"
+[[ -n $filetype      ]] && RG_PREFIX="$RG_PREFIX --type=$filetype "
+[[ -n $maxdepth      ]] && RG_PREFIX="$RG_PREFIX --max-depth=$maxdepth "
+[[ -n $fixedstrings    ]] && RG_PREFIX="$RG_PREFIX --fixed-strings "
+[[ -n $ignorecase  ]] && RG_PREFIX="$RG_PREFIX --ignore-case "
+[[ -n $casesensitive ]] && RG_PREFIX="$RG_PREFIX --case-sensitive "
+[[ -n $smartcase     ]] && RG_PREFIX="$RG_PREFIX --smart-case "
+[[ -n $wordregexp    ]] && RG_PREFIX="$RG_PREFIX --word-regexp "
 
 INITIAL_QUERY="${*:-}"
-: | fzf --ansi --disabled --query "$INITIAL_QUERY" \
+: | fzf --ansi --disabled --query ${exactmatch:+-e} "$INITIAL_QUERY" \
     --bind "start:reload($RG_PREFIX {q})+unbind(ctrl-r)" \
     --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
     --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
