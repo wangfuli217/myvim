@@ -587,11 +587,18 @@ mklast() {
   local verbose
   local cmd
   local fuzzysel
-  while getopts ':vxc:' x; do
+  while getopts ':vxc:h' x; do
       case "$x" in
-          v) verbose="1" ;;
-          x) fuzzysel="1" ;;
+          v) verbose="1"   ;;
+          x) fuzzysel="1"  ;;
           c) cmd=${OPTARG} ;;
+          h) echo "mklast [-v|verbose] [-x|fuzzysel cmd] [-c|specified cmd] package";
+             echo "mklast          netifd"; # {clean,compile}
+             echo "mklast -v       netifd"; # {clean,compile} -j1 V=scw
+             echo "mklast -x       netifd"; # command selected  by fzf
+             echo "mklast -c clean netifd"; # command specified by user
+             return
+          ;;
       esac
   done
   shift $(( OPTIND - 1 ))
@@ -718,25 +725,6 @@ cdp(){
   export __last_cdp="$cdp_var"
   export __last_cdb="$cdp_var"
   [ -d src ] && { cd src; eval xsync; }
-  OLDPWD=${oldpwd}
-}
-# jump file/directory base path
-cdf() {
-  local oldpwd=$(pwd)
-
-  local oldpwd=$(pwd)
-  [ -d package ] || { svnqsdk; }
-
-  local cdp_var="$1"
-  [ "$#" = "0" ] && [ -n "$__last_cdp" ] && { cdp_var=$__last_cdp; }
-  [ -z "$cdp_var" ] && { cd package; return; }
-
-  cd package
-  cd $(find -L -maxdepth 4 -type d -name "*$cdp_var*" | head -n 1)
-  export __last_cdp="$cdp_var"
-  export __last_cdb="$cdp_var"
-  [ -d src ] && { cd src; eval xsync; }
-  fzfe
   OLDPWD=${oldpwd}
 }
 
@@ -1068,6 +1056,7 @@ wfl_help
 
 source ~/.fzf/shell/key-bindings.bash
 source ~/.fzf/shell/completion.bash
+FZF_ALT_C_COMMAND= eval "$(fzf --bash)"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
@@ -1216,12 +1205,22 @@ fdf() {
   local searchdir
   local regex
   local maxdepth
-  while getopts ':m:fdx' x; do
+  local week
+  while getopts ':m:fdxwh' x; do
       case "$x" in
           m) maxdepth=${OPTARG} ;;
           f) searchfile="1" ;;
           d) searchdir="1" ;;
           x) regex="1" ;;
+          w) week="1" ;;
+          h) echo "fdf [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days]"
+             echo "fdf "         # find filename and dirname
+             echo "fdf -f "      # find filename
+             echo "fdf -d "      # find dirname
+             echo "fdf -m 2"     # find maxdepth include filename and dirname
+             echo "fdf -m 2 -d " # find maxdepth and only dirname
+             echo "fdf -m 2 -f " # find maxdepth and only filename
+             return;
       esac
   done
   shift $(( OPTIND - 1 ))
@@ -1231,9 +1230,19 @@ fdf() {
   [[ -n $regex ]] && FD_PREFIX="$FD_PREFIX -regex "
   [[ -n $searchfile ]] && FD_PREFIX="$FD_PREFIX -type f "
   [[ -n $searchdir  ]] && FD_PREFIX="$FD_PREFIX -type d "
+  [[ -n $searchdir  ]] && FD_PREFIX="$FD_PREFIX -type d "
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
-
-  file=$($FD_PREFIX | fzf +m -q "$1" ) && dir=$(dirname "$file") && cd "$dir"
+  [[ -n $week  ]] && FD_PREFIX="$FD_PREFIX --atime 7 "
+  file=$($FD_PREFIX | fzf +m -q "$1" )
+  
+  [ -z "$file" ] && {
+    return
+  }
+  [ -d "$file" ] && {
+    cd "$file"
+  } || {
+    dir=$(dirname "$file") && cd "$dir"
+  }
   eval xsync
 }
 
@@ -1241,13 +1250,22 @@ fdf() {
 fdf0() {
   local file
   local dir
-  file=$(find * | fzf +m -q "$1" --prompt 'All> ' \
-             --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files ' \
+  file=$(find * | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
+             --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files F9: maxdepth=1 F10: maxdepth=2' \
+             --bind 'del:execute(rm -ri {+})' \
              --bind 'ctrl-t:change-prompt(All> )+reload(find *)' \
              --bind 'ctrl-d:change-prompt(Dirs> )+reload(find * -type d)' \
              --bind 'f9:change-prompt(Dirs1> )+reload(find * -maxdepth 1 -type d)' \
              --bind 'f10:change-prompt(Dirs2> )+reload(find * -maxdepth 2 -type d)' \
-             --bind 'ctrl-f:change-prompt(Files> )+reload(find * -type f)') && dir=$(dirname "$file") && cd "$dir"
+             --bind 'ctrl-f:change-prompt(Files> )+reload(find * -type f)')
+  [ -z "$file" ] && {
+    return
+  }
+  [ -d "$file" ] && {
+    cd "$file"
+  } || {
+    dir=$(dirname "$file") && cd "$dir"
+  }
   eval xsync
 }
 
@@ -1258,12 +1276,19 @@ fdf1() {
   local sorttime
   local sortsize
   local sortreverse
-  while getopts ':tsrd' x; do
+  while getopts ':tsrdh' x; do
       case "$x" in
           t) sorttime="1" ;;
           s) sortsize="1" ;;
           r) sortreverse="1" ;;
           d) jumpdir="1" ;;
+          h) echo "fdf1 -t|sorttime -s|sortsize -r|sortreverse -d|jumpdir otherwise edit with vim"
+             echo "fdf1 "       # sorttime older first
+             echo "fdf1 -t "    # sorttime size 
+             echo "fdf1 -s "    # sortsize
+             echo "fdf1 -t -r " # sorttime
+             echo "fdf1 -s -r " # sorttime
+             return;
       esac
   done
   shift $(( OPTIND - 1 ))
@@ -1279,17 +1304,19 @@ fdf1() {
       else
         vim $file
       fi
+      return;
     fi
   fi
 
   if [[ -n $sortsize ]] ; then
-    file=$(find -type f -printf "%12s\t%p\n"  | $SORT_PREFIX  | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1" --preview 'ls -hl {} ; stat {}')
+    file=$(find -type f -printf "%12s\t%p\n"  | $SORT_PREFIX -k1 -n | awk '{print $2}' | grep -v -e ".svn" -e ".git" -e ".github" | fzf +m -q "$1" --preview 'ls -hl {} ; stat {}')
     if [[ -n $file ]]; then
       if [[ -n $jumpdir ]] ; then
         dir=$(dirname "$file") && cd $dir
       else
         vim $file
       fi
+      return;
     fi
   fi
 
@@ -1308,7 +1335,50 @@ fdf1() {
 # fdf - cd into the directory of the selected file
 fdf2() {
   local file
-  file=$(find -maxdepth 2 -type d | fzf +m -q "$1") && cd "$file"
+  local searchfile
+  local searchdir
+  local linkpath
+  local hiddern
+  while getopts ':m:fdlHh' x; do
+      case "$x" in
+          m) maxdepth=${OPTARG} ;;
+          f) searchfile="1" ;;
+          d) searchdir="1" ;;
+          l) linkpath="1" ;;
+          H) hiddern="1" ;;
+          h) echo "fdf2 [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-l|linkpath] [-H|hidden]"
+             echo "fdf2 "         # find filename and dirname
+             echo "fdf2 -f "      # find filename
+             echo "fdf2 -d "      # find dirname
+             echo "fdf2 -m 2"     # find maxdepth include filename and dirname
+             echo "fdf2 -m 2 -d " # find maxdepth and only dirname
+             echo "fdf2 -m 2 -f " # find maxdepth and only filename
+             echo "fdf2 -l "      # find filename and dirname include linkpath
+             echo "fdf2 -H "      # find filename and dirname include hidden
+             return;
+      esac
+  done
+  shift $(( OPTIND - 1 ))
+  unset x OPTARG OPTIND
+
+  FD_PREFIX="fd"
+  [[ -n $searchfile ]] && FD_PREFIX="$FD_PREFIX --type file "
+  [[ -n $searchdir ]] && FD_PREFIX="$FD_PREFIX --type directory "
+  [[ -n $linkpath ]] && FD_PREFIX="$FD_PREFIX --follow "
+  [[ -n $linkpath ]] && FD_PREFIX="$FD_PREFIX --hidden --exclude .git --exclude .svn"
+  [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
+
+  local file
+  file=$($FD_PREFIX | fzf +m -q "$1" )
+  
+  [ -z "$file" ] && {
+    return
+  }
+  [ -d "$file" ] && {
+    cd "$file"
+  } || {
+    dir=$(dirname "$file") && cd "$dir"
+  }
   eval xsync
 }
 
@@ -1395,9 +1465,63 @@ export FZF_TMUX_HEIGHT='80%'
 
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'";  }
-svn_diff(){
-svn diff $@ | bat
+
+svn_diff(){ svn diff $@      | view -; }
+git_diff(){ git diff -w "$@" | view -; }
+V() { $@ | view - ; } # Quick way to view files in vim
+# find fd ag git ls-files
+filef() { $@ | fzf ; }    # Quick way to view files in fzf preview
+# grep rg
+rgf ()  {
+rm -f /tmp/rg-fzf-{r,f}
+RG_PREFIX="$@"
+$@ | fzf --ansi --disabled --query "$INITIAL_QUERY" \
+    --bind "start:reload($RG_PREFIX )+unbind(ctrl-r)" \
+    --bind "change:reload:sleep 0.1; $RG_PREFIX  || true" \
+    --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
+    --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. grep> )+disable-search+reload($RG_PREFIX || true)+rebind(change,ctrl-f)+transform-query(echo {q} > /tmp/rg-fzf-f; cat /tmp/rg-fzf-r)" \
+    --color "hl:-1:underline,hl+:-1:underline:reverse" \
+    --prompt '1. grep> ' \
+    --delimiter : \
+    --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱' \
+    --preview='bat --color=always --style=header,numbers {1} | grep -C3 {q}' \
+    --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
+    --bind 'enter:become(vim {1} +{2})' \
+    --bind "ctrl-o:execute(open {1})" \
+    --bind "ctrl-e:execute(vim {1} +{2})"
 }
+# git log --oneline
+# git reflog
+# git stash list
+# git tag
+gitf(){
+$@ | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}"
+}
+
+gitview(){
+  revsion=$(git log --oneline | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
+  [ -z "$revsion" ] && return
+  revsion=$(echo $revsion | awk '{print $1}')
+  [ -z "$revsion" ] && return
+  git show $revsion | view -;
+}
+
+cdf(){
+  local file
+  file=$($@ | fzf)
+  
+  [ -z "$file" ] && {
+    return
+  }
+
+  [ -d "$file" ] && {
+    cd "$file"
+  } || {
+    dir=$(dirname "$file") && cd "$dir"
+  }
+  eval xsync
+}
+
 [[ -x $(command -v bat) ]] && [[ -x $(command -v fzf) ]] && alias preview="fzf --preview 'bat --color \"always\" {}'"
 
 #### fzf + preview ####
@@ -1504,7 +1628,6 @@ fman() {
     man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
 }
 
-alias tmp='find /ftptmp -maxdepth 1 -name "*tmp*" -o -name "*diff*" | fzf '
 
 inorun() (
   # Run command whenever a given file or a file
@@ -1681,7 +1804,69 @@ z() {
 
 alias upnice="sudo renice -n -15 -p $(ps -o pid,cmd | awk '/bash/{print $1}') "
 alias dnnice="sudo renice -n 0 -p $(ps -o pid,cmd | awk '/bash/{print $1}') "
+alias disable_ipv6="sudo bash -c 'echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6'"
+
+# 自动解压：判断文件后缀名并调用相应解压命令
+function q-extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+        *.tar.bz2)   tar -xvjf $1    ;;
+        *.tar.gz)    tar -xvzf $1    ;;
+        *.tar.xz)    tar -xvJf $1    ;;
+        *.bz2)       bunzip2 $1     ;;
+        *.rar)       rar x $1       ;;
+        *.gz)        gunzip $1      ;;
+        *.tar)       tar -xvf $1     ;;
+        *.tbz2)      tar -xvjf $1    ;;
+        *.tgz)       tar -xvzf $1    ;;
+        *.zip)       unzip $1       ;;
+        *.Z)         uncompress $1  ;;
+        *.7z)        7z x $1        ;;
+        *)           echo "don't know how to extract '$1'..." ;;
+        esac
+    else
+        echo "'$1' is not a valid file!"
+    fi
+}
+
+# 自动压缩：判断后缀名并调用相应压缩程序
+function q-compress() {
+    if [ -n "$1" ] ; then
+        FILE=$1
+        case $FILE in
+        *.tar) shift && tar -cf $FILE $* ;;
+        *.tar.bz2) shift && tar -cjf $FILE $* ;;
+        *.tar.xz) shift && tar -cJf $FILE $* ;;
+        *.tar.gz) shift && tar -czf $FILE $* ;;
+        *.tgz) shift && tar -czf $FILE $* ;;
+        *.zip) shift && zip $FILE $* ;;
+        *.rar) shift && rar $FILE $* ;;
+        esac
+    else
+        echo "usage: q-compress <foo.tar.gz> ./foo ./bar"
+    fi
+}
+
+# 漂亮的带语法高亮的 color cat ，需要先 pip install pygments
+function ccat() {
+    local style="monokai"
+    if [ $# -eq 0 ]; then
+        pygmentize -P style=$style -P tabsize=4 -f terminal256 -g
+    else
+        for NAME in $@; do
+            pygmentize -P style=$style -P tabsize=4 -f terminal256 -g "$NAME"
+        done
+    fi
+}
 
 which drop      >/dev/null 2>&1 && alias f=drop
 which floaterm  >/dev/null 2>&1 && alias f=floaterm
 alias task='asynctask -f'
+
+# argc-completions
+export ARGC_COMPLETIONS_ROOT="/ftptmp/snippets/argc-completions"
+export ARGC_COMPLETIONS_PATH="$ARGC_COMPLETIONS_ROOT/completions/linux:$ARGC_COMPLETIONS_ROOT/completions"
+export PATH="$ARGC_COMPLETIONS_ROOT/bin:$PATH"
+# To add completions for only the specified command, modify next line e.g. argc_scripts=( cargo git )
+argc_scripts=( $(ls -p -1 "$ARGC_COMPLETIONS_ROOT/completions/linux" "$ARGC_COMPLETIONS_ROOT/completions" | sed -n 's/\.sh$//p') )
+source <(argc --argc-completions bash "${argc_scripts[@]}")

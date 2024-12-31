@@ -1511,6 +1511,37 @@ nmap              <Leader>gg :Git<CR>gg<c-n>
 nnoremap <silent> <leader>gt :TigOpenCurrentFile<CR>
 nnoremap <silent> <leader>gT :TigOpenProjectRootDir<CR>
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" tpope/vim-surround (git)
+" ," Surround a word with "quotes"
+map  <leader>" ysiw"
+vmap <leader>" c"<C-R>""<ESC>
+
+" ,' Surround a word with 'single quotes'
+map  <leader>' ysiw'
+vmap <leader>' c'<C-R>"'<ESC>
+
+" ,) or ,( Surround a word with (parens)
+" The difference is in whether a space is put in
+map  <leader>( ysiw(
+map  <leader>) ysiw)
+vmap <leader>( c( <C-R>" )<ESC>
+vmap <leader>) c(<C-R>")<ESC>
+
+" ,[ Surround a word with [brackets]
+map  <leader>] ysiw]
+map  <leader>[ ysiw[
+vmap <leader>[ c[ <C-R>" ]<ESC>
+vmap <leader>] c[<C-R>"]<ESC>
+
+" ,{ Surround a word with {braces}
+map <leader>} ysiw}
+map <leader>{ ysiw{
+vmap <leader>} c{ <C-R>" }<ESC>
+vmap <leader>{ c{<C-R>"}<ESC>
+
+map <leader>` ysiw`
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " iberianpig/tig-explorer.vim (git-tig)

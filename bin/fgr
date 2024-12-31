@@ -70,7 +70,7 @@ INITIAL_QUERY="${*:-}"
     --delimiter : \
     --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱' \
     --preview='bat --color=always --style=header,numbers {1} | grep -C3 {q}' \
-    --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
+    --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
     --bind 'enter:become(vim {1} +{2})' \
     --bind "ctrl-o:execute(open {1})" \
     --bind "ctrl-e:execute(vim {1} +{2})"
