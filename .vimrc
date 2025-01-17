@@ -777,7 +777,7 @@ Plug 'christoomey/vim-system-copy'     " cp for copying; cv for pasting; cP for 
 " let g:system_copy#copy_command='xclip -sel clipboard'
 " let g:system_copy#paste_command='xclip -sel clipboard -o'
 
-" Plug 'rjungemann/registers-everywhere'    " ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
+" Plug 'rjungemann/registers-everywhere'    ay(buffer->register a) \ca(register a -> tempfile a.txt) \va(tempfile a.txt -> register a)  ap(register a -> buffer) \Ca \Va
 Plug 'm6z/VimRegDeluxe'                   " vr(View) a 5; vre(Edit) a 5; vrc(Close) ab;  vrs(Resize) 5 :vrr(Refresh)
 Plug 'vim-scripts/tmpclip.vim'            " TmpClipWrite TmpClipRead
 
@@ -868,11 +868,12 @@ Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
 Plug 'asins/vimcdoc'                   " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
+Plug 'powerman/vim-plugin-viewdoc'     " K
 Plug 'nanotee/nvim-lua-guide'          " lua reference manual, :help lua.table
 Plug 'hotchpotch/perldoc-vim'          " apt-get install perl-doc; K hotkey
 Plug 'bfrg/vim-cmake-help'             " :CMakeHelp {arg} / :CMakeHelpPopup {arg} / :CMakeHelpOnline [{arg}]
 
-Plug 'vim-syntastic/syntastic'         " ALE 异步语法检查引擎
+" Plug 'vim-syntastic/syntastic'         " ALE 异步语法检查引擎
 Plug 'iberianpig/tig-explorer.vim'
 
 Plug 'dracula/vim', { 'as': 'dracula' }  " Plug 'liuchengxu/space-vim-dark' + colorscheme space-vim-dark
@@ -1540,6 +1541,7 @@ vmap <leader>} c{ <C-R>" }<ESC>
 vmap <leader>{ c{<C-R>"}<ESC>
 
 map <leader>` ysiw`
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " iberianpig/tig-explorer.vim (git-tig)
@@ -2295,6 +2297,11 @@ Shortcut! <leader>f?   (fzf.vim)   Help tags                       open help top
 " :FZFNeigh<CR>
 Shortcut! <leader>f.   (fzf.vim)   open file under buffer's directory
 
+Shortcut! ]c       (vimdiff) Next difference
+Shortcut! [c       (vimdiff) Previous difference
+Shortcut! do       (vimdiff) Diff Obtain! Pull the changes to the current file.
+Shortcut! dp       (vimdiff) Diff Put!    Push the changes to the other file.
+
 Shortcut (fzf) apply colorscheme
       \ nnoremap <silent> <leader>f+ :Colors<CR>
 Shortcut (fzf) apply filetype
@@ -2307,22 +2314,39 @@ Shortcut (fzf) apply filetype
 " - Left side of separator is (Action) Name
 " - Right side of separator is Target
 let g:actions_list = [
-    \ ["source local rc            | :source ~/.vimrc "],
-    \ ["edit local rc              | :edit ~/.vimrc   "],
-    \ ["                                            "],
-    \ ["hexdump do                 | :%!xxd"],
-    \ ["hexdump re                 | :%!xxd -r "],
-    \ ["                                                 "],
-    \ ["json format                | :%!jq ."],
-    \ ["                                            "],
-    \ ["file-build                 | :AsyncTask file-build"],
-    \ ["file-run                   | :AsyncTask file-run"],
-    \ ["                                            "],
-    \ ["sudo-write                 | :w !sudo tee % > /dev/null"],
-    \ ["                                            "],
-    \ ["open commit browser        | :GV"],
-    \ ["list current commit file   | :GV!"],
-    \ ["current file location list | :GV?"],
+    \ ["                                                                      "],
+    \ ["source local rc                                      | :source ~/.vimrc "],
+    \ ["edit local rc                                        | :edit ~/.vimrc   "],
+    \ ["                                                                      "],
+    \ ["hexdump do                                           | :%!xxd"],
+    \ ["hexdump re                                           | :%!xxd -r "],
+    \ ["                                                                           "],
+    \ ["json format                                          | :%!jq ."],
+    \ ["                                                                      "],
+    \ ["file-build                                           | :AsyncTask file-build"],
+    \ ["file-run                                             | :AsyncTask file-run"],
+    \ ["                                                                      "],
+    \ ["sudo-write                                           | :w !sudo tee % > /dev/null"],
+    \ ["                                                                      "],
+    \ ["open commit browser                                  | :GV"],
+    \ ["list current commit file                             | :GV!"],
+    \ ["current file location list                           | :GV?"],
+    \ ["                                                           "],
+    \ ["toggle enhancement for distraction-free writing mode | :Limelight!!"],
+    \ ["toggle distraction-free writing mode                 | :Goyo!!"],
+    \ ["                                                              "],
+    \ ["split window above                                   | :aboveleft split"],
+    \ ["split window below                                   | :belowright split"],
+    \ ["split window left                                    | :aboveleft vsplit"],
+    \ ["split window right                                   | :belowright vsplit"],
+    \ ["close window                                         | :close"],
+    \ ["close other windows                                  | :only"],
+    \ ["                                                             "],
+    \ ["reload buffer from file                              | :confirm edit"],
+    \ ["reload buffer from file forcefully                   | :edit!"],
+    \ ["write buffer to file                                 | :write"],
+    \ ["write buffer to file forcefully                      | :write!"],
+    \ ["close all buffers                                    | :1,999bdelete"],
     \ ]
 
 
