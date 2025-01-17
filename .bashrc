@@ -1476,6 +1476,21 @@ bind -x '"\C-x\C-r": pet-select'
 bind -x '"\C-t":__fzf_cd__'    # fzf + ubuntu
 # bind -m emacs-standard '"\C-e": " \C-b\C-k \C-u`__fzf_select__`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
 
+# CTRL-X-1 - Invoke Readline functions by name
+__fzf_readline ()
+{
+    builtin eval "
+        builtin bind ' \
+            \"\C-x3\": $(
+                builtin bind -X | command fzf +s +m --toggle-sort=ctrl-r
+            ) \
+        '
+    "
+}
+
+builtin bind -x '"\C-x2": __fzf_readline';
+builtin bind '"\C-x1": "\C-x2\C-x3"'
+
 # export FZF_DEFAULT_COMMAND='fd'
 export FZF_COMPLETION_TRIGGER='\\'
 # export FZF_TMUX=1
@@ -1600,6 +1615,81 @@ cdmf(){
   } || {
     cdf cat ~/.cdm
   }
+}
+
+# Usage:
+# f cd (hit enter, choose path)
+# f cat (hit enter, choose files)
+# f vim (hit enter, choose files)
+# f vlc (hit enter, choose files)
+fzff() {
+    # Store the arguments from fzf
+    IFS=$'\n' arguments=($(fzf --query="$2" --multi))
+
+    # If no arguments passed (e.g. if Esc pressed), return to terminal
+    if [ -z "${arguments}" ]; then
+        return 1
+    fi
+
+    # We want the command to show up in our bash history, so write the shell's
+    # active history to ~/.bash_history. Then we'll also add the command from
+    # fzf, then we'll load it all back into the shell's active history
+    history -w
+
+    # RUN THE COMMANDS ########################################################
+    # The cd command has no effect when run as background, and doesn't show up
+    # as a job the can be brought to the foreground. So we make sure not to add
+    # a '&' (more programs can be added separated by a '|')
+    if ! [[ $1 =~ ^(cd)$ ]]; then
+        $1 "${arguments[@]}" &
+        
+    else
+        # $1 "${arguments[@]}"
+          arguments[0]=$(echo ${arguments[0]} | awk '{print $NF}')
+          [ -d "${arguments[0]}" ] && {
+            cd "${arguments[0]}"
+          } || {
+            dir=$(dirname "${arguments[0]}") && cd "$dir"
+          }
+          return 0
+    fi
+
+    # If the program is not on the list of GUIs (e.g. vim, cat, etc.) bring it
+    # to foreground so we can see the output. Also put cd on this list
+    # otherwise there will be errors)
+    if ! [[ $1 =~ ^(cd|zathura|vlc|eog|kolourpaint)$ ]]; then
+        fg %%
+    fi
+
+    # ADD A REPEATABLE COMMAND TO THE BASH HISTORY ############################
+    # Store the arguments in a temporary file for sanitising before being
+    # entered into bash history
+    : >/tmp/fzf_tmp
+    for file in ${arguments[@]}; do
+        echo $file >>/tmp/fzf_tmp
+    done
+
+    # Put all input arguments on one line and sanitise the command such that
+    # spaces and parentheses are properly escaped. More sanitisation
+    # substitutions can be added if needed
+    sed -i 's/\n//g; s/ /\\ /g; s/(/\\(/; s/)/\\)/' /tmp/fzf_tmp
+
+    # If the program is on the GUI list add a '&' to the command history
+    if [[ $1 =~ ^(zathura|vlc|eog|kolourpaint)$ ]]; then
+        sed -i '${s/$/ \&/}' /tmp/fzf_tmp
+    fi
+
+    # Grab the sanitised arguments
+    arguments=$(cat /tmp/fzf_tmp)
+
+    # Add the command with the sanitised arguments to our .bash_history
+    echo ${1} ${arguments} >>~/.bash_history
+
+    # Reload the ~/.bash_history into the shell's active history
+    # history -r
+
+    # Clean up temporary variables
+    echo >/tmp/fzf_tmp
 }
 
 [[ -x $(command -v bat) ]] && [[ -x $(command -v fzf) ]] && alias preview="fzf --preview 'bat --color \"always\" {}'"
