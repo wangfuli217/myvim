@@ -1,6 +1,6 @@
 echo "argc=$# argv=$@"
 
-while read line; do
+while IFS= read line; do
 echo "$line"
 done
 
@@ -14,4 +14,3 @@ echo "VIM_FILETYPE  = $VIM_FILETYPE "   # file type of current buffer
 echo "VIM_LINE1     = $VIM_LINE1    "   # start line of the given {range}
 echo "VIM_LINE2     = $VIM_LINE2    "   # last line of the given {range}
 
-fzf

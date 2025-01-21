@@ -1,6 +1,6 @@
 echo "argc=$# argv=$@"
 
-while read line; do
+while IFS= read line; do
 echo "$line"
 done
 

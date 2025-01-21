@@ -1,1 +1,2 @@
-fzf
+echo "argc=$# argv=$@"
+

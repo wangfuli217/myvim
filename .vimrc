@@ -19,7 +19,7 @@ tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
 " 代码显示
 "                                                        <leader>f1 :AsyncTaskLast<cr>              <leader><F1> :call asyncrun#quickfix_toggle(6)<cr>
 nnoremap <F2> :set nu!   nu?<CR>                       " <leader>f2 :AsyncTaskEdit<cr>              <leader><F2> :TagbarToggle<CR>
-nnoremap <F3> :set list! list?<CR>                     " <leader>f3 :AsyncTask FZF-neigh-files<cr>  <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
+nnoremap <F3> :set list! list?<CR>                     " <leader>f3 :AsyncTask FZF-neigh<cr>  <leader><F3> :NERDTreeRefreshRoot<CR>:NERDTreeToggle<CR>
 nnoremap <F4> :set relativenumber! relativenumber?<CR> " <leader>f4 :AsyncTask FZF-root-files<cr>   <leader><F4> :VimRegEdit y<CR><CR>
 
 " ccompile <F5>     <--> <leader>f5 :AsyncTask file-build<cr>
@@ -2080,13 +2080,13 @@ noremap <leader>fe :AsyncTaskFzf<cr>
 noremap <leader>fE :AsyncTaskLast<cr>
 noremap <leader>f1 :AsyncTaskLast<cr>
 noremap <leader>f2 :AsyncTaskEdit<cr>
-noremap <leader>f3 :AsyncTask FZF-neigh-files<cr>
+noremap <leader>f3 :AsyncTask FZF-neigh<cr>
 noremap <leader>f4 :AsyncTask FZF-root-files<cr>
 noremap <leader>f5 :AsyncTask file-build<cr>
 noremap <leader>f6 :AsyncTask file-run<cr>
-noremap <leader>f7 :AsyncTaskFzf<cr>
-noremap <leader>f8 :Shortcuts<cr>
-noremap <leader>f9 :Actions<cr>
+noremap <leader>f7 :TP! run<cr>
+noremap <leader>f8 :TP! runa
+noremap <leader>f9 :TP! rund<cr>
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
 
@@ -2173,7 +2173,7 @@ Shortcut! <leader><F12> (FF)   project cscope build
 Shortcut! <leader>f0    (FF)   SendSelectionToTmux
 Shortcut! <leader>f1    (FF)   AsyncTaskLast
 Shortcut! <leader>f2    (FF)   AsyncTaskEdit
-Shortcut! <leader>f3    (FF)   FZF-neigh-files
+Shortcut! <leader>f3    (FF)   FZF-neigh
 Shortcut! <leader>f4    (FF)   FZF-root-files
 Shortcut! <leader>f5    (FF)   AsyncTask file-build
 Shortcut! <leader>f6    (FF)   AsyncTask file-run
