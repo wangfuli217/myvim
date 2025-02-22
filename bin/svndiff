@@ -1,4 +1,1 @@
-svn status | grep -w M  | fzf --preview "svncolor  {2}" \
-    --bind 'enter:become(vim {2})' \
-    --bind "ctrl-o:execute(open {2})" \
-    --bind "ctrl-e:execute(vim {2} < /dev/tty > /dev/tty 2>&1)"
+svn status | grep -w M  | fzf --preview "svncolor  {2}"
