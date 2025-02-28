@@ -4,11 +4,11 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
-# If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-    *) return;;
-esac
+# # If not running interactively, don't do anything
+# case $- in
+#     *i*) ;;
+#     *) return;;
+# esac
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -97,7 +97,7 @@ alias l='ls -CF'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n 1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -129,11 +129,10 @@ svnqsdk(){
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
   [ -n $1 ] && eval $@
-
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-
   OLDPWD=${oldpwd}
 }
+
+
 # eval "$(lua /home/wangfuli/git/z.lua/z.lua  --init bash once enhanced)"   # BASH 初始化
 
 alias sourcebash='source ~/.bashrc'
@@ -298,7 +297,7 @@ ubin_bin(){
     bindir="${prefix}$((ubin_bin_step++))_${suffix}"
     mkdir $bindir
     cp KF_Image $bindir
-    local newbin=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
+    local newbin=$(ls -dlt *Build* | grep '^d' | head -1 | awk '{print $NF}')
     mv ${newbin}/* $bindir
     rmdir ${newbin}
 }
@@ -441,9 +440,6 @@ svnbin(){
     cd $(ls -tld ./images/*-ZHCN* | head -n 1 | awk '{print $NF}')
     OLDPWD=${oldpwd}
   }
-  
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-  
 }
 
 alias cdromfs=svnromfs
@@ -455,8 +451,6 @@ svnromfs(){
   [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
-  
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 alias cduser=svnuser
@@ -468,8 +462,6 @@ svnuser(){
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
-  
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 put_user(){
@@ -520,7 +512,6 @@ _svnproduct(){
   done
   [ -d "$(pwd)/product" ] && cd $(pwd)/product
   OLDPWD=${oldpwd}
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 alias cdroot=svnroot
@@ -531,7 +522,6 @@ svnroot(){
   done
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 _gitroot() {
@@ -540,21 +530,8 @@ _gitroot() {
 cdgit() {
   cd "$(_gitroot)/${1:-}";
   [ -n $1 ] && eval $@
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
-
-alias cdqsdk=svnqsdk
-svnqsdk(){
-  local oldpwd=$(pwd)
-  while ! [ -d .svn ]; do
-    cd ../
-  done
-  [ -d qsdk ] && cd $(pwd)/qsdk
-  [ -n $1 ] && eval $@
-  OLDPWD=${oldpwd}
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-}
 
 alias cdpackage=svnpackage
 alias cdpkg=svnpackage
@@ -567,9 +544,7 @@ svnpackage(){
   [ -d package ] && cd package
   [ -n $1 ] && eval $@
   OLDPWD=${oldpwd}
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
-
 
 
 alias project='export __project=$(pwd)'
@@ -582,11 +557,7 @@ cdproject(){
       cd $(pwd)/$project_var;
     }
   }
-
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-
   OLDPWD=${oldpwd}
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
 export project_user_mk_arg=  # '-j1 V=s'
@@ -782,9 +753,6 @@ cdrootfs(){
   [ -d build_dir ] || { svnqsdk; }
   cd build_dir/target-*/linux-*/base-files/ipkg-*/base-files
   [ -n $1 ] && eval $@
-
-  which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-
   OLDPWD=${oldpwd}
 }
 
@@ -813,8 +781,7 @@ cross_path_mips(){
   ls ${cross_path}
   cd $oldpwd
 }
-export PATH=/snap/bin/:${PATH}
-export PATH=/home/wangfuli/.vim/bin/:${PATH}
+
 #
 # cdp(){
 # local t=$(pwd)
@@ -879,8 +846,8 @@ alias tpl='tmux last-pane; tmux resize-pane -Z'
 alias xsync='pwd > /mnt/hgfs/ftptmp/xsync'
 alias eu='pwd > /mnt/hgfs/ftptmp/xsync'
 
-alias psmem10='ps auxf | sort -nr -k 4 | head -n 10'
-alias pscpu10='ps auxf | sort -nr -k 3 | head -n 10'
+alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
 
 cdvim(){
   local oldpwd=$(pwd)
@@ -1060,7 +1027,6 @@ repeat_err() { while :; do $@ || return; done }
 # Syntax: "repeat_sleep <timeout> <command>"
 repeat_sleep() { timeout=$1; shift; while :; do $@ && return; sleep $timeout; done }    # 加入延时
 
-FZF_ALT_C_COMMAND= eval "$(fzf --bash)"
 
 alias yuncore+='yuncore_help'
 yuncore_help(){   cat - <<'yuncore_help'
@@ -1110,16 +1076,18 @@ wfl_help
 
 source ~/.fzf/shell/key-bindings.bash
 source ~/.fzf/shell/completion.bash
+# FZF_ALT_C_COMMAND= eval "$(fzf --bash)"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 export FZF_MARKS_JUMP='\C-x\C-g'
 [ -d /home/wangfuli/git/fzf-marks ] && source /home/wangfuli/git/fzf-marks/fzf-marks.plugin.bash
-alias fzf-bookmarks='source ~/.vim/bin/fzf-bookmarks'
 
 FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
+export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
+
 
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
@@ -1138,7 +1106,7 @@ fzfrun(){  # tmux大量日志情况下,分析日志信息
 alias fzfv='vim $(fzf -m --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}" )' #用来多选:TAB选中和Shift-TAB取消
 alias fzfe='fzf --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat --style=numbers --color=always {}"'
 alias fzftmp='find /mnt/hgfs/ftptmp -maxdepth 1 -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat {}"'
-alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all" --bind "ctrl-d:deselect-all" --preview "bat -l sh {}"'
+alias fzfcheat='find /home/wangfuli/git/fzf-cheatsheets/cheatsheets -type f | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-o:execute(xdg-open {})" --bind "ctrl-a:select-all"  --bind "ctrl-d:deselect-all" --preview "bat {}"'
 
 viminfo (){
   local files;
@@ -1156,13 +1124,20 @@ vimdir () {
     done | fzf -d -m -q "$*" -1) && cd $(dirname $files)
 }
 
+dirdiff(){
+    # Shell-escape each path:
+    DIR1=$(printf '%q' "$1"); shift
+    DIR2=$(printf '%q' "$1"); shift
+    vim $@ -c "DirDiff $DIR1 $DIR2"
+}
+
 # Modified version where you can press
 #   - CTRL-O to open with `open` command,
 #   - CTRL-E or Enter key to open with the $EDITOR
 fo() {
-  IFS=$'\n' out=("$(fzf-tmux --multi  --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
-  key=$(head -n 1 <<< "$out")
-  file=$(head -n 2 <<< "$out" | tail -n 1)
+  IFS=$'\n' out=("$(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
   if [ -n "$file" ]; then
     [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
   fi
@@ -1248,6 +1223,7 @@ fdr() {
   cd "$DIR"
   eval xsync
 }
+
 # fdf - cd into the directory of the selected file
 fdf() {
   local file
@@ -1289,7 +1265,6 @@ fdf() {
   [ -z "$file" ] && {
     return
   }
-
   [ -d "$file" ] && {
     cd "$file"
   } || {
@@ -1310,11 +1285,9 @@ fdf0() {
              --bind 'f9:change-prompt(Dirs1> )+reload(find * -maxdepth 1 -type d)' \
              --bind 'f10:change-prompt(Dirs2> )+reload(find * -maxdepth 2 -type d)' \
              --bind 'ctrl-f:change-prompt(Files> )+reload(find * -type f)')
-
   [ -z "$file" ] && {
     return
   }
-
   [ -d "$file" ] && {
     cd "$file"
   } || {
@@ -1338,7 +1311,7 @@ fdf1() {
           d) jumpdir="1" ;;
           h) echo "fdf1 -t|sorttime -s|sortsize -r|sortreverse -d|jumpdir otherwise edit with vim"
              echo "fdf1 "       # sorttime older first
-             echo "fdf1 -t "    # sorttime size 
+             echo "fdf1 -t "    # sorttime size
              echo "fdf1 -s "    # sortsize
              echo "fdf1 -t -r " # sorttime
              echo "fdf1 -s -r " # sorttime
@@ -1428,7 +1401,6 @@ fdf2() {
   [ -z "$file" ] && {
     return
   }
-
   [ -d "$file" ] && {
     cd "$file"
   } || {
@@ -1437,20 +1409,19 @@ fdf2() {
   eval xsync
 }
 
-
-# # fdp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
+# fdp - put selected file to /mnt/hgfs/ftptmp 调到指定文件所在目录
 # fdp () {
 #   local file
 #   local dir
 #   file=$(fzf +m -q "$1") && put $file
 #   eval xsync
 # }
-# 
-# # vgp - put the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
+
+# vgp - put the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
 # vgp (){
 #   local file
 #   file="$(ag --nobreak --noheading $@ | fzf -0 -1 | awk -F: '{print $1}')"
-# 
+
 #   if [[ -n $file ]] ; then
 #      put $file
 #   fi
@@ -1473,7 +1444,7 @@ fdf2() {
 # }
 
 ftags() {
-     [ -e tags ] || ctags -e -R --languages=C --langmap=C:.h.c --c-kinds=+px --extras=+r
+     [ -e tags ] || ctags -e -R --languages=C --langmap=C:.h.c --c-kinds=+px
     export PATH=${PATH}:/home/wangfuli/git/fzf-ctags/bin
     fzf-ctags
 }
@@ -1486,7 +1457,6 @@ cscope_build(){
     --exclude='.git' --exclude='*.a' --exclude='*.js' --exclude='*.pxd' --exclude='*.pyx' --exclude='*.so' &&
     echo "Done."
 }
-
 
 # bind -x '"\C-t":__fzf_cd__'           跳转目录
 # bind -x '"\alt-a":__fzf_select__'     选择文件
@@ -1529,20 +1499,19 @@ builtin bind -x '"\C-x2": __fzf_readline';
 builtin bind '"\C-x1": "\C-x2\C-x3"'
 
 # export FZF_DEFAULT_COMMAND='fd'
-export FZF_COMPLETION_TRIGGER='\'
+export FZF_COMPLETION_TRIGGER='\\'
 # export FZF_TMUX=1
 export FZF_TMUX_HEIGHT='80%'
 # export fzf_preview_cmd='[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file || (bat --color=always || ccat --color=always {} || highlight -O ansi -l {} || cat {}) 2> /dev/null | head -500'
 
 
 # bat
-[[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'"; }
-
+[[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'";  }
 # V some command output; like git diff;svn diff; ls;
 V() { $@ | view - ; } # Quick way to view files in vim
 
 # find fd ag for filename, end preivew or edit it
-filef() { $@ | awk '{print $NF}' | fzf ; }    # Quick way to view files in fzf preview
+filef() { $@ | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
 
 # grep rg with line number
 rgf ()  {
@@ -1632,10 +1601,10 @@ cdfm(){
       [ -f ~/.config/fzf-bookmarks/bookmarks ] && { cdf cat ~/.config/fzf-bookmarks/bookmarks; return; }
     }
     [ "$1" = "a" ] && {
-      cdf cat ~/.cdm ~/.fzf-marks ~/.config/fzf-bookmarks/bookmarks
+      cdf cat ~/.cdm  ~/.fzf-marks ~/.config/fzf-bookmarks/bookmarks
     }
   } || {
-    cdf cat ~/.cdm
+  cdf cat ~/.cdm
   }
 }
 
@@ -1652,7 +1621,7 @@ cdmf(){
       cdf cat ~/.cdm  ~/.fzf-marks ~/.config/fzf-bookmarks/bookmarks
     }
   } || {
-    cdf cat ~/.cdm
+  cdf cat ~/.cdm
   }
 }
 
@@ -1744,8 +1713,7 @@ fzfk() {
 }
 alias fzfy='ag -g "" -f ~/.local/share/yank_history | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {} " '
 
-alias tmp='find -L /ftptmp -maxdepth 1 -name "*tmp*" -o -name "*diff*" | fzf '
-
+alias tmp='find -L /ftptmp -maxdepth 2 -name "*tmp*" -o -name "*diff*" | fzf '
 
 #### fzf + tmux ####
 # tmuxs [FUZZY PATTERN] - Select selected tmux session
@@ -1838,7 +1806,6 @@ fman() {
     man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
 }
 
-alias tmp='find -L /ftptmp -maxdepth 1 -name "*tmp*" -o -name "*diff*" | fzf '
 
 inorun() (
   # Run command whenever a given file or a file
@@ -1876,38 +1843,12 @@ testprogs() (
     fi
   done
 )
-which drop      >/dev/null 2>&1 && alias f=drop
-which floaterm  >/dev/null 2>&1 && alias f=floaterm
-alias task='asynctask -f'
 
-# z() {
-#   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0
-#   local dir
-#   dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
-# }
-
-# --reverse --walker=dir,follow,hidden --scheme=path
-#
 export FZF_CTRL_T_OPTS=" \
-  --border='rounded' \
-  --border-label-pos=50 \
-  --border-label='Find Files' \
-  --preview-label='Find Files' \
   --header ':: ENTER (paste selected files and dirs onto command-line)'"
-
 export FZF_CTRL_R_OPTS=" \
-  --border='rounded' \
-  --border-label-pos=50 \
-  --border-label='Command History' \
-  --preview-label='Command History' \
-  --header ':: CTRL-Y (copy command into clipboard)' \
-  --bind=ctrl-r:toggle-sort "
-
+  --header ':: CTRL-Y (copy command into clipboard)'"
 export FZF_ALT_C_OPTS=" \
-  --border='rounded' \
-  --border-label-pos=50 \
-  --border-label='Find Dirs' \
-  --preview-label='Find Dirs' \
   --header ':: ENTER (cd into the selected dir)'"
 
 # fzf-header="(ctrl-\\: jump) (ctrl-/: toggle-preview) (f1: toggle-help)  (f2: toggle-preview)
@@ -1919,8 +1860,7 @@ export FZF_ALT_C_OPTS=" \
 
 # defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, alt+shift+d → delete"
 # unset FZF_DEFAULT_COMMAND  Linux: --bind="ctrl-o:execute:xdg-open {}"  --bind="ctrl-o:become: cd $(dirname {})"
-#  --history="$HOME/.fzf_history" --history-size=500   # only for Linux
-export FZF_DEFAULT_OPTS='--no-height --no-reverse --no-mouse --multi --cycle --tabstop=4 --track --select-1 --no-scrollbar
+export FZF_DEFAULT_OPTS='--no-height --no-reverse --multi --ansi --cycle
 --bind "ctrl-a:select-all"
 --bind "ctrl-d:deselect-all"
 --bind "ctrl-n:next-selected,ctrl-p:prev-selected"
@@ -1930,27 +1870,14 @@ export FZF_DEFAULT_OPTS='--no-height --no-reverse --no-mouse --multi --cycle --t
 --walker "file,dir,hidden,follow" --walker-skip=".git,.github,.svn,node_modules,target"
 --preview "preview {}"
 --preview-window hidden
---bind "change:first"
 --bind "ctrl-/:toggle-preview"
 --bind "f2:toggle-preview"
---bind "focus:transform-preview-label:echo [ {+} ]"
+--bind "focus:transform-preview-label:echo [ {} ]"
 --bind "start:hide-header"
---bind="alt-w:toggle-preview-wrap"
---bind="ctrl-l:clear-query+first"
---bind "ctrl-r:reload(find -type d)"
---bind "ctrl-f:reload(find -type f)"
---bind "ctrl-o:execute(cygstart {+})"
---bind "ctrl-e:execute(vim {+} < /dev/tty > /dev/tty 2>&1)"
---bind "ctrl-g:become(if [[ -d {} ]]; then cd {}; else vim {+} < /dev/tty > /dev/tty 2>&1; fi)"
---bind "ctrl-\\:jump,jump-cancel:transform:[[ $FZF_KEY =~ ctrl-c ]] && echo abort"
---bind="ctrl-s:toggle-sort"
---highlight-line
---color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189
---color hl:underline,hl+:underline
---color hl+:yellow:regular:reverse,query:white:regular,info:gray:regular
---color prompt:yellow:regular,pointer:yellow:bold
---marker ▏ --pointer "▌" --prompt "▌  " '
-
+--bind "ctrl-o:execute(cygstart {})"
+--bind "ctrl-e:execute(vim {} < /dev/tty > /dev/tty 2>&1)"
+--bind "ctrl-\\:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled"
+--highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌'
 
 
 fzf_my_header='------------------------------------ (keystroke:my binding) ------------------------------------
@@ -1966,46 +1893,46 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --header \"$fzf_my_header\" --bind 'f
 
 echo "------------------------------------ (keystroke:default binding) ------------------------------------
 ------------------------------------ exit          || ---------------------|-------- layout
-abort                | ctrl-c  ctrl-g  ctrl-q  esc || offset-down          | similar to CTRL-E of Vim)
-accept               | enter   double-click        || offset-up            | similar to CTRL-Y of Vim)
+abort                | ctrl-c  ctrl-g  ctrl-q  esc || offset-down          |similar to CTRL-E of Vim)
+accept               | enter   double-click        || offset-up            |similar to CTRL-Y of Vim)
 ---------------------|--------- readline           || ---------------------|-------- preview
-backward-char        | ctrl-b  left                || preview-down         | shift-down
-forward-char         | ctrl-f  right               || preview-up           | shift-up
-backward-delete-char | ctrl-h  bspace              || preview-page-down    | alt-down  #
-beginning-of-line    | ctrl-a  home                || preview-page-up      | alt-up    #
+backward-char        | ctrl-b  left                || preview-down         |shift-down
+forward-char         | ctrl-f  right               || preview-up           |shift-up
+backward-delete-char | ctrl-h  bspace              || preview-page-down    |alt-down
+beginning-of-line    | ctrl-a  home                || preview-page-up      |alt-up
 end-of-line          | ctrl-e  end                 || ---------------------|-------- history
-delete-char          |         del                 || next-history         | (ctrl-n on --history)
-delete-char/eof      | ctrl-d                      || prev-history         | (ctrl-p on --history)
+delete-char          |         del                 || next-history         |(ctrl-n on --history)
+delete-char/eof      | ctrl-d                      || prev-history         |(ctrl-p on --history)
 clear-screen         | ctrl-l                      || ---------------------|-------- marker
-unix-line-discard    | ctrl-u                      || deselect-all         | ctrl-d    #
-unix-word-rubout     | ctrl-w                      || select-all           | ctrl-a    #
----------------------|--------- layout             || toggle+up            | btab    (shift-tab)
-down                 | ctrl-j  ctrl-n  down        || toggle+down          | ctrl-i  (tab)
-up                   | ctrl-k  ctrl-p  up          || toggle-header        | F1 ?      #
-page-down            | pgdn                        || toggle-preview       | F2 ctrl-/ #
-page-up              | pgup                        || jump                 | ctrl-\\   #
+unix-line-discard    | ctrl-u                      || deselect-all         |ctrl-d  #
+unix-word-rubout     | ctrl-w                      || select-all           |ctrl-a  #
+---------------------|--------- layout             || toggle+up            |btab    (shift-tab)
+down                 |ctrl-j  ctrl-n  down         || toggle+down          |ctrl-i  (tab)
+up                   |ctrl-k  ctrl-p  up           ||
+page-down            |pgdn                         ||
+page-up              |pgup                         ||
 ------------------------------------ (search:fuzzy-match) ------------------------------------
 ------------------------------------ extended-search mode (Search syntax)
-Token       Match type                   Description    # toggle-sort      | ctrl-s
+Token       Match type                   Description
 sbtrkt      fuzzy-match                  匹配sbtrkt     fuzzy
 ^music      prefix-exact-match           以music开头    ^
 .mp3$       suffix-exact-match           以.mp3结尾     $
 'wild       exact-match(quoted)          精确包含wild   '
-!fire       inverse-exact-match          不包含fire     !       \"!pyc \'travis\": exclude pyc; exactly include travis
+!fire       inverse-exact-match          不包含fire     !
 !.mp3$      inverse-suffix-exact-match   不以.mp3结尾   !*$
 ^core go$ | rb$ | py$   以core开头,以go或rb或py结尾的   |
 switch\                 switch后紧接空格                \
 ------------------------------------ Fuzzy completion for bash and zsh ------------------------------------
-vim **<TAB>;        cd **<TAB>             || fif    find-in-file - usage: fif <searchTerm>  # frg <arg>; frgi [arg]; frgl <arg>
-vim ../**<TAB>                             || ftags  browse; ctags-generated index of symbols in the sources
-vim ../fzf**<TAB>;  cd ~/github/fzf**<TAB> || vgd    cd into the directory of the selected file - usage: vgd  [FUZZY PATTERN]
-vim ~/**<TAB>                              || git fuzzy        run git add and git reset by selecting or cursoring
-kill -9 **<TAB>                            || ugit / git undo  helps undo git commands. Your damage control git buddy
-ssh **<TAB>                                || git forgit       A utility tool powered by fzf for using git interactively.
-telnet **<TAB>                             || export FZF_DEFAULT_OPTS_FILE=~/.fzfrc
-unset **<TAB>                              || ctrl-r     Paste the selected command from history onto the command-line
-export **<TAB>                             || ctrl-t     cd into the selected directory
-unalias **<TAB>                            || alt-a      Paste the selected files and directories onto the command-line
+vim **<TAB>;        cd **<TAB>                || fif    find-in-file - usage: fif <searchTerm>
+vim ../**<TAB>                                || ftags  browse; ctags-generated index of symbols in the sources
+vim ../fzf**<TAB>;  cd ~/github/fzf**<TAB>    || vgd    cd into the directory of the selected file - usage: vgd  [FUZZY PATTERN]
+vim ~/**<TAB>                                 || git fuzzy        run git add and git reset by selecting or cursoring
+kill -9 **<TAB>                               || ugit / git undo  helps undo git commands. Your damage control git buddy
+ssh **<TAB>                                   || git forgit       A utility tool powered by fzf for using git interactively.
+telnet **<TAB>                                || export FZF_DEFAULT_OPTS_FILE=~/.fzfrc
+unset **<TAB>                                 || ctrl-r     Paste the selected command from history onto the command-line
+export **<TAB>                                || ctrl-t     cd into the selected directory
+unalias **<TAB>                               || alt-a      Paste the selected files and directories onto the command-line
 ------------------------------------Key bindings for command-line ------------------------------------
 bind -x '\C-x\C-o:fzfo'      # fzf + cygstart                      ==> open
 bind -x '\C-x\C-e:fzfv'      # fzf + vim                           ==> vim
@@ -2020,27 +1947,22 @@ bind -x '\C-x\C-r:ugit'      # fzf + manual                        ==> revert
 CTRL-X CTRL-G fzf-marks/fzf-marks.plugin.bash  FZF_MARKS_JUMP='\C-x\C-g'
 CTRL-X CTRL-P james-w/fzf-cheatsheets          bind -m emacs-standard -x '\C-x\C-p: fzf-cheatsheets-widget'
 CTRL-X CTRL-L cheat-fzf/src/cht-fzf.sh         bind -m emacs-standard -x '\C-x\C-l: chtfzf'
-bind -X 2>&1 | grep -e fzf -e 'C-x'            # show fzf
 "> /var/tmp/fzf_self_header
 
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '?:preview: preview /var/tmp/fzf_self_header' "                             # 提供fzf默认绑定帮助
-export FZF_CTRL_R_OPTS="$FZF_DEFAULT_OPTS $FZF_CTRL_R_OPTS --preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"  # 预览窗口中的完整命令
-export FZF_CTRL_R_OPTS="$FZF_DEFAULT_OPTS $FZF_CTRL_R_OPTS --no-sort --exact --bind enter:accept-or-print-query "                              # 排序和精确匹配
-export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_CTRL_T_OPTS --select-1 --exit-0"    # 如果只有一个项目,--select-1 会自动选择该项目,这样就不用按回车键了.同样,--exit-0 会在列表为空时自动退出
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '?:preview: preview /var/tmp/fzf_self_header' "
 
-
-dirdiff(){
-    # Shell-escape each path:
-    DIR1=$(printf '%q' "$1"); shift
-    DIR2=$(printf '%q' "$1"); shift
-    vim $@ -c "DirDiff $DIR1 $DIR2"
-}
+# z() {
+#   [ $# -gt 0 ] && fasd_cd -d "$*" && return 0
+#   local dir
+#   dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
+# }
 
 [ -f ~/.fzf/fzf_complete.sh  ] && source ~/.fzf/fzf_complete.sh
 # [ -f ~/.fzf/fzf_frg_frgi_frgl.sh  ] && source ~/.fzf/fzf_frg_frgi_frgl.sh
 
 # Fig post block. Keep at the bottom of this file.
 # [[ -f "$HOME/.fig/shell/bashrc.post.bash" ]] && builtin source "$HOME/.fig/shell/bashrc.post.bash"
+
 
 [ -f ~/.vim/bin/zoxide ] && { # https://github.com/ajeetdsouza/zoxide same fzf-marks
 eval "$(zoxide init bash)"
@@ -2115,6 +2037,10 @@ function ccat() {
     fi
 }
 
+which drop      >/dev/null 2>&1 && alias f=drop
+which floaterm  >/dev/null 2>&1 && alias f=floaterm
+alias task='asynctask -f'
+
 # argc-completions
 export ARGC_COMPLETIONS_ROOT="/ftptmp/snippets/argc-completions"
 export ARGC_COMPLETIONS_PATH="$ARGC_COMPLETIONS_ROOT/completions/linux:$ARGC_COMPLETIONS_ROOT/completions"
@@ -2122,8 +2048,6 @@ export PATH="$ARGC_COMPLETIONS_ROOT/bin:$PATH"
 # To add completions for only the specified command, modify next line e.g. argc_scripts=( cargo git )
 argc_scripts=( $(ls -p -1 "$ARGC_COMPLETIONS_ROOT/completions/linux" "$ARGC_COMPLETIONS_ROOT/completions" | sed -n 's/\.sh$//p') )
 source <(argc --argc-completions bash "${argc_scripts[@]}")
-
-source /home/wangfuli/.config/broot/launcher/bash/br
 
 export FZF_COMPLETION_TRIGGER='\'
 source ~/.fzf/shell/key-bindings.bash
@@ -2133,4 +2057,3 @@ _fzf_setup_completion dir ranger tree
 _fzf_setup_completion path code bat e np npe npp nppe
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
