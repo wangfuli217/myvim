@@ -1,0 +1,7 @@
+#!/usr/bin/expect
+spawn ftp $argv
+expect "Name"
+send "anonymous\r"
+expect "Password:"
+send "\r"
+interact

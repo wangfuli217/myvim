@@ -1,0 +1,3 @@
+#!/bin/bash
+
+busybox tcpsvd -E 0.0.0.0 23 busybox telnetd -i -l /bin/login

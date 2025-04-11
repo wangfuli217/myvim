@@ -1,27 +1,92 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-export TEMP=$(mktemp -u)
-trap 'rm -f "$TEMP"' EXIT
+declare preview='bat --color=always --style=header,numbers -H {2} {1}'
+
+open=xdg-open
+if [ "$(uname -o)" = "Cygwin" ]; then
+  open() {
+    for f in $@; do
+      cygstart "$(cygpath -w $f)"
+    done
+  }
+fi
+
+usage() {
+  cat <<HEREDOC
+   usage: frg -l -i -f filetype -s -S -w -L -v
+   optional   arguments:
+     -h       show this help message and exit
+     -e       exact-match(fzf)       (default fuzzy match)
+     -l       files-with-matches(rg) (output format)
+     -L       follow symbolic links(rg)
+     -i       ignore-case(rg)
+     -s       case-sensitive(rg)     (default)
+     -S       smart-case(rg)
+     -w       word-regexp(rg)
+     -F       fixed-strings(rg)
+     -f <opt> filetype: rg --type-list
+     -d <opt> maxdepth
+     -v       verbose RG_PREFIX
+  inst: frg -l fzf # output filename only
+  inst: frg -L fzf # search symbolic links dirctory
+  inst: frg -w fzf # search word match only
+  inst: frg -s fzf # default search match mode: -i/-s/-S/-w
+  inst: frg -v fzf # output RG_PREFIX config
+HEREDOC
+}
+
+while getopts ':hlLifd:FsSwv' x; do
+  case "$x" in
+    h)
+      usage
+      exit 0
+      ;;
+    e) exactmatch=1 ;;
+    l)
+      list_files=1
+      preview='bat --color=always --style=header,numbers {1}'
+      ;;
+    L) follow="1";;
+    i) ignorecase="1" ;;
+    f) filetype=${OPTARG} ;;
+    d) maxdepth=${OPTARG} ;;
+    F) fixedstrings="1" ;;
+    s) casesensitive="1" ;;
+    S) smartcase="1" ;;
+    w) wordregexp="1" ;;
+    v) verbose="1" ;;
+  esac
+done
+shift $((OPTIND - 1))
+unset x OPTARG OPTIND
+
+# --preview 'bat --color=always {1} --highlight-line {2}' \
+# Switch between Ripgrep launcher mode (CTRL-R) and fzf filtering mode (CTRL-F)
+rm -f /tmp/rg-fzf-{r,f}
+RG_PREFIX="rg --column --line-number --no-heading --color=always ${list_files:+-l}"
+
+[[ -n $filetype ]] && RG_PREFIX="$RG_PREFIX --type=$filetype "
+[[ -n $maxdepth ]] && RG_PREFIX="$RG_PREFIX --max-depth=$maxdepth "
+[[ -n $fixedstrings ]] && RG_PREFIX="$RG_PREFIX --fixed-strings "
+[[ -n $ignorecase ]] && RG_PREFIX="$RG_PREFIX --ignore-case "
+[[ -n $casesensitive ]] && RG_PREFIX="$RG_PREFIX --case-sensitive "
+[[ -n $smartcase ]] && RG_PREFIX="$RG_PREFIX --smart-case "
+[[ -n $wordregexp ]] && RG_PREFIX="$RG_PREFIX --word-regexp "
+[[ -n $follow ]] && RG_PREFIX="$RG_PREFIX -L "
+[[ -n $verbose ]] && { echo "RG_PREFIX=$RG_PREFIX"; exit; }
 
 INITIAL_QUERY="${*:-}"
-TRANSFORMER='
-  rg_pat={q:1}      # The first word is passed to ripgrep
-  fzf_pat={q:2..}   # The rest are passed to fzf
-
-  if ! [[ -r "$TEMP" ]] || [[ $rg_pat != $(cat "$TEMP") ]]; then
-    echo "$rg_pat" > "$TEMP"
-    printf "reload:sleep 0.1; rg --column --line-number --no-heading --color=always --smart-case %q || true" "$rg_pat"
-  fi
-  echo "+search:$fzf_pat"
-'
-fzf --ansi --disabled --query "$INITIAL_QUERY" \
-    --with-shell 'bash -c' \
-    --bind "start,change:transform:$TRANSFORMER" \
-    --color "hl:-1:underline,hl+:-1:underline:reverse" \
-    --delimiter : \
-    --header '╱ first word (ripgrep mode)  rest word (fzf mode) ╱' \
-    --preview 'bat --color=always {1} --highlight-line {2}' \
-    --preview-window 'right,50%,border-line,+{2}+3/3,~3' \
-    --bind 'ctrl-e:execute(vim {1} +{2})'    \
-    --bind 'ctrl-o:execute(vim {1} +{2})'    \
-    --bind 'enter:become(vim {1} +{2})'
+: | fzf --ansi --disabled --query ${exactmatch:+-e} "$INITIAL_QUERY" \
+  --bind "start:reload($RG_PREFIX {q})+unbind(ctrl-r)" \
+  --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
+  --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
+  --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. ripgrep> )+disable-search+reload($RG_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > /tmp/rg-fzf-f; cat /tmp/rg-fzf-r)" \
+  --color "hl:-1:underline,hl+:-1:underline:reverse" \
+  --prompt '1. ripgrep> ' \
+  --delimiter : \
+  --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf arguments: [ -l;-L/-i/-d 1/-f c/-F/-s/-S/-w;-v ] /' \
+  --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1}' \
+  --preview-window 'right,45%,+{2}+1/3,~1' \
+  --bind 'enter:become(less {1})' \
+  --bind "ctrl-o:execute(open {1})" \
+  --bind "ctrl-e:execute(vim {1} +{2})"

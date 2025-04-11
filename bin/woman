@@ -1,18 +1,29 @@
 #!/bin/bash
 
 # Lookup section meaning in `man man`.
-sections='1,8,6,5,7'
+sections='1,2,3,8,6,5,7'
+
+[ -f /var/cache/man/index.db ] || sudo mandb --create
 
 show_manual () {
-    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+    export MANPAGER="sh -c 'col -bx | bat -l man -p'"  # uses bat for colorizing man pages
     man -- "${1%% *}" 2> /dev/null
 }
+
+
+edit_manual () {
+    export MANPAGER="vim -c MANPAGER -"
+    man "$1"
+}
+
 export -f show_manual
+export -f edit_manual
 
 if selection=$(man -k . --sections="${sections}" \
                | sort -t ' ' -k 2,2 -k 1,1 \
                | fzf -q "${*}" \
                      --cycle \
+                     --prompt='man> ' \
                      --border=none \
                      --bind change:first \
                      --bind tab:down \
@@ -23,5 +34,5 @@ if selection=$(man -k . --sections="${sections}" \
                      --preview='show_manual {}' \
                      --preview-window=down:70%:wrap:border-rounded)
 then
-    show_manual "${selection}"
+    edit_manual $(echo $selection | awk '{print $1}') # uses vim for jumping man pages
 fi

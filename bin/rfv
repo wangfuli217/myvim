@@ -7,7 +7,7 @@ rg --color=always --no-heading --smart-case "${*:-}" |
   fzf --ansi \
       --color "hl:-1:underline,hl+:-1:underline:reverse" \
       --delimiter : \
-      --preview 'bat -n --color=always {1} --highlight-line {2} 2>/dev/null || bat -n --color=always {1} ' \
+      --preview 'preview {1}' \
       --preview-window '+{2}+3/3,~3' \
-      --bind 'enter:become(vim {1})'
+      --bind 'enter:become(vim {1} +{2})'
 export FZF_DEFAULT_OPTS="--color=bg+:236,bg:235,border:0,spinner:81,hl:15,fg:255,header:242,info:185,pointer:203,marker:81,fg+:255,prompt:185,hl+:81"

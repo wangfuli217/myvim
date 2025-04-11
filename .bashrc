@@ -1,3 +1,5 @@
+# Amazon Q pre block. Keep at the top of this file.
+[[ -f "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash" ]] && builtin source "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash"
 # Fig pre block. Keep at the top of this file.
 # [[ -f "$HOME/.fig/shell/bashrc.pre.bash" ]] && builtin source "$HOME/.fig/shell/bashrc.pre.bash"
 # ~/.bashrc: executed by bash(1) for non-login shells.
@@ -1087,7 +1089,7 @@ FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
 export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
-
+export PATH="$PATH:/home/wangfuli/git/cheatsheets"
 
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
@@ -1233,13 +1235,14 @@ fdf() {
   local regex
   local maxdepth
   local week
-  while getopts ':m:fdxwh' x; do
+  while getopts ':m:fdxwhL' x; do
       case "$x" in
           m) maxdepth=${OPTARG} ;;
           f) searchfile="1" ;;
           d) searchdir="1" ;;
           x) regex="1" ;;
           w) week="1" ;;
+          L) folllow="1" ;;
           h) echo "fdf [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days]"
              echo "fdf "         # find filename and dirname
              echo "fdf -f "      # find filename
@@ -1259,8 +1262,9 @@ fdf() {
   [[ -n $searchdir  ]] && FD_PREFIX="$FD_PREFIX -type d "
   [[ -n $searchdir  ]] && FD_PREFIX="$FD_PREFIX -type d "
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
+  [[ -n $folllow  ]] && FD_PREFIX="$FD_PREFIX --follow  "
   [[ -n $week  ]] && FD_PREFIX="$FD_PREFIX --atime 7 "
-  file=$($FD_PREFIX | fzf +m -q "$1" )
+  file=$($FD_PREFIX | fzf +m -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /'  )
 
   [ -z "$file" ] && {
     return
@@ -1278,9 +1282,9 @@ fdf0() {
   local file
   local dir
   file=$(find * | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
-             --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files F9: maxdepth=1 F10: maxdepth=2' \
+             --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files / F9: maxdepth=1 / F10: maxdepth=2' \
              --bind 'del:execute(rm -ri {+})' \
-             --bind 'ctrl-t:change-prompt(All> )+reload(find *)' \
+             --bind 'ctrl-t:change-prompt(All> )+reload(find -L *)' \
              --bind 'ctrl-d:change-prompt(Dirs> )+reload(find * -type d)' \
              --bind 'f9:change-prompt(Dirs1> )+reload(find * -maxdepth 1 -type d)' \
              --bind 'f10:change-prompt(Dirs2> )+reload(find * -maxdepth 2 -type d)' \
@@ -2057,3 +2061,6 @@ _fzf_setup_completion dir ranger tree
 _fzf_setup_completion path code bat e np npe npp nppe
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# Amazon Q post block. Keep at the bottom of this file.
+[[ -f "${HOME}/.local/share/amazon-q/shell/bashrc.post.bash" ]] && builtin source "${HOME}/.local/share/amazon-q/shell/bashrc.post.bash"

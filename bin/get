@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# for f in "$@"; do
+#    tftp 192.168.100.253 -m binary -c get $f
+# done
+
+if [ $# -eq 0 ]; then
+  for name in ./*[ch]; do
+    if [ -e "/mnt/hgfs/ftptmp/$name" ]; then
+      echo "$name"
+      cp -r "/mnt/hgfs/ftptmp/$name" .
+    fi
+  done
+else
+  for name in "$@"; do
+    echo "$name"
+    cp -r "/mnt/hgfs/ftptmp/$name" .
+  done
+fi

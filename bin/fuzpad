@@ -1,0 +1,275 @@
+#!/bin/bash
+
+SHELL=/bin/bash # Set the SHELL environment variable, fixes POSIX-incompatible shells
+FUZPAD_DIR="${FUZPAD_DIR:-"$HOME/.notes"}"
+AUTO_GIT="${FUZPAD_AUTO_GIT:-"1"}"
+TEXT_FORMAT="${FUZPAD_TEXT_FORMAT:-"txt"}"
+EDITOR="${EDITOR:-"vim"}"
+DATE_TIME_FORMAT="${FUZPAD_DATE_TIME_FORMAT:-"%Y-%m-%d-%H-%M-%S"}"
+ICON=${FUZPAD_ICON:-"1"} # 1 to use the icon and 0 to not use the icon
+REVERSE_LIST=${FUZPAD_REVERSE_LIST:-"false"} # Only applies to open and delete (default is false)
+PREVIEW_SIZE=${FUZPAD_PREVIEW_SIZE:-"70%"}
+START_LINE_SEARCH_PREVIEW=${FUZPAD_START_LINE_SEARCH_PREVIEW:-"5"} # Recommend 5 for start_line so user can see the highlighted line quickly in the search preview
+END_LINE_SEARCH_PREVIEW=${FUZPAD_END_LINE_SEARCH_PREVIEW:-"9999"}
+
+if [[ "$1" == "--test" ]]; then
+   echo "1"
+   exit 0
+fi
+
+get_current_date_time() {
+	echo $(date +"$DATE_TIME_FORMAT")
+}
+
+
+list_order() {
+  [ ! "$REVERSE_LIST" = true ] && echo "--tac"
+}
+
+render_icon(){
+	[ "$ICON" -eq 1 ] && echo "$1 "
+}
+
+get_title() {
+  local FILE="$1"
+  local FIRST_LINE
+  FIRST_LINE=$(sed -n '1p' "$FILE")
+  if [[ $FIRST_LINE == "#!"* ]]; then
+    sed -n '2p' "$FILE"
+  else
+    echo "$FIRST_LINE"
+  fi
+}
+
+export -f get_title
+
+get_tags() {
+  local FILE="$1"
+  local FIRST_LINE
+  FIRST_LINE=$(sed -n '1p' "$FILE")
+  if [[ $FIRST_LINE == "#!"* ]]; then
+    sed -n '3p' "$FILE"
+  else
+    sed -n '2p' "$FILE"
+  fi
+}
+
+auto_git_commit(){
+	if ! command -v git &> /dev/null || [ "$AUTO_GIT" != "1" ]; then
+    exit
+	fi
+	if [[ -d "$FUZPAD_DIR/.git" ]]; then
+		git ls-files --others | grep -v '^$' | xargs git add > /dev/null 2>&1
+		git commit -am "$(get_current_date_time)" > /dev/null 2>&1
+	else
+		git init > /dev/null 2>&1
+		git ls-files --others | grep -v '^$' | xargs git add > /dev/null 2>&1
+		git commit -am "$(get_current_date_time)" > /dev/null 2>&1
+	fi
+}
+
+show_menu() {
+	local ACTIONS=("$(render_icon '📕')New" "$(render_icon '📖')Open" \
+					"$(render_icon '📍')Tags" "$(render_icon '🔎')Search" \
+					"$(render_icon '🔥')Delete" "$(render_icon '❌')Quit")
+	while true; do
+		auto_git_commit &
+		local SELECTED_ACTION=$(printf "%s\n" "${ACTIONS[@]}" | fzf --border --border-label="FuzPad" --border-label-pos=0 \
+		--layout=reverse --highlight-line --padding=0,30%)
+		[[ -z $SELECTED_ACTION ]] && break
+		case $SELECTED_ACTION in
+			"$(render_icon '📕')New") 
+				create_new_note ;;
+			"$(render_icon '📖')Open") 
+				open_note ;;
+			"$(render_icon '📍')Tags") 
+				open_tags ;;
+			"$(render_icon '🔎')Search") 
+				search_notes ;;
+			"$(render_icon '🔥')Delete") 
+				delete_notes ;;
+			"$(render_icon '❌')Quit") 
+				break ;;
+		esac
+	done
+}
+
+create_new_note(){
+	local NOTE_PREFIX="./$(get_current_date_time)"
+	if [ -f "$NOTE_PREFIX.$TEXT_FORMAT" ]; then
+		local N=1
+		while [ -f "${NOTE_PREFIX}-$N.$TEXT_FORMAT" ]; do ((N++)); done
+		${EDITOR} "${NOTE_PREFIX}-$N.$TEXT_FORMAT"
+		return
+	fi
+	${EDITOR} "$NOTE_PREFIX.$TEXT_FORMAT"
+}
+
+open_note(){
+	while true; do
+		local NOTE_DATA=$(ls -p "$FUZPAD_DIR" | grep -v '/$' | \
+		while read -r NOTE; do echo "$(get_title "$NOTE" | sed "s/://g"):$(basename "$NOTE")"; done | fzf --border --border-label="FuzPad" \
+		--border-label-pos=0 \
+		--highlight-line \
+		--layout=reverse $(list_order) \
+		--ignore-case --prompt="$(render_icon '📖')Open > " \
+		--preview-window=down:$PREVIEW_SIZE:noinfo:wrap \
+		--preview='
+			IFS=":" read -r TITLE NOTE <<< {}
+			echo -e "\e[1m$NOTE\e[0m"; echo
+			echo -e "\e[1m$TITLE\e[0m" | bat --color=always --style=plain --theme=Dracula
+			sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | bat --color=always --style=plain --theme=Dracula')
+		[[ -z $NOTE_DATA ]] && break
+		
+		IFS=":" read -r TITLE NOTE <<< "$NOTE_DATA"
+		${EDITOR} "./$NOTE"
+	done
+}
+
+delete_notes(){
+	local NOTES_DATA=$(ls -p "$FUZPAD_DIR" | grep -v '/$' | \
+	while read -r NOTE; do echo "$(get_title "$NOTE" | sed "s/://g"):$(basename "$NOTE")"; done | fzf --border --border-label="FuzPad" \
+	--border-label-pos=0 \
+	--highlight-line \
+	--layout=reverse $(list_order) \
+	--multi --ignore-case --prompt="$(render_icon '🔥')Delete > " \
+	--preview-window=down:$PREVIEW_SIZE:noinfo:wrap \
+	--preview='
+		IFS=":" read -r TITLE NOTE <<< {}
+		echo -e "\e[1m$NOTE\e[0m"; echo
+		echo -e "\e[1m$TITLE\e[0m" | bat --color=always --style=plain --theme=Dracula
+		sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | bat --color=always --style=plain --theme=Dracula')
+		
+	local NOTES=()  
+
+	while IFS=":" read -r TITLE NOTE; do
+		NOTES+=("$NOTE") 
+	done <<< "$NOTES_DATA"
+
+	if [[ -n "$NOTES" ]]; then
+		local CONFIRMATION=$(printf "%s\n" "${NOTES[@]}" | \
+		sort -n | cut -d ' ' -f2- | \
+		while read -r NOTE; do echo "$(get_title "$NOTE" | sed "s/://g"):$(basename "$NOTE")"; done | \
+		fzf --print-query --border --border-label="FuzPad" \
+		--border-label-pos=0 \
+		--highlight-line \
+		--layout=reverse $(list_order) \
+		--disabled --prompt="Type 'yes' or 'y' to confirm deletion > " \
+		--preview-window=down:$PREVIEW_SIZE:noinfo:wrap \
+		--preview='
+			IFS=":" read -r TITLE NOTE <<< {}
+			echo -e "\e[1m$NOTE\e[0m"; echo
+			echo -e "\e[1m$TITLE\e[0m" | bat --color=always --style=plain --theme=Dracula
+			sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | bat --color=always --style=plain --theme=Dracula' | sed -n '1p')
+
+		if [[ "$CONFIRMATION" =~ ^[Yy][Ee]?[Ss]?$ ]]; then
+			for NOTE in "${NOTES[@]}"; do
+				rm "./$NOTE"	
+			done
+		fi
+	fi
+}
+
+search_notes(){
+	while true; do
+		local SELECTED=$( \
+			if [[ -z "$LAST_QUERY" ]]; then
+				echo "Enter your query to begin searching"
+			else
+				RESULTS=$(ls -p "$FUZPAD_DIR" | grep -v '/$' | xargs grep -ni "$LAST_QUERY"  2> /dev/null)
+				[ -n "$RESULTS" ] && echo "Found $(echo "$RESULTS" | wc -l) results" || \
+				{ echo "Found 0 results"; exit; }
+				echo "$RESULTS" |
+				while IFS=: read -r NOTE LINE CONTENT; do
+					CLEANED_CONTENT=$(echo "$CONTENT" | sed "s/://g")
+					echo "$CLEANED_CONTENT:$LINE:$(basename "$NOTE")"
+				done
+			fi | \
+			fzf --print-query --query="$LAST_QUERY" \
+			--bind 'change:reload(
+				if [[ -z {q} ]]; then
+					echo "Enter your query to begin searching"
+				else
+					QUERY={q}
+					RESULTS=$(ls -p '$FUZPAD_DIR' | grep -v "/$" | xargs grep -ni "$QUERY" 2> /dev/null)
+					[ -n "$RESULTS" ] && echo "Found $(echo "$RESULTS" | wc -l) results" || \
+					{ echo "Found 0 results"; exit; }
+					echo "$RESULTS" |
+					while IFS=: read -r NOTE LINE CONTENT; do
+						CLEANED_CONTENT=$(echo "$CONTENT" | sed "s/://g")
+						echo "$CLEANED_CONTENT:$LINE:$(basename "$NOTE")"
+					done
+				fi)' \
+			--border --border-label="FuzPad" --border-label-pos=0 \
+			--highlight-line --layout=reverse --no-info --preview-window=down:$PREVIEW_SIZE:noinfo:wrap \
+			--ignore-case --header-lines=1 --prompt="$(render_icon '🔎')Search > " \
+			--preview 'IFS=":" read -r CONTENT LINE NOTE <<< {}
+				[[ -z {q} ]] && exit
+				QUERY={q}
+				if ! [[ -z {} ]]; then
+					TITLE=$(get_title "'$FUZPAD_DIR'/$NOTE" | sed "s/://g")
+					TITLE_LINE=$(if head -n 1 "'$FUZPAD_DIR'/$NOTE" | grep -q "^#!"; then echo 2; else echo 1; fi)
+					MAX_LINES=$(wc -l < "'$FUZPAD_DIR'/$NOTE")
+					START_LINE=$(($LINE > '$START_LINE_SEARCH_PREVIEW' ? $LINE - '$START_LINE_SEARCH_PREVIEW' : 1))
+					END_LINE=$(($LINE + 5 < '$END_LINE_SEARCH_PREVIEW' ? $LINE + '$END_LINE_SEARCH_PREVIEW' : MAX_LINES))
+					echo -e "\e[1m$NOTE\e[0m"; echo
+					[ "$LINE" -ne $TITLE_LINE ] && echo -e "\e[1m$TITLE\e[0m" | bat --color=always --style=plain --theme=Dracula && \
+					sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | \
+					sed -e "$(( LINE > 1 ? LINE - 1 : 1 ))s|$(printf "%s" "$QUERY" | sed "s|[][&]|\\&|g")|\x1b[4m&\x1b[24m|gi" | \
+					sed -E "$(( LINE > 1 ? LINE - 1 : 1 ))s/(.*)/\x1b[47m\1\x1b[0m/" | \
+					bat --color=always --style=plain --paging=always --theme=Dracula \
+					--line-range $(( START_LINE > 1 ? START_LINE - 1 : 1 )):$END_LINE && exit
+					
+					echo -e "$TITLE" | \
+					sed -e "1s/.*/\x1b[1m&\x1b[22m/" \
+					-e "1s|$(printf "%s" "$QUERY" | sed "s|[][&]|\\&|g")|\x1b[4m&\x1b[24m\x1b[1m|gi" | \
+					sed -E "1s/(.*)/\x1b[47m\1\x1b[0m/" | \
+					bat --color=always --style=plain --paging=always --theme=Dracula && \
+					sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | bat --color=always --style=plain --theme=Dracula --line-range 1:$END_LINE 
+				fi')
+		[[ -z $SELECTED ]] && break
+		
+		local LAST_QUERY="$(echo "$SELECTED" | sed -n '1p')"
+		IFS=":" read -r CONTENT LINE NOTE <<< $(echo "$SELECTED" | sed -n '2p')
+		${EDITOR} +$LINE "./$NOTE"
+	done
+	LAST_QUERY=""
+}
+
+open_tags(){
+	while true; do
+		local TAG=$(ls -p "$FUZPAD_DIR" | grep -v '/$' | while read -r NOTE; do get_tags "$FUZPAD_DIR/$NOTE" | grep -oE '#[A-Za-z0-9_]+'; done | sort -u | \
+		fzf --border --border-label="FuzPad" --border-label-pos=0 --layout=reverse --ignore-case --prompt="$(render_icon '📍')Tags > " --highlight-line --padding=0,30%)
+		[[ -z $TAG ]] && break
+		
+		if [[ -n "$TAG" ]]; then		
+			local NOTE_DATA=$(ls -p "$FUZPAD_DIR" | grep -v '/$' | while read -r NOTE; do get_tags "$FUZPAD_DIR/$NOTE" | grep -q "$TAG" && echo "$NOTE"; done | \
+			while read -r NOTE; do echo "$(get_title "$FUZPAD_DIR/$NOTE" | sed "s/://g"):$(basename "$FUZPAD_DIR/$NOTE")"; done | \
+			fzf --border --border-label="FuzPad" \
+			--border-label-pos=0 \
+			--highlight-line \
+			--layout=reverse $(list_order) \
+			--ignore-case --prompt="$(render_icon '📖')Open > " \
+			--preview-window=down:$PREVIEW_SIZE:noinfo:wrap \
+			--preview='
+			IFS=":" read -r TITLE NOTE <<< {}
+			echo -e "\e[1m$NOTE\e[0m"; echo
+			echo -e "\e[1m$TITLE\e[0m" | bat --theme=Dracula
+			sed "1{/^#!/ { n; d; }; d; }" "'$FUZPAD_DIR'/$NOTE" | bat --color=always --style=plain --theme=Dracula')
+			
+			if [[ -n "$NOTE_DATA" ]]; then	
+				IFS=":" read -r TITLE NOTE <<< "$NOTE_DATA"
+				${EDITOR} "./$NOTE"
+			fi
+		fi
+	done
+}
+
+
+# Creates FUZZPAD_DIR if it does not exist.
+if [[ ! -d "$FUZPAD_DIR" ]]; then
+	mkdir -p "$FUZPAD_DIR"
+fi
+
+cd "$FUZPAD_DIR"
+show_menu
