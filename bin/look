@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cat /usr/share/dict/words | fzf \
+        --preview='CLICOLOR_FORCE=1 clitrans {}' \
+        --preview-window='default:right:wrap:80%'

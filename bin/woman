@@ -19,10 +19,30 @@ edit_manual () {
 export -f show_manual
 export -f edit_manual
 
-if selection=$(man -k . --sections="${sections}" \
+batman="man {1} | col -bx | bat --language=man --plain --color always --theme=\"Monokai Extended\""
+
+woman_filename=$(mktemp -t woman.XXXXXXXXXX)
+
+cleanup() {
+  rm -f "$woman_filename";
+}
+trap cleanup EXIT
+
+[ -d "$FZF_CHEATSHEETS_DIR" ] && {
+  ls $FZF_CHEATSHEETS_DIR/cheatsheets > $woman_filename
+} || {
+  export FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
+  ls $FZF_CHEATSHEETS_DIR/cheatsheets > $woman_filename
+}
+
+if selection=$({ man -k . --sections="${sections}" ; cat $woman_filename; } \
                | sort -t ' ' -k 2,2 -k 1,1 \
+               | awk -v CYN=${CYN} -v BLU=${BLU} -v RES=${RES} -v BLD=${BLD} '{ $1=CYN BLD $1; $2=RES BLU;} 1' \
                | fzf -q "${*}" \
                      --cycle \
+                     --no-multi \
+                     --bind "start:show-header" \
+                     --header "/CTRL-m(manual mode)/CTRL-c(cht.sh mode)/CTRL-t(cheat mode)/CTRL-p(mycheat mode)/CTRL-e(edit mycheat)/enter(vim mode)/" \
                      --prompt='man> ' \
                      --border=none \
                      --bind change:first \
@@ -32,6 +52,13 @@ if selection=$(man -k . --sections="${sections}" \
                      --tiebreak=begin,chunk,length \
                      --reverse \
                      --preview='show_manual {}' \
+                     --bind "ctrl-c:+change-preview(cht.sh {1})+change-prompt(ﯽ cht.sh > )" \
+                     --bind "ctrl-m:+change-preview(${batman})+change-prompt(ﯽ Man > )" \
+                     --bind "ctrl-u:execute(sudo mandb && echo -e '\nUpdating tl;dr cache...')" \
+                     --bind "ctrl-t:+change-preview(cheat {1})+change-prompt(ﳁ cheat > )" \
+                     --bind "ctrl-p:+change-preview(cat $FZF_CHEATSHEETS_DIR/cheatsheets/{1})+change-prompt(ﳁ mycheat > )" \
+                     --bind "ctrl-e:execute(vi $FZF_CHEATSHEETS_DIR/cheatsheets/{1})" \
+                     --bind "enter:accept" \
                      --preview-window=down:70%:wrap:border-rounded)
 then
     edit_manual $(echo $selection | awk '{print $1}') # uses vim for jumping man pages

@@ -7,6 +7,7 @@
 if [ $# -eq 0 ]; then
   cp -r ./* /mnt/hgfs/ftptmp/
 else
+  echo "$@"
   for f in "$@"; do
     cp -r "$f" /mnt/hgfs/ftptmp/
   done

@@ -1,91 +1,81 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-declare preview='bat --color=always --style=header,numbers -H {2} {1}'
+# Ref: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#switching-between-ripgrep-mode-and-fzf-mode
 
-open=xdg-open
-if [ "$(uname -o)" = "Cygwin" ]; then
-  open() {
-    for f in $@; do
-      cygstart "$(cygpath -w $f)"
-    done
-  }
-fi
+# MNEMONIC: [F]uzzy search [G]rep [R]e-interactive
+# SYNOPSIS: fgr [rg's OPTIONS] [PATTERN]
+# DESCRIPTION: Riggrep powered by FZF
+#   It has two modes:
+#   1) rg mode, fzf merely acts as the interactive interface, providing the live grep experience for rg.
+#   2) fzf mode, normal fzf, fuzzy finder for the current results of rg.
+# KEYBINDINGS:
+#   1) ENTER: open the selections via vim: if only one entry is selected,
+#      open it directly; if multiple entrys are selected, open the first one and
+#      dump all into the quickfix.
+#   3) CTRL-M: toggle between fzf mode and riggrep mode
+# NOTE:
+#   -e/--regex is not supported
+# EXAMPLES:
+#   fgr -s "Foo", given some rg's options and the initial query
+#   fgr "foo", just given the initial query
+#   fgr, launch it directly
 
-usage() {
-  cat <<HEREDOC
-   usage: frg -l -i -f filetype -s -S -w -L -v
-   optional   arguments:
-     -h       show this help message and exit
-     -e       exact-match(fzf)       (default fuzzy match)
-     -l       files-with-matches(rg) (output format)
-     -L       follow symbolic links(rg)
-     -i       ignore-case(rg)
-     -s       case-sensitive(rg)     (default)
-     -S       smart-case(rg)
-     -w       word-regexp(rg)
-     -F       fixed-strings(rg)
-     -f <opt> filetype: rg --type-list
-     -d <opt> maxdepth
-     -v       verbose RG_PREFIX
-  inst: frg -l fzf # output filename only
-  inst: frg -L fzf # search symbolic links dirctory
-  inst: frg -w fzf # search word match only
-  inst: frg -s fzf # default search match mode: -i/-s/-S/-w
-  inst: frg -v fzf # output RG_PREFIX config
-HEREDOC
+# Temp file to store the query when switch to another mode so that the query can
+# be restored when switch back.
+rg_query=$(mktemp -t fgrr.XXXXXXXXXX)
+fzf_query=$(mktemp -t fgrf.XXXXXXXXXX)
+# Temp file to mark if the current mode is fzf mode
+fzf_mode_enabled=$(mktemp -t fgrm.XXXXXXXXXX)
+cleanup() {
+  rm -f "$rg_query";
+  rm -f "$fzf_query";
+  rm -f "$fzf_mode_enabled";
+}
+trap cleanup EXIT
+
+# Path for the file where all selected entries are saved and they will be fed to
+# the quickfix.
+errorfile_path="$HOME/.local/share/rg"
+[[ ! -e $errorfile_path ]] && mkdir -p "$errorfile_path"
+
+[ "$1" = "-h" ] && {
+  rg -h
+  echo '============================================================'
+  echo 'fgr -s "Foo" , given some rg options and the initial query'
+  echo 'fgr "foo"    , just given the initial query'
+  echo 'fgr          , launch it directly'
+  exit 0
 }
 
-while getopts ':hlLifd:FsSwv' x; do
-  case "$x" in
-    h)
-      usage
-      exit 0
-      ;;
-    e) exactmatch=1 ;;
-    l)
-      list_files=1
-      preview='bat --color=always --style=header,numbers {1}'
-      ;;
-    L) follow="1";;
-    i) ignorecase="1" ;;
-    f) filetype=${OPTARG} ;;
-    d) maxdepth=${OPTARG} ;;
-    F) fixedstrings="1" ;;
-    s) casesensitive="1" ;;
-    S) smartcase="1" ;;
-    w) wordregexp="1" ;;
-    v) verbose="1" ;;
-  esac
-done
-shift $((OPTIND - 1))
-unset x OPTARG OPTIND
+last_arg=${*: -1}
+if [[ $last_arg =~ "^-" ]]; then
+  initial_query=""
+  extra_opts=$*
+else
+  initial_query="$last_arg"
+  extra_opts="${*%%"$last_arg"}"
+fi
 
-# --preview 'bat --color=always {1} --highlight-line {2}' \
-# Switch between Ripgrep launcher mode (CTRL-R) and fzf filtering mode (CTRL-F)
-rm -f /tmp/rg-fzf-{r,f}
-RG_PREFIX="rg --column --line-number --no-heading --color=always ${list_files:+-l}"
+if [[  $initial_query =~ fgr$ ]]; then
+  initial_query=""
+fi
 
-[[ -n $filetype ]] && RG_PREFIX="$RG_PREFIX --type=$filetype "
-[[ -n $maxdepth ]] && RG_PREFIX="$RG_PREFIX --max-depth=$maxdepth "
-[[ -n $fixedstrings ]] && RG_PREFIX="$RG_PREFIX --fixed-strings "
-[[ -n $ignorecase ]] && RG_PREFIX="$RG_PREFIX --ignore-case "
-[[ -n $casesensitive ]] && RG_PREFIX="$RG_PREFIX --case-sensitive "
-[[ -n $smartcase ]] && RG_PREFIX="$RG_PREFIX --smart-case "
-[[ -n $wordregexp ]] && RG_PREFIX="$RG_PREFIX --word-regexp "
-[[ -n $follow ]] && RG_PREFIX="$RG_PREFIX -L "
-[[ -n $verbose ]] && { echo "RG_PREFIX=$RG_PREFIX"; exit; }
+rg_prefix="rg --line-number --column --color=always --smart-case --vimgrep $RG_EXCLUDE $extra_opts "
 
-INITIAL_QUERY="${*:-}"
-: | fzf --ansi --disabled --query ${exactmatch:+-e} "$INITIAL_QUERY" \
-  --bind "start:reload($RG_PREFIX {q})+unbind(ctrl-r)" \
-  --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
-  --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
-  --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. ripgrep> )+disable-search+reload($RG_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > /tmp/rg-fzf-f; cat /tmp/rg-fzf-r)" \
-  --color "hl:-1:underline,hl+:-1:underline:reverse" \
+fzf \
+  --height 100% \
+  --ansi \
+  --disabled \
+  --query "$initial_query" \
+  --bind "start:reload($rg_prefix {q})" \
+  --bind "change:reload:sleep 0.1; $rg_prefix {q} || true" \
+  --bind 'ctrl-t:transform:[[ ! $FZF_PROMPT =~ ripgrep ]] &&
+    echo "rebind(change)+change-prompt(1. ripgrep> )+disable-search+transform-query:echo \{q} > $frgf_filename; cat $frgr_filename" ||
+    echo "unbind(change)+change-prompt(2. fzf> )+enable-search+transform-query:echo \{q} > $frgr_filename; cat $frgf_filename"' \
   --prompt '1. ripgrep> ' \
   --delimiter : \
-  --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf arguments: [ -l;-L/-i/-d 1/-f c/-F/-s/-S/-w;-v ] /' \
-  --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1}' \
+  --header '╱  CTRL-T: Switch between ripgrep|fzf / ctrl-o:open ctrl-e:vim enter:less / support rg argument: -s FOO /' \
+  --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
   --preview-window 'right,45%,+{2}+1/3,~1' \
   --bind 'enter:become(less {1})' \
   --bind "ctrl-o:execute(open {1})" \

@@ -1,17 +1,113 @@
 #!/usr/bin/env bash
 
-# Grepping and Parsing
-# https://github.com/rafi/.config
-# Fuzzy find files and edit selected in vim.
-# Dependencies: fzf, ripgrep, bat
-ffi() {
-	BAT_ENV=BAT_STYLE=changes,header-filename,numbers
-	rg --color=always --line-number --no-heading --smart-case "${*:-}" |
-		fzf --ansi --multi --delimiter : \
-			--color "hl:-1:underline,hl+:-1:underline:reverse" \
-			--preview="$BAT_ENV bat --color=always {1} --highlight-line {2}" \
-			--preview-window 'right,50%,border-left,+{2}+3/3,~1' \
-			--bind 'enter:become(vim {1} +{2})'
-}
+# This file is part of ElectricRCAircraftGuy/ripgrep_replace:
+# https://github.com/ElectricRCAircraftGuy/ripgrep_replace
 
-ffi "$@"
+# RipGrep Fuzzyfinder (ffi)
+# This is a simple script that turns RipGrep (`rg`) into a simple interactive fuzzy finder to find
+# content in any files.
+# See: https://github.com/junegunn/fzf#3-interactive-ripgrep-integration
+
+# INSTALLATION INSTRUCTIONS:
+#
+# Install dependencies:
+#
+# 1. Install RipGrep: https://github.com/BurntSushi/ripgrep#installation; Ex:
+#
+#       sudo apt update
+#       sudo apt install ripgrep
+#
+#   OR (preferred, to get the latest version)
+#
+#       cd /tmp
+#       curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb
+#       sudo dpkg -i ripgrep_13.0.0_amd64.deb
+#
+# 2. Install `fzf` fuzzy finder: https://github.com/junegunn/fzf#installation
+#    The "Using git" instructions there, for instance, work great:
+#
+#       git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+#       ~/.fzf/install
+#
+# 3. Install `bat` (colored `cat`--used by fzf for file previews): https://github.com/sharkdp/bat
+#    Install the latest release from here: https://github.com/sharkdp/bat/releases
+#    Ex:
+#
+#       wget https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-musl_0.23.0_amd64.deb
+#       sudo dpkg -i bat-musl_0.23.0_amd64.deb
+#
+# Install `ffi`:
+#
+# 4. Create a symlink in ~/bin to this script so you can run it from anywhere.
+#
+#       cd /path/to/here
+#       mkdir -p ~/bin
+#       ln -si "${PWD}/ffi.sh" ~/bin/ffi     # required
+#       ln -si "${PWD}/ffi.sh" ~/bin/gs_ffi  # optional; replace "gs" with your initials
+#
+# 5. Now you can use this command directly anywhere you like in any of these ways:
+#   1. `ffi`
+#   2. `gs_ffi`
+
+# References:
+# 1. https://github.com/junegunn/fzf#3-interactive-ripgrep-integration
+# 1. See also my `sublf` and `fsubl` aliases in .bash_aliases.
+
+EXECUTABLE_NAME="$(basename "$0")"
+
+HELP_STR="\
+This ('$EXECUTABLE_NAME') is a RipGrep interactive fuzzy finder of content in files!
+
+It is a simple wrapper script around Ripgrep and the fzf fuzzy finder that turns RipGrep ('rg') into
+an easy-to-use interactive fuzzy finder to find content in any files. Options passed to this
+program are passed to 'rg'.
+
+See also: https://github.com/junegunn/fzf#3-interactive-ripgrep-integration
+
+The default behavior of Ripgrep used under-the-hood here is '--smart-case', which means:
+    Searches case insensitively if the pattern is all lowercase. Search case sensitively otherwise.
+
+EXAMPLE USAGES:
+
+1. Pass in '-i' to make Ripgrep act in case 'i'nsensitive mode:
+        ffi -i
+2. You can specify a path to search in as well:
+        ffi \"path/to/some/dir/to/search/in\"
+3. Providing an initial search regular expression is allowed, but only optional:
+        ffi \"my regular expression search pattern\"
+4. If you do both a regex pattern and a path, follow the order Ripgrep requires:
+        ffi \"regex pattern\" \"path\"
+5. Search only in \"*.cpp\" files!
+        ffi -g \"*.cpp\"
+6. Also search hidden files (files that begin with a dot ('.') in Unix or Linux)
+        ffi --hidden
+
+- See also my 'sublf' and 'fsubl' aliases in .bash_aliases.
+- Run 'rg -h' or 'man rg' if you wish to see the RipGrep help menu.
+- Run 'fzf -h' or 'man fzf' if you wish to see the fzf fuzzy finder help menu.
+
+This program is part of eRCaGuy_dotfiles: https://github.com/ElectricRCAircraftGuy/eRCaGuy_dotfiles
+by Gabriel Staples.
+"
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "$HELP_STR" | less -RFX
+    exit
+fi
+
+PASSED_IN_ARGS="$@"
+
+INITIAL_QUERY=""
+RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
+FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY' $PASSED_IN_ARGS" \
+  fzf -m --bind "change:reload:$RG_PREFIX {q} $PASSED_IN_ARGS || true" \
+      --ansi --disabled --query "$INITIAL_QUERY" \
+      --delimiter : \
+      --color "hl:-1:underline,hl+:-1:underline:reverse" \
+      --header '╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf/' \
+    --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
+    --preview-window 'right,45%,+{2}+1/3,~1' \
+    --bind 'enter:become(less {1})' \
+    --bind "ctrl-o:execute(open {1})" \
+    --bind "ctrl-e:execute(vim {1} +{2})" \
+    --height=100% --layout=reverse

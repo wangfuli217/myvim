@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# MNEMONIC: [F]uzzy search
+# SYNOPSIS: f [DIR] [FZF ARGS]
+# DESCRIPTION: Make FZF support execution under a certain directory
+
+last_arg=${*:-1}
+
+if [[ $last_arg =~ ^- ]]; then
+  find "$@" 2> /dev/null | fzf -m --ansi --reverse --tac --preview="preview {-1}" --bind "ctrl-e:execute(vim {-1})"
+else
+  fzf
+fi

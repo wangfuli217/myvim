@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# fif
+# 不支持ctrl-r/ctrl-f简约版本的frg -l
 #
 # Source - https://betterprogramming.pub/boost-your-command-line-productivity-with-fuzzy-finder-985aa162ba5d
 
@@ -16,7 +16,10 @@ fif() {
   fi
   # if FZF_PREVIEW_WINDOW is undefined, quoting it breaks the script
   # shellcheck disable=SC2086
-  rg --files-with-matches --no-messages "$1" | fzf --preview-window "$FZF_PREVIEW_WINDOW" --preview "rg --ignore-case --pretty --context 10 '$1' {}"
+  rg --files-with-matches --no-messages "${*:-}" \
+    | fzf --preview-window "$FZF_PREVIEW_WINDOW" \
+    --bind "enter:become($(type -P vim) {+})" \
+    --preview "bat --color=always --style=plain {} || rg --no-line-number --ignore-case --pretty --context 20 '$1' {} }"
 }
 
 [[ -z "$FZF_PREVIEW_WINDOW" ]] && export FZF_PREVIEW_WINDOW=':hidden'

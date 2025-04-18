@@ -1,5 +1,5 @@
 # Amazon Q pre block. Keep at the top of this file.
-[[ -f "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash" ]] && builtin source "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash"
+# [[ -f "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash" ]] && builtin source "${HOME}/.local/share/amazon-q/shell/bashrc.pre.bash"
 # Fig pre block. Keep at the top of this file.
 # [[ -f "$HOME/.fig/shell/bashrc.pre.bash" ]] && builtin source "$HOME/.fig/shell/bashrc.pre.bash"
 # ~/.bashrc: executed by bash(1) for non-login shells.
@@ -130,7 +130,7 @@ svnqsdk(){
     cd ../
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -162,7 +162,7 @@ alias makekv='cdqsdk; make target/linux/compile -j1 V=scw; make package/kernel/l
 # make target/linux/compile V=s  # kernel compile
 # make target/linux/install V=s  # kernel install
 
-# mkpkg -j1 V=scw
+# mkpkg -j1 V=scw; mkpkg compile -j1 V=scw
 mkpkg (){
   local oldpwd=$(pwd)
   cdqsdk;
@@ -170,32 +170,44 @@ mkpkg (){
   # dir=$(find -L package/ -type d | grep -v 'files\|patches\|src\|hotplug.d\|config\|.svn\|.git' | fzf -0 -1 +m)
   dir=$(find -L package/ -name Makefile | xargs dirname | grep -v 'src\|kernel\|boot' | fzf -0 -1 +m )
   [ -n "$dir" ] && dir=$(basename $dir)
-  [ -n "$dir" ] && { package=$(basename $dir); make package/$package/{clean,compile} "$@";
-    echo "make package/$package/{clean,compile} $@;"
+  [ -n "$dir" ] && { package=$(basename $dir);
+    [ -n "${1}" ] && { cmd="${1}"; shift; }
+    if [[ -n $cmd ]] ; then
+      make package/$package/$cmd "$@"
+    else
+      make package/$package/{clean,compile} -j1 V=scw
+    fi
+    echo "make package/$package/{clean,compile};"
   }
   cd "$oldpwd"
 }
 
-# mkmod -j1 V=scw
+# mkmod -j1 V=scw;  mkmod compile -j1 V=scw
 mkmod (){
   local oldpwd=$(pwd)
   cdqsdk;
   local dir
   dir=$(find -L package/kernel/ -maxdepth 1 -type d | fzf -0 -1 +m)
-  [ -n "$dir" ] && { module=$(basename $dir); make package/kernel/$module/{clean,compile} "$@";
+  [ -n "$dir" ] && { module=$(basename $dir);
+    [ -n "${1}" ] && { cmd="${1}"; shift; }
+    if [[ -n $cmd ]] ; then
+      make package/kernel/$package/$cmd "$@"
+    else
+      make package/kernel/$module/{clean,compile} -j1 V=scw
+    fi
     echo "make package/kernel/$module/{clean,compile} $@";
   }
   cd "$oldpwd"
 }
 
-mkqsdk(){ # reduce fzf interactive
+mkqsdk(){ # reduce fzf interactive @openwrt
   local oldpwd=$(pwd)
   cdqsdk;
-  eval "$@"
+  ( eval "$@"; )
   cd "$oldpwd"
 }
 
-mkuser (){
+mkuser (){ # reduce fzf interactive @sdk
   local oldpwd=$(pwd)
   cduser;
   local dir
@@ -205,14 +217,14 @@ mkuser (){
   cd "$oldpwd"
 }
 
-mkorig(){ # reduce fzf interactive
+mkorig(){ # reduce fzf interactive @sdk
   local oldpwd=$(pwd)
   cduser;
   eval "cd $1; make"
   cd "$oldpwd"
 }
 
-makekm() {
+makekm() {  # depreciated; replace by mkmod
   local oldpwd=$(pwd)
   local module
   [ -z "$1" ] && module=$( cdqsdk; ls package/kernel | fzf; ) || module="$1"
@@ -223,13 +235,13 @@ makekm() {
   cd $oldpwd
 }
 
-makevv(){
+makevv(){ # depreciated; need PRODUCT_DIR=MR890H-N PRODUCT_HARDWARE_VERSION=MR890 environment variable
     local output="make.${RANDOM}"
-    make -j1 V=scw $@ 2>&1 | tee $output
+    make -j1 V=scw "$@" 2>&1 | tee $output
     echo "vim $output"
 }
 
-gitc(){
+gitc(){ # init a c git project
     [ -d .git ] && return
     git config user.name "wangfuli"
     git config user.email "wangfl217@126.com"
@@ -304,7 +316,7 @@ ubin_bin(){
     rmdir ${newbin}
 }
 
-put_ubin(){
+put_ubin(){ # put newest ubin to /ftptmp
   local oldpwd=$(pwd)
   [ -d images ] && {
     newdir=$(ls -dlt images/*Build* | grep '^d' | head -n 1 | awk '{print $NF}')
@@ -313,7 +325,7 @@ put_ubin(){
     newdir=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   }
 
-  echo "$newdir"/*.ubin
+  # echo "$newdir"/*.ubin
   [ "$(uname)" = "Linux" ] && {
     put "$newdir"/*.ubin
   } || {
@@ -321,7 +333,7 @@ put_ubin(){
   }
   cd ${oldpwd}
 }
-put_rbin(){
+put_rbin(){ # put newest rbin to /ftptmp
   local oldpwd=$(pwd)
   [ -d images ] && {
     newdir=$(ls -dlt images/*Build* | grep '^d' | head -n 1 | awk '{print $NF}')
@@ -330,7 +342,7 @@ put_rbin(){
     newdir=$(ls -dlt *Build* | grep '^d' | head -n 1 | awk '{print $NF}')
   }
 
-  echo "$newdir"/*.rbin
+  # echo "$newdir"/*.rbin
   [ "$(uname)" = "Linux" ] && {
     put "$newdir"/*.rbin
   } || {
@@ -338,7 +350,7 @@ put_rbin(){
   }
   cd ${oldpwd}
 }
-put_KF(){
+put_KF(){ # put newest KF_Image to /ftptmp
   local oldpwd=$(pwd)
   [ -d images ] && {
     newdir=$(pwd)/images
@@ -355,32 +367,31 @@ put_KF(){
   cd ${oldpwd}
 }
 
-put_img(){
+put_img(){ # put newest img or cpio.lzma to /ftptmp
   local oldpwd=$(pwd)
   cdqsdk
 
   [ -d build_dir ] && {
     test -f bin/*/openwrt-*-squashfs-root.img && {
-        echo bin/*/openwrt-*-squashfs-root.img
+        # echo bin/*/openwrt-*-squashfs-root.img
         put bin/*/openwrt-*-squashfs-root.img
     }
     find  bin/targets/ramips/ -name "*.bin" > /dev/null 2>&1 && {
-        echo bin/targets/ramips/*/*.bin
+        # echo bin/targets/ramips/*/*.bin
         put bin/targets/ramips/*/*.bin
     }
   }
 
   [ -d source ] && {
-    echo source/linux-*/usr/initramfs_data.cpio.lzma
+    # echo source/linux-*/usr/initramfs_data.cpio.lzma
     put source/linux-*/usr/initramfs_data.cpio.lzma
   }
 
   cd ${oldpwd}
 }
 
-# put pkg include executable file
 alias put_bin='put_pkg'
-put_pkg(){
+put_pkg(){ # put pkg include executable file
   local oldpwd=$(pwd)
   [ -d build_dir ] || { svnqsdk; }
 
@@ -395,8 +406,7 @@ put_pkg(){
   cd ${oldpwd}
 }
 
-# put put_opkg file
-put_opkg(){
+put_opkg(){ # put put_opkg file
   local oldpwd=$(pwd)
   [ -d build_dir ] || { svnqsdk; }
   cd bin
@@ -451,7 +461,7 @@ svnromfs(){
     cd ../
   done
   [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -462,7 +472,7 @@ svnuser(){
     cd ../
   done
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -472,11 +482,11 @@ put_user(){
     cd ../
   done
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
-  local pkgdir=$(find -maxdepth 1 -type d | fzf)
+  local pkgdir
+  [ -n "$1" ] && pkgdir="$1" || pkgdir=$(find -maxdepth 1 -type d | fzf)
   [ -n "$pkgdir" ] &&  (
     cd "$pkgdir"
     [ -d src ] && cd src
-    pwd
     put $(file * 2>&1 | grep linked | awk -F ':' '{print $1}')
   )
   cd "$oldpwd"
@@ -489,7 +499,8 @@ mkuser(){
     cd ../
   done
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
-  local pkgdir=$(find -maxdepth 1 -type d | fzf)
+  local pkgdir
+  [ -n "$1" ] && pkgdir="$1" || pkgdir=$(find -maxdepth 1 -type d | fzf)
   [ -n "$pkgdir" ] && ( cd "$pkgdir"; make clean; make; )
   cd "$oldpwd"
   OLDPWD=${oldpwd}
@@ -522,7 +533,7 @@ svnroot(){
   while ! [ -d .svn ]; do
     cd ../
   done
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -531,7 +542,7 @@ _gitroot() {
 }
 cdgit() {
   cd "$(_gitroot)/${1:-}";
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
 }
 
 
@@ -544,7 +555,7 @@ svnpackage(){
   done
   [ -d qsdk ] && cd $(pwd)/qsdk
   [ -d package ] && cd package
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -584,7 +595,7 @@ mklaste(){
   elif [ "$method" = "dirclean" ]; then
      make dirclean
   else
-    make package/$__last_cdp/$method -j1 V=scw "$@"
+    make package/$__last_cdp/$method "$@" # -j1 V=scw 
   fi
   cd $oldpwd
 }
@@ -610,6 +621,7 @@ mklast() {
   shift $(( OPTIND - 1 ))
   unset x OPTARG OPTIND
 
+  [ -n "${2}" ] && { cmd="${2}"; shift; shift; }
   [[ -n $verbose ]] && verbose="-j1 V=scw"
 
   local oldpwd=$(pwd)
@@ -620,7 +632,7 @@ mklast() {
   [[ -n $fuzzysel ]] && { mklaste $__last_cdp; cd $oldpwd; return; }
   [ -n "$__last_cdp" ] && {
     if [[ -n $cmd ]] ; then
-      make package/$__last_cdp/$cmd $verbose
+      make package/$__last_cdp/$cmd $verbose "$@"
     else
       make package/$__last_cdp/{clean,compile} $verbose
     fi
@@ -632,8 +644,16 @@ mklastv(){
   local oldpwd=$(pwd)
   [ -d build_dir ] || cdqsdk;
   [ -n "$1" ] && { __last_cdp="$1"; __last_cdb="$1"; }
+
+  [ -n "${2}" ] && { cmd="${2}"; shift; shift; }
   eval ${project_mk_arg} ${project_user_mk_arg}
-  [ -n "$__last_cdp" ] && make package/$__last_cdp/{clean,compile} -j1 V=s
+  [ -n "$__last_cdp" ] && {
+    if [[ -n $cmd ]] ; then
+      make package/$__last_cdp/$cmd -j1 V=s "$@"
+    else
+      make package/$__last_cdp/{clean,compile} -j1 V=s
+    fi
+  }
   cd $oldpwd
 }
 
@@ -655,30 +675,20 @@ project_env(){
 
 mkall(){
   local oldpwd=$(pwd)
-  [ -f mkall.sh ] && {
-    project;
-    [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; } || { ./mkall.sh $@; export PRODUCT_DIR=$(basename $(pwd)); project_env; };
-    cd ${oldpwd};
-    return;
-  }
 
-  [ -n "$__project" ] && [ -d "$__project" ] && [ "${__project%/product}" = "$__project" ] && {
-    cd ${__project};
-    [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; } || { ./mkall.sh $@; export PRODUCT_DIR=$(basename $(pwd)); project_env; };
-    cd ${oldpwd};
-    return;
-  }
+  while ! [ -d .svn ]; do
+    cd ../
+  done
 
-  _cdproduct
-  local project_var=$(ls -dlt * | grep '^d' | head -n 1 | awk '{print $NF}');
-  [ -n "project_var" ] && [ -d "$(pwd)/$project_var" ] && {
-    cd $(pwd)/$project_var;
-    project;
-    [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; } || { ./mkall.sh $@; export PRODUCT_DIR=$(basename $(pwd)); project_env; };
+  local product_path
+  [ -n "$1" ] && product_path="$(pwd)/product/$1" || product_path=$(find $(pwd)/product -maxdepth 1 -type d | fzf)
+  [ -d "$product_path" ] && {
+    cd "$product_path"
+    [ "$#" = "0" ] && { ./mkall.sh zh; export PRODUCT_DIR=$(basename $(pwd)); project_env; echo "mkall $(basename $product_path)"; } || \
+    { ./mkall.sh ; export PRODUCT_DIR=$(basename $(pwd)); project_env; echo "mkall $(basename $product_path)"; };
   }
   cd ${oldpwd};
 }
-alias mkall0='mkall zh 0'
 
 md5k(){ # tftp升级
   ls KF_Image > /dev/null 2>&1 && {
@@ -754,7 +764,7 @@ cdrootfs(){
   local oldpwd=$(pwd)
   [ -d build_dir ] || { svnqsdk; }
   cd build_dir/target-*/linux-*/base-files/ipkg-*/base-files
-  [ -n $1 ] && eval $@
+  [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
 }
 
@@ -795,8 +805,8 @@ alias cdftp='cd /mnt/hgfs/ftptmp/'
 #[c]
 indentlen='wc -L $@'
 indentwfl(){
-  dos2unix $@
-  indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf -nbbo $@
+  dos2unix "$@"
+  indent -kr -i4 -ts4 -sob -ss -sc -npsl -pcs -bs --ignore-newlines -l200 -nut -npro -brf -nbbo "$@"
 }
 
 indentyc(){
@@ -827,24 +837,6 @@ alias iperl='rlwrap -A -S "iperl> " perl -MData::Printer -wnE '\'' BEGIN { say "
 alias vi='vim -u ~/.vimrc-backup'
 
 # ntpdate -s time.nist.gov
-
-alias tt0='tmux select-window -t :=10'
-alias tt1='tmux select-window -t :=11'
-alias tt2='tmux select-window -t :=12'
-alias tt3='tmux select-window -t :=13'
-alias tt4='tmux select-window -t :=14'
-alias tt5='tmux select-window -t :=15'
-alias tt6='tmux select-window -t :=16'
-alias tt7='tmux select-window -t :=17'
-alias tt8='tmux select-window -t :=18'
-alias tt9='tmux select-window -t :=19'
-
-alias tt680='tmux switch -t FAP680-M1'
-alias tt5G03='tmux switch -t WB_5G03'
-alias tttmp='tmux switch -t tmp'
-alias ttplast='tmux last-pane; tmux resize-pane -Z'
-alias tpl='tmux last-pane; tmux resize-pane -Z'
-
 alias xsync='pwd > /mnt/hgfs/ftptmp/xsync'
 alias eu='pwd > /mnt/hgfs/ftptmp/xsync'
 
@@ -1023,11 +1015,11 @@ putwrt(){
 }
 
 # Syntax: "repeat_ok [command]"
-repeat_ok()  { while :; do $@ && return; done }
+repeat_ok()  { while :; do "$@" && return; done }
 # Syntax: "repeat_err [command]"
-repeat_err() { while :; do $@ || return; done }
+repeat_err() { while :; do "$@" || return; done }
 # Syntax: "repeat_sleep <timeout> <command>"
-repeat_sleep() { timeout=$1; shift; while :; do $@ && return; sleep $timeout; done }    # 加入延时
+repeat_sleep() { timeout=$1; shift; while :; do "$@" && return; sleep $timeout; done }    # 加入延时
 
 
 alias yuncore+='yuncore_help'
@@ -1101,7 +1093,7 @@ fe() {
 }
 
 fzfrun(){  # tmux大量日志情况下,分析日志信息
-  eval $@ 2>&1 > /tmp/fzfrun.log
+  eval "$@" 2>&1 > /tmp/fzfrun.log
   cat /tmp/fzfrun.log | fzf --bind "enter:execute(vim /tmp/fzfrun.log)"
 }
 
@@ -1130,7 +1122,7 @@ dirdiff(){
     # Shell-escape each path:
     DIR1=$(printf '%q' "$1"); shift
     DIR2=$(printf '%q' "$1"); shift
-    vim $@ -c "DirDiff $DIR1 $DIR2"
+    vim "$@" -c "DirDiff $DIR1 $DIR2"
 }
 
 # Modified version where you can press
@@ -1152,7 +1144,7 @@ fo() {
 vf() {
   local files
 
-  files=(${(f)"$(locate -Ai -0 $@ | grep -z -vE '~$' | fzf --read0 -0 -1 -m)"})
+  files=(${(f)"$(locate -Ai -0 "$@" | grep -z -vE '~$' | fzf --read0 -0 -1 -m)"})
 
   if [[ -n $files ]]
   then
@@ -1165,7 +1157,7 @@ vf() {
 vg() {
   local file
 
-  file="$(ag --nobreak --noheading $@ | fzf -0 -1 -m | awk -F: '{print $1}')"
+  file="$(ag --nobreak --noheading "$@" | fzf -0 -1 -m | awk -F: '{print $1}')"
 
   if [[ -n $file ]] ; then
      vim $file
@@ -1177,7 +1169,7 @@ vgf() {
   local file
   local line
 
-  read -r file line <<<"$(ag --nobreak --noheading $@ | fzf -m -0 -1 | awk -F: '{print $1, $2}')"
+  read -r file line <<<"$(ag --nobreak --noheading "$@" | fzf -m -0 -1 | awk -F: '{print $1, $2}')"
 
   if [[ -n $file ]] ; then
      vim $file +$line
@@ -1187,7 +1179,7 @@ vgf() {
 vgd() {
   local file
 
-  file="$(ag --nobreak --noheading $@ | fzf -0 -1 | awk -F: '{print $1}')"
+  file="$(ag --nobreak --noheading "$@" | fzf -0 -1 | awk -F: '{print $1}')"
 
   if [[ -n $file ]] ; then
      cd $(dirname $file)
@@ -1281,7 +1273,7 @@ fdf() {
 fdf0() {
   local file
   local dir
-  file=$(find * | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
+  file=$(find | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
              --header 'CTRL-D: Dirs / CTRL-F: Files / CTRL-T : Dirs + Files / F9: maxdepth=1 / F10: maxdepth=2' \
              --bind 'del:execute(rm -ri {+})' \
              --bind 'ctrl-t:change-prompt(All> )+reload(find -L *)' \
@@ -1424,7 +1416,7 @@ fdf2() {
 # vgp - put the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
 # vgp (){
 #   local file
-#   file="$(ag --nobreak --noheading $@ | fzf -0 -1 | awk -F: '{print $1}')"
+#   file="$(ag --nobreak --noheading "$@" | fzf -0 -1 | awk -F: '{print $1}')"
 
 #   if [[ -n $file ]] ; then
 #      put $file
@@ -1462,28 +1454,28 @@ cscope_build(){
     echo "Done."
 }
 
-# bind -x '"\C-t":__fzf_cd__'           跳转目录
-# bind -x '"\alt-a":__fzf_select__'     选择文件
-# bind -x '"\C-r":__fzf_history__'      回溯历史
-# "\C-x\C-g"    自定义跳转目录(goto)                                   ==> goto
-# "\C-x\C-p"    自定义命令cheatsheet查看                               ==> preview
-# "\C-x\C-l"    cht.sh命令cheatsheet查看                               ==> last
-# bind -x '"\C-x\C-o":fzfo'      # fzf + cygstart                      ==> open
-bind -x '"\C-x\C-e":fzfv'      # fzf + vim                           ==> vim
-bind -x '"\C-x\C-v":fzfe'      # fzf + edit                          ==> editor
 bind -x '"\C-x\C-y":fzfy'      # fzf + ~/.local/share/yank_history   ==> yank
-bind -x '"\C-x\C-d":fdf'       # fzf + cd                            ==> directory
-bind -x '"\C-x\C-t":fzftmp'    # fzf + tmp                           ==> tmp
-#bind -x '"\C-x\C-x":fzfcheat'  # fzf + cheat                         ==> cheat
-# bind -x '"\C-x\C-u":eu'        # fzf + ubuntu                        ==> ubuntu
-bind -x '"\C-x\C-m":fman'      # fzf + manual                        ==> manual
-# bind -x '"\C-x\C-r":ugit'      # fzf + manual                        ==> revert
+
+                             # 1. t (current direcory)
+bind -x '"\C-x\C-t":cdm'     # 2. (all noted direcory)
+bind -x '"\C-g":fdf'         # 3. (current direcory)
+                             # 4. xg (fzf-marks)
+
+                             # 1. r (bash noted command)
+bind -x '"\C-x\C-r":chtfzf'  # 2 (networkd noted command)
+                             # 3. xp (user noted command)
+
+bind -x '"\C-x\C-f":frg'     # 1.xf (frg grep)
+bind -x '"\C-x\C-v":viminfo' # 2.xv (current noted file)
+bind -x '"\C-x\C-m":woman'   # 3.xm (current manual + chtfzf/user noted command)
+bind -x '"\C-x\C-d":look'    # 4.xd (dict/words)
+
 function pet-select() {
   BUFFER=$(pet search --query "$READLINE_LINE")
   READLINE_LINE=$BUFFER
   READLINE_POINT=${#BUFFER}
 }
-bind -x '"\C-x\C-r": pet-select'
+# bind -x '"\C-x\C-r": pet-select'
 bind -x '"\C-t":__fzf_cd__'    # fzf + ubuntu
 # bind -m emacs-standard '"\C-e": " \C-b\C-k \C-u`__fzf_select__`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
 
@@ -1512,16 +1504,16 @@ export FZF_TMUX_HEIGHT='80%'
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'";  }
 # V some command output; like git diff;svn diff; ls;
-V() { $@ | view - ; } # Quick way to view files in vim
+V() { "$@" | view - ; } # Quick way to view files in vim
 
 # find fd ag for filename, end preivew or edit it
-filef() { $@ | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
+filef() { "$@" | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
 
 # grep rg with line number
 rgf ()  {
 rm -f /tmp/rg-fzf-{r,f}
 RG_PREFIX="$@"
-$@ | fzf --ansi --disabled --query "$INITIAL_QUERY" \
+"$@" | fzf --ansi --disabled --query "$INITIAL_QUERY" \
     --bind "start:reload($RG_PREFIX )+unbind(ctrl-r)" \
     --bind "change:reload:sleep 0.1; $RG_PREFIX  || true" \
     --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
@@ -1551,7 +1543,7 @@ gitf(){
 }
 
 #### input [filename], end view it  ####
-svn_diff(){ svn diff $@      | view -; }
+svn_diff(){ svn diff "$@"      | view -; }
 git_diff(){ git diff -w "$@" | view -; }
 #### input [filename] -> preview difference ####
 # git ls-files --deleted  # deleted files
@@ -1559,12 +1551,12 @@ git_diff(){ git diff -w "$@" | view -; }
 # git status --short .    # current directory
 # git status --short      # root directory
 gitd(){
-$@ | fzf -m --print0 --preview "git diff -- {-1} | delta"
+"$@" | fzf -m --print0 --preview "git diff -- {-1} | delta"
 }
 
 #### input [filename] -> preview difference; end view it ####
 gitview(){
-  revsion=$(git log --oneline $@ | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
+  revsion=$(git log --oneline "$@" | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
   [ -z "$revsion" ] && return
   revsion=$(echo $revsion | awk '{print $1}')
   [ -z "$revsion" ] && return
@@ -1574,7 +1566,7 @@ gitview(){
 
 cdf(){
   local file
-  file=$($@ | fzf)
+  file=$("$@"| fzf)
 
   [ -z "$file" ] && {
     return
@@ -1591,9 +1583,61 @@ cdf(){
 #  ~/.fzf-marks
 #  ~/.config/fzf-bookmarks/bookmarks
 cdm(){
-  echo -e "$@ \t $(pwd)" >> ~/.cdm
-}
+  local cdm_marks cdm_bookmarks cdm_cdmmarks cdm_add_bookmark cdm_edit_bookmark
+  while getopts 'mbiaeh' x; do
+      case "$x" in
+        m) cdm_marks=1 ;;
+        b) cdm_bookmarks=1 ;;
+        i) cdm_cdmmarks=1 ;;
+        a) cdm_add_bookmark=1 ;;
+        e) cdm_edit_bookmark=1 ;;
+        h) echo "cdm [-m|fzf-marks] [-b|fzf-bookmarks] [-i|fzf-cdmmarks] | [-a|append] [-e|edit]"
+           echo "1. -m/-b/-i jump; 2. [-m/-b/-i]+ -a append; 3. -e edit"
+           echo "cdm -m [-a] " # find directory in fzf-marks    ; -a add to ~/.fzf-marks
+           echo "cdm -b [-a] " # find directory in fzf-bookmarks; -a add to ~/.config/fzf-bookmarks/bookmarks
+           echo "cdm -i [-a] " # find directory in fzf-cdmmarks ; -a add to ~/.cdm
+           echo "cdm -e      " # edit ~/.config/fzf-bookmarks/bookmarks ~/.fzf-marks ~/.cdm
+           return 0
+      esac
+  done
+  shift $(( OPTIND - 1 ))
+  unset x OPTARG OPTIND
 
+  [ "$cdm_edit_bookmark" = "1" ] && {
+    vim ~/.config/fzf-bookmarks/bookmarks ~/.fzf-marks ~/.cdm
+    return 0
+  }
+  
+  [ "$cdm_add_bookmark" = "1" ] && {
+    [ "$cdm_marks" = "1" ] && {
+      mark "$@" "$(pwd)"
+    }
+    [ "$cdm_bookmarks" = "1" ] && {
+      fzf-bookmarks -a "$@" "$(pwd)"
+    }
+    [ "$cdm_cdmmarks" = "1" ] && {
+      echo -e "$@ \t $(pwd)" >> ~/.cdm
+    }
+    return 0
+  }
+  [ "$cdm_marks" = "1" ] && {
+    cdf cat ~/.fzf-marks
+    return 0
+  }
+  [ "$cdm_bookmarks" = "1" ] && {
+    cdf cat ~/.config/fzf-bookmarks/bookmarks
+    return 0
+  }
+  [ "$cdm_cdmmarks" = "1" ] && {
+   cdf cat ~/.cdm
+    return 0
+  }
+  cat ~/.cdm | awk '{ print "cdm          \t " $0 }' > /tmp/cdfm.tmp
+  cat ~/.config/fzf-bookmarks/bookmarks | awk '{ print "fzf-bookmarks\t " $0 }' >> /tmp/cdfm.tmp
+  cat ~/.fzf-marks | awk '{ print "fzf-marks    \t " $0 }' >> /tmp/cdfm.tmp
+  cdf cat /tmp/cdfm.tmp
+  return 0
+}
 
 cdfm(){
   touch ~/.cdm
@@ -2064,3 +2108,4 @@ _fzf_setup_completion path code bat e np npe npp nppe
 
 # Amazon Q post block. Keep at the bottom of this file.
 [[ -f "${HOME}/.local/share/amazon-q/shell/bashrc.post.bash" ]] && builtin source "${HOME}/.local/share/amazon-q/shell/bashrc.post.bash"
+bind -x '"\C-t":fdf0'
