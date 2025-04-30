@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# Source: https://github.com/rtomayko/dotfiles/blob/rtomayko/bin/git-grab
+
+[ $# -eq 0 ] && {
+  echo "usage: git-add-username-remote username [repo]"
+  exit 1
+}
+
+function debug() {
+  if [[ -n "$DEBUG" ]]; then
+    echo "$@"
+  fi
+}
+
+function fail() {
+  printf '%s\n' "$1" >&2  ## Send message to stderr. Exclude >&2 if you don't want it that way.
+  exit "${2-1}"  ## Return a code specified by $2 or 1 by default.
+}
+
+username="$1"
+
+if [ -n "$2" ] ; then
+  repo="$2"
+else
+  # shellcheck disable=SC2046
+  repo=$(basename $(pwd))
+fi
+
+command="git remote add $username git://github.com/$username/$repo.git"
+debug "$command"
+$command || fail "$command failed"
+
+command="git fetch $username"
+debug "$command"
+exec $command

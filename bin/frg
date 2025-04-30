@@ -32,8 +32,6 @@ usage() {
   inst: frg -w fzf # search word match only
   inst: frg -s fzf # default search match mode: -i/-s/-S/-w
   inst: frg -v fzf # output RG_PREFIX config
-  inst: ffi        # frg    without re-interactive version
-  inst: fif        # frg -l without re-interactive version
 HEREDOC
 }
 

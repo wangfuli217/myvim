@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Find the default branch for a given git remote, or origin if unspecified
+#
+# Copyright 2020, Joe Block <jpb@unixorn.net>
+
+set -o pipefail
+
+usage() {
+  myname=$(basename "$0")
+  echo "Usage: $myname [GIT_REMOTE_NAME]"
+}
+
+if [[ $# -eq 0 ]]; then
+  REMOTENAME='origin'
+fi
+if [[ $# -eq 1 ]];then
+  REMOTENAME="$1"
+fi
+if [[ $# -gt 1 ]];then
+  # shellcheck disable=SC2068
+  usage $@
+  exit 1
+fi
+
+git remote show "${REMOTENAME}" | awk '/HEAD branch/ {print $3}'
+exit $?

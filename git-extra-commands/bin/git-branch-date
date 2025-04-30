@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Sort branches by recent commit
+#
+# I can never remember the command for this, so I wrapped it
+#
+# Copyright 2022, Joe Block <jpb@unixorn.net>
+
+exec git branch -v -r --sort=-committerdate

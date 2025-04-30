@@ -77,7 +77,7 @@ x=$(find "$@" -type f |
         --print-query \
         --color=hl:12,hl+:12 \
         --bind alt-a:select-all \
-        --preview-window=wrap:right:60%  \
+        --preview-window=wrap:top:75% \
         --preview="echo {} | $0 --preview {q}" |
     perl -F: -nae 'print if $F[1] != $old+1; $old=$F[1]'
 )
@@ -90,8 +90,7 @@ x=$(find "$@" -type f |
 # make a vim search pattern out of the first line of $x (which is the "query",
 # due to using "--print-query" in the fzf command)
 q=$(echo "$x" | head -1 | tr ' ' '|')
-file=$(echo "$x" | awk '{print $1}' | tail -n 1 | awk -F ':' '{print $1}')
-[ -f "$file"  ] && vim "$file"
+
 # start vim with the quickfix list set to "$x".  \v is "very magic"; allows
 # '|' to act as alternation in regex
-# vim -q <(echo "$x"|tail +2) -c copen -c "let @/='\v$q'"
+vim -q <(echo "$x"|tail +2) -c copen -c "let @/='\v$q'"
