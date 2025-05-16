@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set telnetd_user   [lindex $argv 0]
+set telnetd_passwd [lindex $argv 1]
+set telnetd_srv    [lindex $argv 2]
+
+
+set timeout 1
+
+spawn -noecho telnet ${telnetd_srv}
+
+expect {
+"*login:*" { send "${telnetd_user}\r" }
+eof { exit }
+}
+expect {
+"Password:" { send "${telnetd_passwd}\r" }
+eof { exit }
+}
+expect {
+"Enter 'help' for a list of built-in commands." { interact }
+"*commands*" { interact }
+"*Enter*" { interact }
+"*sh*" { interact }
+eof { exit }
+}
+exit
+# expect "#"
+# send "ifconfig\r"
+# send "exit\r"

@@ -114,7 +114,7 @@ function switchToBookmark {
 	# Show all bookmarks without filtering
 	elif [ $1 -eq 0 ]
 	then
-			selectedBookmark=$(awk '{printf("%-20s %-25s %-30s\n", $1, $2, $3)}' $bookmarkPath | fzf)
+			selectedBookmark=$(awk '{printf("%-20s %-25s %s30\n", $1, $2, $3)}' $bookmarkPath | fzf)
 			# Check if empty
 			if [ ! -z "$selectedBookmark" ]
 			then

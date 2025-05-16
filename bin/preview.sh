@@ -3,19 +3,16 @@
 REVERSE="\x1b[7m"
 RESET="\x1b[m"
 
-if [[ $# -lt 1 ]]; then
+if [ -z "$1" ]; then
   echo "usage: $0 [--tag] FILENAME[:LINENO][:IGNORED]"
   exit 1
 fi
 
-if [[ $1 = --tag ]]; then
+if [ "$1" = --tag ]; then
   shift
   "$(dirname "${BASH_SOURCE[0]}")/tagpreview.sh" "$@"
   exit $?
 fi
-
-# Ignore if an empty path is given
-[[ -z $1 ]] && exit
 
 IFS=':' read -r -a INPUT <<< "$1"
 FILE=${INPUT[0]}
@@ -47,9 +44,7 @@ fi
 
 FILE="${FILE/#\~\//$HOME/}"
 if [ ! -r "$FILE" ]; then
-  if [[ "${INPUT[0]}" != '[No Name]' ]]; then
-    echo "File not found ${FILE}"
-  fi
+  echo "File not found ${FILE}"
   exit 1
 fi
 
@@ -58,16 +53,14 @@ if [ -z "$CENTER" ]; then
 fi
 
 # Sometimes bat is installed as batcat.
-if [[ -z "$BATCAT" ]]; then
-  if command -v batcat > /dev/null; then
-    BATCAT="batcat"
-  elif command -v bat > /dev/null; then
-    BATCAT="bat"
-  fi
+if command -v batcat > /dev/null; then
+  BATNAME="batcat"
+elif command -v bat > /dev/null; then
+  BATNAME="bat"
 fi
 
-if [ -z "$FZF_PREVIEW_COMMAND" ] && [ "${BATCAT:+x}" ]; then
-  ${BATCAT} --style="${BAT_STYLE:-numbers}" --color=always --pager=never \
+if [ -z "$FZF_PREVIEW_COMMAND" ] && [ "${BATNAME:+x}" ]; then
+  ${BATNAME} --style="${BAT_STYLE:-numbers}" --color=always --pager=never \
       --highlight-line=$CENTER -- "$FILE"
   exit $?
 fi
@@ -81,7 +74,7 @@ fi
 
 DEFAULT_COMMAND="highlight -O ansi -l {} || coderay {} || rougify {} || cat {}"
 CMD=${FZF_PREVIEW_COMMAND:-$DEFAULT_COMMAND}
-CMD=${CMD//{\}/"$(printf %q "$FILE")"}
+CMD=${CMD//{\}/$(printf %q "$FILE")}
 
 eval "$CMD" 2> /dev/null | awk "{ \
     if (NR == $CENTER) \

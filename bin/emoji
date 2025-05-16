@@ -1,3 +1,4 @@
 emojis=$(cat emoji.txt)
 selected_emoji=$(echo "$emojis" | fzf)
 echo $selected_emoji
+# https://quickref.cn/docs/emoji.html
