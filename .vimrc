@@ -172,6 +172,16 @@ nnoremap <silent> g* g*zz
 " Format Jump
 nnoremap <silent> g; g;zz
 nnoremap <silent> g, g,zz
+" Change j and k to add movements to the jumplist.
+nnoremap <expr> k (v:count > 1 ? "m'". v:count : '') . 'gk'
+nnoremap <expr> j (v:count > 1 ? "m'". v:count : '') . 'gj'
+
+" Clear the jump list on startup.
+" I have never once remembered the jumplist between multiple Vim sessions.
+" Starting from a zero state each session lets me rewind/fast-forward through
+" the current session movements without accidentally entering a previous and
+" long-forogtten session.
+au VimEnter * clearjumps
 
 nnoremap }   }zz                " 向前移动一个段落并居中显示
 nnoremap {   {zz                " 向后移动一个段落并居中显示
@@ -598,20 +608,22 @@ nnoremap <leader>fL :Lines!<CR>     | " Lines in loaded buffers
 nnoremap <leader>ft :execute "Tags '" . expand('<cword>')<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
 nnoremap <leader>fT :execute "BTags '" . expand('<cword>')<CR>    | " Tags in the project (ctags -R); Tags and Helptags require Perl
 let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --c-kinds=+px --fields=+niazS --extra=+r'
-nnoremap <leader>fm :Marks<CR>     | " Marks
-nnoremap <leader>fM :Maps<CR>      | " Normal mode mappings
-nnoremap <leader>fj :Jumps<CR>     | " Jumps
-nnoremap <leader>fw :Windows!<CR>   | " Windows
+nnoremap <leader>fm :Marks<CR>      | " Marks
+nnoremap <leader>fM :Maps<CR>       | " Normal mode mappings
+nnoremap <leader>fj :Jumps<CR>      | " Jumps
+nnoremap <leader>fw :Windows!<CR>   | " switch Windows
+nnoremap <leader>fW :MaximizerToggle<CR>   | " max Windows
 nnoremap <leader>fh :History!<CR>   | " Open buffers history
 nnoremap <leader>H :execute ":help " . expand("<cword>")<cr>
-nnoremap <leader>f: :History:<CR>  | " Command history
-nnoremap <leader>f/ :History/<CR>  | " Search history
-nnoremap <leader>f? :Helptags<CR>  | " Help tags
-nnoremap <leader>fs :Snippets<CR>  | " Snippets (UltiSnips)
+nnoremap <leader>f: :History:<CR>   | " Command history
+nnoremap <leader>f/ :History/<CR>   | " Search history
+nnoremap <leader>f? :Helptags<CR>   | " Help tags
+nnoremap <leader>fs :Snippets<CR>   | " Snippets (UltiSnips)
 nnoremap <leader>fS :call fzf#sonictemplate#run()<CR>   | " sonictemplate
 nnoremap <leader>fc :Commits!<CR>   | " Git commits (requires fugitive.vim)
+nnoremap <leader>fc :Changes!<CR>   | " Git commits (requires fugitive.vim)
 nnoremap <leader>fC :BCommits!<CR>  | " Git commits (requires fugitive.vim)
-nnoremap <leader>f; :Commands<CR>  | " Commands
+nnoremap <leader>f; :Commands<CR>   | " Commands
 
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
@@ -757,7 +769,6 @@ Plug 'vim-autoformat/vim-autoformat'   " 代码格式化
 
 Plug 'easymotion/vim-easymotion'       " \\w (quick motion)
 Plug 'junegunn/vim-easy-align'         " ga gaip=; gaip*=
-Plug 'junegunn/vader.vim'
 Plug 'vim-scripts/VisIncr'             " :I [#]; :II [# [zfill]]; :IO [#]; :IIO [# [zfill]]; :IX [#]; :IIX [# [zfill]]; :IYMD [#]; :IMDY [#]; :IDMY [#]; :ID [#]
 
 Plug 'tpope/vim-surround'              " cs]{  ds{ds)  ysiw<em>
@@ -868,6 +879,7 @@ hi illuminatedWord cterm=underline gui=underline
 Plug 'vim-airline/vim-airline'         " 状态栏
 Plug 'vim-airline/vim-airline-themes'  " 状态栏主题
 
+Plug 'metakirby5/codi.vim'             " 异步显示当前代码执行结果
 Plug 'asins/vimcdoc'                   " vim中文文档  help
 Plug 'vim-utils/vim-man'               " vim Man Vman帮助文档
 Plug 'powerman/vim-plugin-viewdoc'     " K
@@ -885,7 +897,6 @@ Plug 'morhetz/gruvbox'                   " colorscheme
 Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
 Plug 'lambdalisue/suda.vim'                                             " sudo
-
 call plug#end()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2089,7 +2100,7 @@ noremap <leader>f5 :AsyncTask file-build<cr>
 noremap <leader>f6 :AsyncTask file-run<cr>
 noremap <leader>f7 :TP! run<cr>
 noremap <leader>f8 :TP! runa
-noremap <leader>f9 :TP! rund<cr>
+noremap <leader>f9 :Actions<cr>
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
 
@@ -2104,12 +2115,12 @@ command! FZFCd call fzf#run({
 \ })
 
 noremap <leader>f> :FZFCd<cr>
+command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
+command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
+
 " Change directory to the path of the current file; and back again
 map <leader>cd :lcd %:p:h<cr><bar>:pwd<cr>
 map <leader>cc :lcd -<cr><bar>:pwd<cr>
-
-command! -nargs=1 Spaces let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " expandtab"   | silent execute "%!expand -t "  . <args> . ""  | call winrestview(b:wv) | setlocal ts? sw? sts? et?
-command! -nargs=1 Tabs   let b:wv = winsaveview() | execute "setlocal tabstop=" . <args> . " noexpandtab" | silent execute "%!unexpand -t " . <args> . "" | call winrestview(b:wv) | setlocal ts? sw? sts? et?
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2324,9 +2335,6 @@ let g:actions_list = [
     \ ["                                                                      "],
     \ ["source local rc                                      | :source ~/.vimrc "],
     \ ["edit local rc                                        | :edit ~/.vimrc   "],
-    \ ["edit tmux.conf                                       | :edit ~/.tmux.conf "],
-    \ ["edit bashrc                                          | :edit ~/.bashrc   "],
-    \ ["edit cheatsheet                                      | :Files ~/git/fzf-cheatsheets/cheatsheets "],
     \ ["                                                                      "],
     \ ["hexdump do                                           | :%!xxd"],
     \ ["hexdump re                                           | :%!xxd -r "],
@@ -2406,14 +2414,7 @@ endfunction
 Shortcut show shortcut menu and run chosen shortcut
     \ nnoremap  <leader>fX  :Actions<CR>
 
+
 let g:ranger_replace_netrw = 1
 let g:ranger_map_keys = 0
 map <C-p> :Ranger<CR>
-
-
-function! ExecuteFZFHandle(selected)
-    let l:target = a:selected
-    echom "Executing command: " .. l:target
-    execute l:target
-endfunction
-

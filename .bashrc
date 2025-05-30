@@ -2159,3 +2159,40 @@ alias tla='telnetwfl admin "476t*_f0%g09y" '
 alias tlr='telnetwfl root  "476t*_f0%g09y" '
 alias tlna='telnetwfl admin "Z2-VQ%G!9urdP" '
 alias tlnr='telnetwfl root  "Z2-VQ%G!9urdP" '
+
+# Codi
+# Usage: codi [filetype] [filename]
+codi() {
+  local syntax="${1:-python}"
+  shift
+  vim -c \
+    "let g:startify_disable_at_vimenter = 1 |\
+    set bt=nofile ls=0 noru nonu nornu |\
+    hi ColorColumn ctermbg=NONE |\
+    hi VertSplit ctermbg=NONE |\
+    hi NonText ctermfg=0 |\
+    Codi $syntax" "$@"
+}
+
+export NAP_CONFIG="~/.nap/config.yaml"
+export NAP_HOME="~/.nap"
+export NAP_DEFAULT_LANGUAGE="sh"
+export NAP_THEME="nord"
+
+export NAP_PRIMARY_COLOR="#AFBEE1"
+export NAP_RED="#A46060"
+export NAP_GREEN="#527251"
+export NAP_FOREGROUND="7"
+export NAP_BACKGROUND="0"
+export NAP_BLACK="#373B41"
+export NAP_GRAY="240"
+export NAP_WHITE="#FFFFFF"
+
+napc(){
+  local language="sh"
+  local ext=$(echo ${1##*.})
+  if [ -n "$ext" ] ; then
+    language="$ext"
+  fi
+  nap $language/$1 < $1
+}
