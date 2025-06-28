@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -euo pipefail
+[[ "${DEBUG:-}" == "true" ]] && set -x
+
+fzf \
+  --bind "start:reload:cat ~/.config/fzf-bookmarks/bookmarks ~/.fzf-marks ~/.cdm" \
+  --bind 'ctrl-e:become:tmux select-window -t $(basename {}) || tmux new-window -c {} -- nvim .' \
+  --bind 'ctrl-v:become:tmux split-window -h -c {}' \
+  --bind 'ctrl-x:become:tmux split-window -v -c {}' \
+  --bind 'enter:become:tmux select-window -t $(basename {}) || tmux new-window -c {}' \
+  --header 'ENTER: new/goto window / CTRL-X: horizontal split / CTRL-V: vertical split / CTRL-E: edit in vim' \
+  --header-border 'bottom' \
+  --input-border \
+  --prompt 'Projects> ' \
+  --reverse  || true

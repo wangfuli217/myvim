@@ -1083,6 +1083,17 @@ export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
 export PATH="$PATH:/home/wangfuli/git/cheatsheets"
 
+r1() {
+  PREV="$(echo `history | tail -n2 | head -n1` | sed 's/[0-9 -:]*//')"
+  echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r1
+  echo "$PREV"
+}
+rr() {
+  PREV="$(echo `history | tail -n2 | head -n1` | sed 's/[0-9 -:]*//')"
+  echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/rr
+  echo "$PREV"
+}
+
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
 #   - Bypass fuzzy finder if there's only one match (--select-1)
@@ -1116,6 +1127,57 @@ vimdir () {
     while read line; do
     [ -f "${line/\~/$HOME}" ] && echo "$line"
     done | fzf -d -m -q "$*" -1) && cd $(dirname $files)
+}
+
+vimchanged(){
+    local git_root
+    git_root="$(git rev-parse --show-toplevel)"
+    # want splitting
+    # shellcheck disable=SC2046
+     git status --porcelain | \
+     awk '/^.M/ {$1=""; print}' | \
+     sed "s|^[[:space:]]|$git_root/|" | \
+     fzf --print0  --bind  '?:preview: git diff --color=always {}'
+}
+
+vimhome(){
+    # must expand in vim, not in shell
+    # shellcheck disable=SC2016
+    vim -Nesc '!echo $VIMRUNTIME' -c qa |
+    #tr -dc '[:alnum:]/\r\n'
+    sed 's,[^/]*/,/,'
+}
+
+# same as frg -l
+vimgrep(){
+    if [ $# -lt 2 ]; then
+        echo "usage: vimgrep <pattern> <files>"
+        return 3
+    fi
+    # want splitting
+    # shellcheck disable=SC2046
+    vim $(grep -l "$1" "$@" | sort -u | fzf)
+}
+
+pythonpath(){
+    python -c 'from __future__ import print_function; import sys; [print(_) for _ in sys.path if _]'
+}
+
+open(){
+    if type -P xdg-open &>/dev/null; then
+        xdg-open "$@"
+    elif sensible-browser &>/dev/null; then
+        sensible-browser "$@"
+    elif x-www-browser &>/dev/null; then
+        x-www-browser "$@"
+    elif gnome-open &>/dev/null; then
+        gnome-open "$@"
+    else
+        echo "Neither 'xdg-open' nor 'sensible-browser' were found in \$PATH - install one of them to automatically open this URL:"
+        echo
+        echo "$*"
+        echo
+    fi
 }
 
 dirdiff(){
@@ -1822,6 +1884,15 @@ tmuxp() {
   fi
 }
 
+tmuxnotice(){
+  command="$1"
+  shift
+  message="$1"
+  [ -z "$message" ] && message="command"
+  eval "$command"
+  tmuxsesdo "echo $message"
+}
+
 #### fzf + history ####
 # fh - repeat history
 fh() {
@@ -2030,6 +2101,7 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '?:preview: preview /var/tmp/f
 # }
 
 [ -f ~/.fzf/fzf_complete.sh  ] && source ~/.fzf/fzf_complete.sh
+[ -f ~/.fzf/mark_complete.sh  ] && source ~/.fzf/mark_complete.sh
 # [ -f ~/.fzf/fzf_frg_frgi_frgl.sh  ] && source ~/.fzf/fzf_frg_frgi_frgl.sh
 
 # Fig post block. Keep at the bottom of this file.

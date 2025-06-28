@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# USAGE: tmuxpaste
+#DESCRIPTION: Print the contents of the pane
+
+tmux capture-pane -J -p -S- | vim -
+
+exit 0
+
+active=$(tmux list-panes -F '#{session_name}:#{active_window_index}.#{pane_index} #{pane_active}' | awk '$2==1{print $1}')
+file="/tmp/tmux-${active}"
+tmux capture-pane -p  > $file
+echo "$file"
+vim  "$file"

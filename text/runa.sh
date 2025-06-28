@@ -2,6 +2,7 @@
 while IFS= read -r line; do
   echo "$line" >> /tmp/test.$VIM_FILENAME
 done
+echo "" >> /tmp/test.$VIM_FILENAME
 
 case $VIM_FILETYPE in
     python ) python3 /tmp/test.$VIM_FILENAME $@ ;;

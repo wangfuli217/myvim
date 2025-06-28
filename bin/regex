@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ $# -lt 2 ] ; then
+  echo "regex string pattern"
+  exit 1
+fi
+
+if [[ "$1" =~ $2 ]] ; then
+  echo "\"$2\" match \"$1\""
+  for key in "${!BASH_REMATCH[@]}"; do
+    echo "BASH_REMATCH[$key]" "    " "${BASH_REMATCH[$key]}"
+  done
+else
+  echo "\"$2\" do not match \"$1\""
+fi

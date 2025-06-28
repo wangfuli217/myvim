@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+#  vim:ts=4:sts=4:sw=4:et
+#
+#  Author: Hari Sekhon
+#  Date: 2025-05-14 05:27:20 +0300 (Wed, 14 May 2025)
+#
+#  https///github.com/HariSekhon/DevOps-Bash-tools
+#
+#  License: see accompanying Hari Sekhon LICENSE file
+#
+#  If you're using my code you're welcome to connect with me on LinkedIn
+#  and optionally send me feedback to help steer this or other code I publish
+#
+#  https://www.linkedin.com/in/HariSekhon
+#
+
+set -euo pipefail
+[ -n "${DEBUG:-}" ] && set -x
+srcdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# shellcheck disable=SC1090,SC1091
+die(){
+    echo "$@" >&2
+    exit 1
+}
+
+timestamp(){
+    printf "%s  %s" "$(date '+%F %T')" "$*" >&2
+    if [ $# -gt 0 ]; then
+        printf '\n' >&2
+    fi
+}
+
+help_usage(){
+    for arg; do
+        case "$arg" in
+            -h|-help|--help)  usage
+                              ;;
+        esac
+    done
+}
+
+min_args(){
+    local min="$1"
+    shift || :
+    if [ $# -lt "$min" ]; then
+        usage "error: missing arguments"
+    fi
+}
+
+max_args(){
+    local max="$1"
+    shift || :
+    if [ $# -gt "$max" ]; then
+        usage "error: too many arguments, expected $max, got $#"
+    fi
+}
+
+usage(){
+    local args=""
+    local switches=""
+    local description=""
+    if [ -n "${usage_args:-}" ]; then
+        args="$usage_args"
+    fi
+    if [ -n "${usage_switches:-}" ]; then
+        switches="$usage_switches"
+        switches="${switches##[[:space:]]}"
+        switches="${switches%%[[:space:]]}"
+    fi
+    if [ -n "${usage_description:-}" ]; then
+        description="$usage_description
+"
+    fi
+    if [ -n "$*" ]; then
+        echo "$*" >&2
+        echo >&2
+    fi
+    cat >&2 <<EOF
+$description
+usage: ${0##*/} $args
+
+$switches
+-h --help           Print usage help and exit
+EOF
+    exit 3
+}
+
+# shellcheck disable=SC2034,SC2154
+usage_description="
+Launches tmux and runs the commands given as args in a square tiled view
+Fast way to launch a bunch of commands in an easily reviewable way
+If args aren't given, launches a \$SHELL in each pane, defaulting to bash if \$SHELL is not set
+Autogenerates a new session name in the form of \$tmuxn4do-\$rand ascii for uniqueness
+Example:
+    ${0##*/} htop 'iostat 1' 'ping google.com'
+"
+
+# used by usage() in lib/utils.sh
+# shellcheck disable=SC2034
+usage_args='"<command_1>" "<command_2>" "<command_3>" "<command_4>"'
+
+help_usage "$@"
+
+max_args 4 "$@"
+
+# cannot separate the session name with a dot as this breaks:
+#
+#   tmux has-session -t "$session"
+#
+# this command:
+#
+#   tmux has-session -t /Users/hari/mydir.1747191485
+#
+# results in this:
+#
+#   can't find window: /Users/hari/mydir
+#
+session=$(mktemp -t tmuxnhdo.XXXXXXXXXX)
+rm -f session
+session=${session##*/}
+session=${session##*.}
+session="tmuxn4do-$session"
+
+shell="${SHELL:-bash}"
+
+cmd1="${1:-$shell}"
+cmd2="${2:-$shell}"
+cmd3="${3:-$shell}"
+cmd4="${4:-$shell}"
+
+shift || :
+
+timestamp "Starting new tmux session in detached mode called '$session' with command: $cmd1"
+tmux new-session -d -s "$session" "$cmd1"
+
+if ! tmux has-session -t "$session"; then
+    die "ERROR: tmux session exited too soon from first command: $cmd1"
+fi
+
+for cmd in "$cmd2" "$cmd3" "$cmd4"; do
+    timestamp "Splitting the tmux window vertically and launching command: $cmd"
+    tmux split-window -h -t "$session":1 "$cmd"
+done
+
+timestamp "Balancing the tmux pane layout into a square tiled view for tmux session: $session"
+tmux select-layout -t "$session":1 tiled
+# even-horizontal, even-vertical, main-horizontal, main-horizontal-mirrored, main-vertical, main-vertical, or tiled
+# 按照七种预设布局之一排列窗格：均匀水平、均匀垂直、主水平、主水平镜像、主垂直、主垂直或平铺
+
+timestamp "Attaching to tmux session: $session"
+tmux attach-session -t "$session" || tmux switch-client -t "$session"

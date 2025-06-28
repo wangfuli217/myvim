@@ -1,0 +1,55 @@
+svn up   system/configmanage/src/change_ver.c
+svn up   system/configmanage/src/configmanager.c
+svn up   system/macmanage/src/Makefile
+svn up   system/macmanage/src/checkmac_agent.c
+svn up   system/systemconf/src/systemconf.c
+
+
+
+dd if=debian-10.11.0-amd64-DVD-1.iso | pv | dd of=/dev/sda bs=4M
+tar -czf - ./Documents/ | (pv -n > backup.tgz) 2>&1 | dialog --gauge "Progress" 10 70
+tar -czf - ./Downloads/ | (pv -p --timer --rate --bytes > backup.tgz)
+
+
+44:D1:FA:00:00:04  
+192.168.122.38
+192.168.188.2
+http://192.168.122.38/desktop/views/home/main_status.html
+
+
+
+44D1FAAD68C2
+
+B860910047AA
+
+00116B743C6C
+
+
+
+
+[AC8320-RZX-Net110目录] 合入代码路径
+/mnt/AC8320/YL_SPF11_IPQ60XX_GW/product/AC8320-RZX-Net110
+192.168.122.251   wangfuli / wfl.2023
+
+
+../src/radiusclient -f radiusclient-temp.conf  -p 1812 -a User-Name=testeap Password=testeap
+../src/radlogin -f radiusclient-temp.conf   User-Name=testeap Password=testeap                # testeap / testeap
+../src/radstatus -f radiusclient-temp.conf 
+
+
+radstatus.c:46:5:int main (int argc, char **argv)␍                                                                                                                                                                                     
+radiusclient.c:50:1:main(int argc, char *argv[])␍               
+radembedded.c:14:1:main (int argc, char **argv)␍        
+radexample.c:23:1:main (int argc, char **argv)␍                       
+radlogin.c:186:1:main (int argc, char **argv)␍          
+radacct.c:40:1:main (int argc, char **argv)␍ 
+
+
+
+vimchanged(){
+    local git_root
+    git_root="$(git_root)"
+    # want splitting
+    # shellcheck disable=SC2046
+    vim "$@" $(git status --porcelain | awk '/^.M/ {$1=""; print}' | sed "s|^[[:space:]]|$git_root/|")
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -n $# ] ; then
+    tmux list-panes -F '#{session_name}:#{window_index}.#{pane_index}' | xargs -I PANE tmux send-keys -t PANE "$@" Enter
+else
+    tmux list-panes -F '#{session_name}:#{window_index}.#{pane_index}' | xargs -I PANE tmux send-keys -t PANE "source ~/.bashrc" Enter
+fi

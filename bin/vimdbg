@@ -1,0 +1,41 @@
+#!/bin/bash
+
+sourcevimrc=""
+waittimeout=""
+filename="-"
+debug=""
+while getopts ':swdf:h' x; do
+  case "$x" in
+    s) sourcevimrc=":source ~/.vimrc" ;;
+    w) waittimeout="sleep 1" ;;
+    f) filename=${OPTARG} ;;
+    d) debug=1 ;;
+    h)
+      echo "vimdbg [-s] [-w] [-d] -f <filename>"
+      echo "       -s source ~/.vimrc"
+      echo "       -w sleep 1 second"
+      echo "       -d output test content"
+      echo "       -f filename for content"
+      return
+      ;;
+  esac
+done
+
+content="$(cat "$filename")"
+
+touch ./test.pl
+vim -E -s ./test.pl <<EOF |
+${sourcevimrc}
+redir>>/dev/stdout
+${content}
+${waittimeout}
+qall
+redir END
+EOF
+  sed -e '/^$/d' -e '/E501/d'
+
+rm -f ./test.pl
+[ "$debug" = "1" ] && {
+  echo "########## vimscript ##########"
+  echo "$content"
+}
