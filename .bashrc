@@ -1083,16 +1083,25 @@ export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
 export PATH="$PATH:/home/wangfuli/git/cheatsheets"
 
+# r1 recored forever; used by ctrl-xctrl-p
 r1() {
-  PREV="$(echo `history | tail -n2 | head -n1` | sed 's/[0-9 -:]*//')"
+  [ -n "$1" ] && {
+    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/r1
+    return 0
+  }
+  PREV="$(history | sed 's/[0-9 -:]*//' | fzf)"
   echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r1
-  echo "$PREV"
 }
+# rr recored interactivel between bash; used by ctrl-xctrl-p
 rr() {
-  PREV="$(echo `history | tail -n2 | head -n1` | sed 's/[0-9 -:]*//')"
+  [ -n "$1" ] && {
+    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/rr
+    return 0
+  }
+  PREV="$(history | sed 's/[0-9 -:]*//' | fzf)"
   echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/rr
-  echo "$PREV"
 }
+
 
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
@@ -1890,7 +1899,7 @@ tmuxnotice(){
   message="$1"
   [ -z "$message" ] && message="command"
   eval "$command"
-  tmuxsesdo "echo $message"
+  tmuxsesdo "echo  ⚡️⚡️⚡️⚡️ ${message} ⚡️⚡️⚡️⚡️"
 }
 
 #### fzf + history ####
