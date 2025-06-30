@@ -1,0 +1,27 @@
+#!/bin/bash
+
+filename=$1
+filetype=$2
+
+if [ -z "$filetype" ] ; then
+  filetype=${filename##*.}
+fi
+
+repl=bash
+
+declare -A repls
+repls[sh]="bash"
+repls[py]="python3"
+repls[pl]="reply"
+repls[js]="node"
+repls[tcl]="tclsh"
+repls[lua]="lua"
+
+for ft in "${!repls[@]}"; do
+  if [ "$filetype" = "$ft" ]; then
+    repl="$(echo ${repls["$filetype"]})"
+  fi
+done
+
+tmuxnvdo "vim $filename" $repl
+
