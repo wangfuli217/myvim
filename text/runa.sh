@@ -9,4 +9,5 @@ case $VIM_FILETYPE in
     sh | bash ) bash /tmp/test.$VIM_FILENAME $@ ;;
     pl | perl ) perl /tmp/test.$VIM_FILENAME $@ ;;
     lua ) lua /tmp/test.$VIM_FILENAME        $@ ;;
+    js | javascript ) node /tmp/test.$VIM_FILENAME $@ ;;
 esac

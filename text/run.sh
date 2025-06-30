@@ -10,4 +10,5 @@ case $VIM_FILETYPE in
     pl | perl ) perl /tmp/test.$VIM_FILENAME ;;
     lua ) lua /tmp/test.$VIM_FILENAME        ;;
     vim ) vimdbg -f /tmp/test.$VIM_FILENAME  ;;
+    js | javascript ) node /tmp/test.$VIM_FILENAME ;;
 esac
