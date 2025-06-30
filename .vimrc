@@ -2092,15 +2092,15 @@ let g:asynctasks_extra_config = [ $HOME .. "/.vim/asynctasks.ini", '~/.config/nv
 command! -nargs=0 AsyncTaskFzf call s:fzf_task()
 noremap <leader>fe :AsyncTaskFzf<cr>
 noremap <leader>fE :AsyncTaskLast<cr>
-noremap <leader>f1 :AsyncTaskLast<cr>
-noremap <leader>f2 :AsyncTaskEdit<cr>
+noremap <leader>f1 :FZF ~/.vim/snippet<cr>
+noremap <leader>f2 :FZF ~/.vim/text<cr>
 noremap <leader>f3 :AsyncTask FZF-neigh<cr>
 noremap <leader>f4 :AsyncTask FZF-root-files<cr>
 noremap <leader>f5 :AsyncTask file-build<cr>
 noremap <leader>f6 :AsyncTask file-run<cr>
 noremap <leader>f7 :TP! run<cr>
 noremap <leader>f8 :TP! runa
-noremap <leader>f9 :Actions<cr>
+noremap <leader>f9 :TP! snippet
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
 
