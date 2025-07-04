@@ -1,0 +1,145 @@
+#!/bin/bash
+
+FUZMIT_JIRA_SCOPE=${FUZMIT_JIRA_SCOPE:-false}
+FUZMIT_SCOPE=${FUZMIT_SCOPE:-false}
+
+# === How-To ===
+# - Place git-fuzmit (without an extension) in your $PATH, make it executable, and run via `git fuzmit`
+# - Set FUZMIT_JIRA_SCOPE=true to auto-detect the Jira ID (e.g., JIRA-123) from the branch name and use it as the commit scope
+# - Set FUZMIT_SCOPE=true to enable scope prompts for each and every commit
+
+# === Function: Display Usage Information ===
+display_usage() {
+    echo -e "\033[1;38;5;81m"
+    echo "fuzmit: Conventional Commits, but Fuzzy."
+    echo -e "\033[0m"
+    echo ""
+    echo -e "\033[1;37m# Conventional Commit Message Format:\033[0m"
+    echo -e "\033[1;32m<type>\033[0m\033[1;34m(optional scope)\033[0m: \033[1;36m<description>\033[0m"
+    echo ""
+    echo -e "\033[1;37mCommit Types:\033[0m"
+    echo -e "    🏗   build     - Project build or dependencies changes"
+    echo -e "    🧹  chore     - Routine tasks, maintenance"
+    echo -e "    🔄  ci        - Continuous integration changes"
+    echo -e "    📚  docs      - Documentation updates"
+    echo -e "    🚀  feat      - New feature addition"
+    echo -e "    🔧  fix       - Bug fixes"
+    echo -e "    🏎   perf      - Performance improvements"
+    echo -e "    🛠️   refactor  - Code refactoring without changing behavior"
+    echo -e "    🎨  style     - Code style or formatting"
+    echo -e "    🧪  test      - Adding or modifying tests"
+    echo ""
+    echo -e "\033[1;37m# Example Commit Message:\033[0m"
+    echo -e "\033[1;36mfeat(authentication): add support for password reset\033[0m"
+    echo ""
+    echo -e "\033[1;37m# Usage:\033[0m"
+    echo -e "  git fuzmit [--scope] [--override]"
+    echo ""
+    echo -e "\033[1;37m# Options:\033[0m"
+    echo -e "  --scope     Manually add a commit scope for this commit"
+    echo -e "  --override  Bypass main branch restriction and allow committing"
+    echo ""
+    echo -e "\033[1;37m# Notes:\033[0m"
+    echo -e "  - If FUZMIT_JIRA_SCOPE=true, both --scope and FUZMIT_SCOPE are ignored since Jira scope is auto-detected"
+    echo ""
+    echo -e "\033[1;36mConventional Commits: https://www.conventionalcommits.org/en/v1.0.0/#specification\033[0m"
+    echo ""
+}
+
+# === Function: Check if fzf is installed ===
+check_fzf_installed() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "❌  fm: fzf is not installed. Please install it first."
+        exit 1
+    fi
+}
+
+# === Function: Check if we're in a git repository ===
+check_git_repo() {
+    if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+        echo "❌  fm: Not inside a git repository."
+        exit 1
+    fi
+}
+
+# === Function: Check if we're on the main branch ===
+check_branch() {
+    current_branch=$(git symbolic-ref --short HEAD)
+    if [ "$current_branch" = "main" ] && [ "$1" != "--override" ]; then
+        echo "🚫  fm: You are on the main branch. Use --override to bypass this check."
+        exit 1
+    fi
+}
+
+# === Function: Check if there are staged changes to commit ===
+check_staged_changes() {
+    if git diff --cached --quiet; then
+        echo "ℹ️  fm: No staged changes to commit."
+        exit 0
+    fi
+}
+
+# === Function: Extract Jira scope if applicable ===
+extract_jira_scope() {
+    if [ "${FUZMIT_JIRA_SCOPE}" = "true" ]; then
+        current_branch=$(git symbolic-ref --short HEAD)
+        if [[ $current_branch =~ ^([A-Za-z]+-[0-9]+) ]]; then
+            echo "${BASH_REMATCH[1]}"
+            return
+        fi
+    fi
+    echo ""
+}
+
+# === Function: Select commit type with fzf and prompt for a description ===
+select_commit_type() {
+    commit_type=$(printf "🏗  build      - Project build or dependencies changes\n🧹 chore      - Routine tasks, maintenance\n🔄 ci         - Continuous integration changes\n📚 docs       - Documentation updates\n🚀 feat       - New feature addition\n🔧 fix        - Bug fixes\n🏎  perf       - Performance improvements\n🛠️  refactor   - Code refactoring without changing behavior\n🎨 style      - Code style or formatting\n🧪 test       - Adding or modifying tests" | fzf --height 12 --prompt="Pick commit type: ")
+
+    if [ -z "$commit_type" ]; then
+        echo "❌  fm: No commit type selected, aborting."
+        exit 1
+    fi
+
+    commit_type=$(echo "$commit_type" | cut -d'-' -f1 | xargs)
+
+    jira_scope=$(extract_jira_scope)
+    
+    if [ -n "$jira_scope" ]; then
+        echo "ℹ️  fm: Auto-detected Jira scope '$jira_scope'"
+        commit_scope="($jira_scope)"
+    elif [ "$FUZMIT_SCOPE" = "true" ] || [ "$1" = "--scope" ]; then
+        read -r -p "Enter optional scope (leave empty if not needed): " commit_scope
+        if [ -n "$commit_scope" ]; then
+            commit_scope="($commit_scope)"
+        fi
+    else
+        commit_scope=""
+    fi
+
+    read -r -p "Enter commit description: " commit_message
+    if [ -z "$commit_message" ]; then
+        echo "❌  fm: Commit description cannot be empty, aborting."
+        exit 1
+    fi
+
+    full_commit_message="$commit_type$commit_scope: $commit_message"
+    echo "💾  fm: Commit message - '$full_commit_message'"
+    git commit -m "$full_commit_message"
+}
+
+# === Main Execution ===
+if [ "$1" = "help" ]; then
+    display_usage
+    exit 0
+fi
+
+# Check if the --scope flag is provided and enable FUZMIT_SCOPE
+if [ "$1" = "--scope" ]; then
+    FUZMIT_SCOPE=true
+fi
+
+check_fzf_installed
+check_git_repo
+check_branch "$1"
+check_staged_changes
+select_commit_type "$1"

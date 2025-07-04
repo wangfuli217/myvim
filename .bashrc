@@ -123,6 +123,15 @@ fi
 
 export GIT_SSL_NO_VERIFY=1  # 忽略git认证
 
+pipe(){
+  exval=1
+  while IFS= read -t 0.1 -r line; do
+    echo "$line"
+    exval=0
+  done
+  return "$exval"
+}
+
 alias cdqsdk=svnqsdk
 svnqsdk(){
   local oldpwd=$(pwd)
@@ -1083,25 +1092,54 @@ export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
 export PATH="$PATH:/home/wangfuli/git/cheatsheets"
 
-# r1 recored forever; used by ctrl-xctrl-p
-r1() {
+# rbat recored forever; used by ctrl-xctrl-p
+rbat() {
   [ -n "$1" ] && {
-    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/r1
+    bat ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
     return 0
   }
-  PREV="$(history | sed 's/[0-9 -:]*//' | fzf)"
-  echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r1
+  { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
 }
-# rr recored interactivel between bash; used by ctrl-xctrl-p
-rr() {
+# rvim recored interactivel between bash; used by ctrl-xctrl-p
+rvim() {
   [ -n "$1" ] && {
-    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/rr
+    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
     return 0
   }
-  PREV="$(history | sed 's/[0-9 -:]*//' | fzf)"
-  echo "$PREV" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/rr
+  { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
 }
 
+r0() {
+  local alpha
+  if [ -z "$1" ]; then
+    local f=$(find  ${FZF_CHEATSHEETS_DIR}/cheatsheets -name "r[a-z0-9]" -type f | fzf)
+    [ -n "$f" ] && bat $f
+    return
+  fi
+
+  local append=$(tr '[A-Z]' '[a-z]'  <<< $1)
+  for i in {A..Z}; do
+    if [ "$i" = "$1" ]; then
+      : > ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+      break
+    fi
+  done
+  shift
+  [ -n "$1" ] &&  echo "#### $@ ####" >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+  { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+  echo >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+  echo >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+}
+
+emoji-fzf() {
+    # TODO (k): <2022-03-07> cache
+    local cache_file=~/.cache/emoji-fzf-cache
+    if ! [[ -s $cache_file ]]; then
+        wget 'https://git.io/JXXO7' -O $cache_file
+    fi
+    selected_emoji=$(cat $cache_file | fzf)
+    echo $selected_emoji
+}
 
 #### fzf + vim ####
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
@@ -1327,7 +1365,7 @@ fdf() {
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
   [[ -n $folllow  ]] && FD_PREFIX="$FD_PREFIX --follow  "
   [[ -n $week  ]] && FD_PREFIX="$FD_PREFIX --atime 7 "
-  file=$($FD_PREFIX | fzf +m -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /'  )
+  file=$( { pipe || $FD_PREFIX;} | fzf +m -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /'  )
 
   [ -z "$file" ] && {
     return
@@ -1344,7 +1382,7 @@ fdf() {
 fdf0() {
   local file
   local dir
-  file=$(find | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
+  file=$( { pipe || find ; } | fzf +m -q "$1" --prompt 'All> ' --bind "start:show-header" \
              --header '🎛️ ^d: Dirs / ^f: Files / ^t : Dirs + Files / F9: maxdepth=1 / F10: maxdepth=2 / ^e (edit bookmark) ⚡️ cdm -a [-mbi] [fzf-marks|fzf-bookmarks|mybookmark] |^x^t:cdm ^g:fzf-bookmarks ^x^g:fzf-marks' \
              --bind 'del:execute(rm -ri {+})' \
              --bind 'ctrl-t:change-prompt(All> )+reload(find -L *)' \
@@ -1580,37 +1618,32 @@ export FZF_TMUX_HEIGHT='80%'
 # bat
 [[ -x $(command -v bat) ]] && { alias cat="bat"; alias more="bat";  export MANPAGER="sh -c 'col -bx | bat -p -l man'";  }
 # V some command output; like git diff;svn diff; ls;
-V() { "$@" 2> /dev/null | view - ; } # Quick way to view files in vim
+V() { { pipe || "$@" ; } 2> /dev/null | view - ; } # Quick way to view files in vim
 
 # find fd ag for filename, end preivew or edit it
-filef() { "$@" 2> /dev/null | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
+filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
 
 # grep rg with line number
+alias rgx="rg --column --line-number --no-heading --crlf --color=always "
 rgf ()  {
-rm -f /tmp/rg-fzf-{r,f}
-RG_PREFIX="$@" 2> /dev/null
-"$@" 2> /dev/null | fzf --ansi --disabled --query "$INITIAL_QUERY" \
-    --bind "start:reload($RG_PREFIX )+unbind(ctrl-r)" \
-    --bind "change:reload:sleep 0.1; $RG_PREFIX  || true" \
-    --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > /tmp/rg-fzf-r; cat /tmp/rg-fzf-f)" \
-    --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. grep> )+disable-search+reload($RG_PREFIX || true)+rebind(change,ctrl-f)+transform-query(echo {q} > /tmp/rg-fzf-f; cat /tmp/rg-fzf-r)" \
-    --color "hl:-1:underline,hl+:-1:underline:reverse" \
-    --prompt '1. grep> ' \
+{ pipe || rg --column --line-number --no-heading --crlf --color=always "$1" ; } | fzf  \
+    --prompt '1. fzf> ' \
     --delimiter : \
-    --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱' \
+    --header '/ CTRL-F (fzf mode) ╱' \
     --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1}' \
     --preview-window 'right,45%,+{2}+1/3,~1' \
     --bind 'enter:become(vim {1} +{2})' \
     --bind "ctrl-o:execute(open {1})" \
     --bind "ctrl-e:execute(vim {1} +{2})"
 }
+
 #### input revsion -> preview difference; end view it ####
 # git log --oneline
 # git reflog
 # git stash list
 # git tag
 gitf(){
-  revsion=$($@ 2> /dev/null | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
+  revsion=$( { pipe || "$@" ; }  2> /dev/null | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
   [ -z "$revsion" ] && return
   revsion=$(echo $revsion | awk '{print $1}')
   [ -z "$revsion" ] && return
@@ -1627,12 +1660,12 @@ git_diff(){ git diff -w "$@" | view -;   }
 # git status --short .    # current directory
 # git status --short      # root directory
 gitd(){
-"$@" | fzf -m --print0 --preview "git diff -- {-1} | delta"
+{ pipe || "$@" ; } | fzf -m --print0 --preview "git diff -- {-1} | delta"
 }
 
 #### input [filename] -> preview difference; end view it ####
 gitview(){
-  revsion=$(git log --oneline "$@" | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
+  revsion=$( { pipe || git log --oneline "$@" ; } | fzf --ansi  --preview "echo {} | cut -d' ' -f1 | xargs -I{} git show --color --pretty=format:%b {}")
   [ -z "$revsion" ] && return
   revsion=$(echo $revsion | awk '{print $1}')
   [ -z "$revsion" ] && return
@@ -1642,7 +1675,7 @@ gitview(){
 
 cdf(){
   local file
-  file=$("$@"| fzf)
+  file=$( { pipe || "$@" ; } | fzf)
 
   [ -z "$file" ] && {
     return

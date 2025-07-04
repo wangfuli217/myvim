@@ -896,7 +896,8 @@ Plug 'morhetz/gruvbox'                   " colorscheme
 
 Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
-Plug 'lambdalisue/suda.vim'                                             " sudo
+Plug 'lambdalisue/suda.vim'              " sudo
+Plug 'inkarkat/vim-ReplaceWithRegister'  " [count]["x]gr{motion} 普通模式griw; [count]["x]grr 行替换grr; {Visual}["x]gr 可视模式 viw then gr
 call plug#end()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2418,3 +2419,15 @@ Shortcut show shortcut menu and run chosen shortcut
 let g:ranger_replace_netrw = 1
 let g:ranger_map_keys = 0
 map <C-p> :Ranger<CR>
+
+" :S hello world  搜索 hello 后跟 world,中间用空格(包括换行符)分隔
+" :S! hello world 搜索 hello 后跟 world,中间用任何非单词字符(空格、换行符、标点符号)分隔.
+" Search for the ... arguments separated with whitespace (if no '!'),
+" or with non-word characters (if '!' added to command).
+function! SearchMultiLine(bang, ...)
+  if a:0 > 0
+    let sep = (a:bang) ? '\_W\+' : '\_s\+'
+    let @/ = join(a:000, sep)
+  endif
+endfunction
+command! -bang -nargs=* -complete=tag S call SearchMultiLine(<bang>0, <f-args>)|normal! /<C-R>/<CR>

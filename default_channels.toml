@@ -1,0 +1,139 @@
+#### GIT #### tv命令必须在.git根目录执行
+[[cable_channel]]
+name = "git-diff"
+source_command = "git diff --name-only"
+preview_command = "git diff --color=always {0}"
+shortcut = "Ctrl-1"
+
+[[cable_channel]]
+name = "git-reflog"
+source_command = 'git reflog'
+preview_command = 'git show -p --stat --pretty=fuller --color=always {0}'
+
+[[cable_channel]]
+name = "git-log"
+source_command = "git log --oneline --date=short --pretty=\"format:%h %s %an %cd\" \"$@\""
+preview_command = "git show -p --stat --pretty=fuller --color=always {0}"
+shortcut = "Ctrl-2"
+
+[[cable_channel]]
+name = "git-branch"
+source_command = "git --no-pager branch --all --format=\"%(refname:short)\""
+preview_command = "git show -p --stat --pretty=fuller --color=always {0}"
+
+[[cable_channel]]
+name = "git-files"
+source_command = 'git ls-files'
+preview_command = 'bat -n --color=always {}'
+
+#### Docker #### todo
+[[cable_channel]]
+name = "images"
+source_command = "docker image list --format \"{{.ID}}\""
+preview_command = "docker image inspect {0} | jq -C"
+
+[[cable_channel]]
+name = "containers"
+source_command = "docker container list"
+preview_command = "docker container inspect {0} | jq -C"
+
+[[cable_channel]]
+name = "networks"
+source_command = "docker network list --format \"{{.Name}} - {{.Driver}}\""
+preview_command = "docker network inspect {0} | jq -C"
+
+[[cable_channel]]
+name = "volumes"
+source_command = "docker volume list --format \"{{.Name}} - {{.Driver}}\""
+preview_command = "docker volume inspect {0} | jq -C"
+
+#### specified ####
+# Dotfiles
+[[cable_channel]]
+name = "my-dotfiles"
+source_command = "fd -t f . $HOME/.config"
+preview_command = ":files:"
+
+# cheatsheet
+[[cable_channel]]
+name = "cheatsheet"
+source_command = "fd -t f . $HOME/git/fzf-cheatsheets/cheatsheets"
+preview_command = "bat --language=sh -p --color=always {}"
+
+# history
+[[cable_channel]]
+name = "bash-history"
+source_command  = "sed '1!G;h;$!d' ${HISTFILE:-${HOME}/.bash_history}"
+preview_command = "bat --language=sh -p --color=always ${HISTFILE:-${HOME}/.bash_history}"
+
+#### files ####
+[[cable_channel]]
+name = "hidden-dirs"
+source_command = "fd --no-ignore-vcs --type directory --hidden --follow -0 | xargs -0 printf '%q\n'"
+preview_command = "ls --all --long --time-style long-iso --color always {0}"
+action_command = 'cd {0}'
+
+[[cable_channel]]
+name = "hidden-files"
+source_command = "fd --no-ignore-vcs --type file --hidden --follow -0 | xargs -0 printf '%q\n'"
+preview_command = ":files:"
+action_command = 'vim {0}'
+
+[[cable_channel]]
+name = "csv-files"
+source_command = "fd --no-ignore-vcs --type file --hidden --follow --extension csv -0 | xargs -0 printf '%q\n'"
+preview_command = ":files:"
+
+[[cable_channel]]
+name = "sh-files"
+source_command = "fd --no-ignore-vcs --type file --hidden --follow --extension sh --extension bash --extension zsh -0 | xargs -0 printf '%q\n'"
+preview_command = ":files:"
+
+[[cable_channel]]
+name = "stat-files"
+source_command = "fd -I -t f"
+preview_command = "echo '#### file ####'; file {}; echo '#### stat ####'; stat {}; echo '#### ls -l ####'; ls -l {};"
+
+#### manpages ####
+[[cable_channel]]
+name = "manpages"
+source_command = "man -k . | awk \"{print \\$1}\""
+preview_command = "man {0} | sed -u -e 's/\\x1B\\[[0-9;]*m//g; s/.\\x08//g' | bat --language=man -p --color=always"
+
+#### channels ####
+[[cable_channel]]
+name = "channels"
+source_command = "tv list-channels | grep -v 'channels:' | sed '/^[[:space:]]*$/d' | sed 's/^[[:space:]]*//'"
+
+
+# Files
+[[cable_channel]]
+name = "files"
+source_command = "fd -t f"
+preview.command = "bat -n --color=always {}"
+
+# Text
+[[cable_channel]]
+name = "text"
+source_command = "rg . --no-heading --line-number"
+preview.command = "bat -n --color=always {0}"
+preview.delimiter = ":"
+preview.offset = "{1}"
+
+# Directories
+[[cable_channel]]
+name = "dirs"
+source_command = "fd -t d"
+preview.command = "ls -la --color=always {}"
+
+# Environment variables
+[[cable_channel]]
+name = "env"
+source_command = "printenv"
+preview.command = "cut -d= -f2 <<< ${0} | cut -d\" \" -f2- | sed 's/:/\\n/g'"
+
+# Aliases
+[[cable_channel]]
+name = "alias"
+source_command = "alias"
+interactive = true

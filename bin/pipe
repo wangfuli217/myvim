@@ -1,0 +1,8 @@
+#!/bin/bash
+
+exval=1
+while IFS= read -t 0.1 -r line; do
+  echo "$line"
+  exval=0
+done
+exit "$exval"
