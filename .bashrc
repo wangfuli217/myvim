@@ -1092,18 +1092,10 @@ export PATH=/home/wangfuli/.vim/bin/:${PATH}
 source "${FZF_CHEATSHEETS_DIR}/shell/fzf-cheatsheets.bash"
 export PATH="$PATH:/home/wangfuli/git/cheatsheets"
 
-# rbat recored forever; used by ctrl-xctrl-p
-rbat() {
-  [ -n "$1" ] && {
-    bat ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
-    return 0
-  }
-  { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
-}
 # rvim recored interactivel between bash; used by ctrl-xctrl-p
-rvim() {
-  [ -n "$1" ] && {
-    vim ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
+rcheat() {
+  [ -z "$1" ] && {
+    find ${FZF_CHEATSHEETS_DIR}/cheatsheets/ | fzf
     return 0
   }
   { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/$1
@@ -1129,6 +1121,29 @@ r0() {
   { pipe || (history | sed 's/[0-9 -:]*//' | fzf ; ) ; } >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
   echo >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
   echo >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
+}
+
+# ctrl-d
+rv() {
+  local alpha
+  if [ -z "$1" ]; then
+    local f=$(find  ~/.vim/registers -name "r[a-z0-9]" -type f | fzf)
+    [ -n "$f" ] && bat $f
+    return
+  fi
+
+  local append=$(tr '[A-Z]' '[a-z]'  <<< $1)
+  for i in {A..Z}; do
+    if [ "$i" = "$1" ]; then
+      : > ~/.vim/registers/r${append}
+      break
+    fi
+  done
+  shift
+  [ -n "$1" ] &&  echo "#### $@ ####" >> ~/.vim/registers/r${append}
+  { pipe || cat - ; } >> ~/.vim/registers/r${append}
+  echo >> ~/.vim/registers/r${append}
+  echo >> ~/.vim/registers/r${append}
 }
 
 emoji-fzf() {
