@@ -2325,3 +2325,18 @@ napc(){
   fi
   nap $language/$1 < $1
 }
+
+gitproxy(){
+  git config --global http.proxy  "socks5://$1:7890"
+  git config --global https.proxy "socks5://$1:7890"
+
+  git config -l | sed -n '/proxy/p'
+}
+
+gitproxyip(){
+  ipaddr=$(sudo arp-scan -I ens33 192.168.122.1/24 2>/dev/null | awk '/58:11:22:d9:92:57/{ print $1 }')
+  [ -z "$ipaddr" ] && {
+    ipaddr=$(sudo arp-scan -I ens33 192.168.123.1/24 2>/dev/null | awk '/58:11:22:d9:92:57/{ print $1 }')
+  }
+  echo $ipaddr
+}
