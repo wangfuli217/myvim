@@ -16,7 +16,6 @@ if [ -z "$VIM_FILETYPE" ]; then
   VIM_FILETYPE="sh"
 fi
 
-
 echo "#### $@" >> /tmp/test.$VIM_FILENAME
 while IFS= read -r line; do
   echo "$line" >> /tmp/test.$VIM_FILENAME

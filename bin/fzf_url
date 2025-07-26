@@ -17,6 +17,6 @@ fzf \
   --bind "enter:become:open {+}" \
   --multi \
   --prompt='URL(s)> ' \
-  --reverse  || true
+  --reverse || true
 
 # vim:sts=2:ts=2:sw=2:et:
