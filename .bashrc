@@ -460,9 +460,9 @@ svnbin(){
     cd $(ls -tld ./images/*-ZHCN* | head -n 1 | awk '{print $NF}')
     OLDPWD=${oldpwd}
   }
-  
+
   which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
-  
+
 }
 
 alias cdromfs=svnromfs
@@ -474,7 +474,7 @@ svnromfs(){
   [ -d "$(pwd)/source/romfs/" ] && cd $(pwd)/source/romfs/
   [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
-  
+
   which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
@@ -487,7 +487,7 @@ svnuser(){
   [ -d "$(pwd)/source/user/" ] && cd $(pwd)/source/user/
   [ -n $1 ] && eval "$@"
   OLDPWD=${oldpwd}
-  
+
   which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
 
@@ -1562,12 +1562,12 @@ fdf2() {
 #   file=$(fzf +m -q "$1") && put $file
 #   eval xsync
 # }
-# 
+#
 # # vgp - put the selected file from /mnt/hgfs/ftptmp 调到指定文件所在目录
 # vgp (){
 #   local file
 #   file="$(ag --nobreak --noheading "$@" | fzf -0 -1 | awk -F: '{print $1}')"
-# 
+#
 #   if [[ -n $file ]] ; then
 #      put $file
 #   fi
@@ -1668,16 +1668,31 @@ V() { { pipe || "$@" ; } 2> /dev/null | view - ; } # Quick way to view files in 
 filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | fzf ; }    # Quick way to view files in fzf preview
 
 # grep rg with line number
-alias rgx="rg --column --line-number --no-heading --crlf --color=always "
-rgf ()  {
-{ pipe || rg --column --line-number --no-heading --crlf --color=always "$1" ; } | fzf  \
+# grep rg with line number
+alias rgg="rg --column --line-number --no-heading --crlf --color=always "
+rgx ()  {
+  [ -n "$SSH_CLIENT" ] && {
+      open=less
+  } || {
+      open=xdg-open
+  }
+
+  if [ "$(uname -o)" = "Cygwin" ]; then
+    open() {
+      for f in $@; do
+        cygstart "$(cygpath -w $f)"
+      done
+    }
+  fi
+
+{ pipe || rg --column --line-number --no-heading --crlf --color=always "$1" ; } | fzf --ansi \
     --prompt '1. fzf> ' \
     --delimiter : \
     --header '/ CTRL-F (fzf mode) ╱' \
     --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1}' \
-    --preview-window 'right,45%,+{2}+1/3,~1' \
-    --bind 'enter:become(vim {1} +{2})' \
-    --bind "ctrl-o:execute(open {1})" \
+    --preview-window 'right,50%,+{2}+1/3,~1' \
+    --bind 'enter:become(less {1})' \
+    --bind "ctrl-o:execute($open {1})" \
     --bind "ctrl-e:execute(vim {1} +{2})"
 }
 
@@ -1762,7 +1777,7 @@ cdm(){
     vim ~/.config/fzf-bookmarks/bookmarks ~/.fzf-marks ~/.cdm
     return 0
   }
-  
+
   [ "$cdm_add_bookmark" = "1" ] && {
     [ "$cdm_marks" = "1" ] && {
       mark "$@" "$(pwd)"
@@ -1853,7 +1868,7 @@ fzff() {
     # a '&' (more programs can be added separated by a '|')
     if ! [[ $1 =~ ^(cd)$ ]]; then
         $1 "${arguments[@]}" &
-        
+
     else
         # $1 "${arguments[@]}"
           arguments[0]=$(echo ${arguments[0]} | awk '{print $NF}')
@@ -2397,5 +2412,16 @@ gitproxyip(){
   [ -z "$ipaddr" ] && {
     ipaddr=$(sudo arp-scan -I br0 192.168.123.1/24 2>/dev/null | awk '/58:11:22:d9:92:57/{ print $1 }')
   }
+  echo $ipaddr
+}
+
+# getdeviceip '58:11:22:d9:92:57' # as gitproxyip
+getdeviceip () {
+  [ -z "$1" ] && { echo "give mac say ip in local network"; return 0; }
+  local mac=$(echo $1 | tr 'A-Z' 'a-z')
+  ipaddr=$(sudo arp-scan -I ens33 192.168.122.1/24 2>/dev/null | grep "$mac" | awk '{ print $1 }');
+  [ -z "$ipaddr" ] && {
+    ipaddr=$(sudo arp-scan -I ens33 192.168.123.1/24 2>/dev/null | grep "$mac" | awk '{ print $1 }')
+  };
   echo $ipaddr
 }

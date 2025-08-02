@@ -3,7 +3,7 @@
 # Ref: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#switching-between-ripgrep-mode-and-fzf-mode
 
 # MNEMONIC: [F]uzzy search [G]rep [R]e-interactive
-# SYNOPSIS: fgr [rg's OPTIONS] [PATTERN]
+# SYNOPSIS: frgg [rg's OPTIONS] [PATTERN]
 # DESCRIPTION: Riggrep powered by FZF
 #   It has two modes:
 #   1) rg mode, fzf merely acts as the interactive interface, providing the live grep experience for rg.
@@ -16,9 +16,9 @@
 # NOTE:
 #   -e/--regex is not supported
 # EXAMPLES:
-#   fgr -s "Foo", given some rg's options and the initial query
-#   fgr "foo", just given the initial query
-#   fgr, launch it directly
+#   frgg -s "Foo", given some rg's options and the initial query
+#   frgg "foo", just given the initial query
+#   frgg, launch it directly
 
 # Temp file to store the query when switch to another mode so that the query can
 # be restored when switch back.
@@ -37,10 +37,10 @@ if [ "$(uname -o)" = "Cygwin" ]; then
   }
 fi
 
-rg_query=$(mktemp -t fgrr.XXXXXXXXXX)
-fzf_query=$(mktemp -t fgrf.XXXXXXXXXX)
+rg_query=$(mktemp -t frggr.XXXXXXXXXX)
+fzf_query=$(mktemp -t frggf.XXXXXXXXXX)
 # Temp file to mark if the current mode is fzf mode
-fzf_mode_enabled=$(mktemp -t fgrm.XXXXXXXXXX)
+fzf_mode_enabled=$(mktemp -t frggm.XXXXXXXXXX)
 cleanup() {
   rm -f "$rg_query";
   rm -f "$fzf_query";
@@ -56,9 +56,9 @@ errorfile_path="$HOME/.local/share/rg"
 [ "$1" = "-h" ] && {
   rg -h
   echo '============================================================'
-  echo 'fgr -s "Foo" , given some rg options and the initial query'
-  echo 'fgr "foo"    , just given the initial query'
-  echo 'fgr          , launch it directly'
+  echo 'frgg -s "Foo" , given some rg options and the initial query'
+  echo 'frgg "foo"    , just given the initial query'
+  echo 'frgg          , launch it directly'
   exit 0
 }
 
@@ -71,7 +71,7 @@ else
   extra_opts="${*%%"$last_arg"}"
 fi
 
-if [[  $initial_query =~ fgr$ ]]; then
+if [[  $initial_query =~ frgg$ ]]; then
   initial_query=""
 fi
 

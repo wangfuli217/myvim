@@ -9,7 +9,8 @@ vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
 vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>"
 
 " autocmd TermOpen term://* startinsert
-tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
+tnoremap <Esc> <C-\><C-n><C-w><c-w>
+" noremap <Esc>  <C-w><c-w>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2102,7 +2103,9 @@ noremap <leader>f8 :TP! runa
 noremap <leader>f9 :TP! snippet
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
-
+vmap <leader>f7 :TP! run<cr>
+vmap <leader>f8 :TP! runa
+vmap <leader>f9 :TP! snippet
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
