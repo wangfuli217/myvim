@@ -4,10 +4,40 @@
 
 tmux capture-pane -J -p -S- | vim -
 
+[ -n "$1" ] && tmux clear-history
+
 exit 0
+
+alias tmux_logs="tmux capture-pane -pS -"
+
+tmux capture-pane              # To capture the contents of the currently active pane and save it to the default buffer
+tmux capture-pane -t 0:0.1     # To capture the contents of a specific pane (e.g., pane 1 in window 0 of session 0):
+tmux capture-pane -t AX835:1.1 # @clipboard    tmux paste-buffer
+tmux capture-pane -t AX835:1.2 # @clipboard
+tmux capture-pane -p           # To capture the current pane and print the output directly to the terminal:
+tmux capture-pane -S 10        # To capture lines from line 10 to the end of the pane
+tmux capture-pane -S 10 -E 20  # To capture lines from line 10 to line 20
+tmux capture-pane -b mybuffer  # To save the captured content to a specific buffer named "mybuffer" --> tmux paste-buffer -b mybuffer
+
+# urlscan as context and url view
+bind-key u capture-pane \; save-buffer /tmp/tmux-buffer \; \
+  new-window -n "urlscan" '$SHELL -c "urlscan  < /tmp/tmux-buffer"'
+
+# urlview as context and url view
+bind-key U capture-pane \; save-buffer /tmp/tmux-buffer \; \
+  new-window -n "urlview" '$SHELL -c "urlview  < /tmp/tmux-buffer"'
+
+bind-key L capture-pane -b temp-capture-buffer -S - \; save-buffer -b temp-capture-buffer ~/tmux.log \; delete-buffer -b capture-buffer
+
+bind-key P command-prompt -p 'save history to filename:' -I '~/tmux.printscreen.txt' 'capture-pane -S - ; save-buffer %1 ; delete-buffer'
+
+# Save whole buffer to file for search
+bind-key P command-prompt -p 'save history to filename:' -I '~/tmux.history' 'capture-pane -S -32768 ; save-buffer %1 ; delete-buffer'
+
+bind Y run "tmux save-buffer - | pbcopy"
 
 active=$(tmux list-panes -F '#{session_name}:#{active_window_index}.#{pane_index} #{pane_active}' | awk '$2==1{print $1}')
 file="/tmp/tmux-${active}"
-tmux capture-pane -p  > $file
+tmux capture-pane -p >$file
 echo "$file"
-vim  "$file"
+vim "$file"

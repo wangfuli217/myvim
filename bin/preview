@@ -58,27 +58,33 @@ verbose=0 language='' cols="${COLS:-}" rows="${ROWS:-}" X=0 Y=0
 color=
 case "$TERM" in
   # Assert whether curren terminal is true-color.
-  *-color|*-256color|*-24bit) color=1 ;;
+  *-color | *-256color | *-24bit) color=1 ;;
 esac
 declare -A options
 
 while getopts 'hvl:x:y:r:c:o:' OPT; do
   case "$OPT" in
-    h) echo "$HELP"
-       exit 0 ;;
+    h)
+      echo "$HELP"
+      exit 0
+      ;;
     l) language="$OPTARG" ;;
     v) verbose=1 ;;
     c) cols="$OPTARG" ;;
     r) rows="$OPTARG" ;;
     x) X="$OPTARG" ;;
     y) Y="$OPTARG" ;;
-    o) IFS='=' read -r -d '' key value <<< "$OPTARG"
-       options["$key"]="$value" ;;
-    \?) echo "$USAGE" >&2
-        exit 1 ;;
+    o)
+      IFS='=' read -r -d '' key value <<<"$OPTARG"
+      options["$key"]="$value"
+      ;;
+    \?)
+      echo "$USAGE" >&2
+      exit 1
+      ;;
   esac
 done
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
 # Extract the PATH that we're trying to preview or fail.
 if [ -z "$*" ]; then
@@ -88,13 +94,13 @@ if [ -z "$*" ]; then
 fi
 FILE_PATH="$*"
 
-[ "$verbose" -eq 0 ] && exec 2>/dev/null                                           # Redirect standard error to null device.
+[ "$verbose" -eq 0 ] && exec 2>/dev/null # Redirect standard error to null device.
 
 # Detect display environment properties unless supplied by parent.
 if [ -z "$cols" ] || [ -z "$rows" ] || [ -z "$color" ]; then
-  read -d '' -r DCOLOR DCOLS DROWS <<< "$(echo -e 'colors\ncols\nlines\n' | tput -S)"
+  read -d '' -r DCOLOR DCOLS DROWS <<<"$(echo -e 'colors\ncols\nlines\n' | tput -S)"
   if [ -z "$color" ]; then
-     if [ "${DCOLOR:-0}" -ge 256 ]; then color=1; else color=0; fi
+    if [ "${DCOLOR:-0}" -ge 256 ]; then color=1; else color=0; fi
   fi
   [ -z "$cols" ] && cols="$DCOLS"
   [ -z "$cols" ] && rows="$DROWS"
@@ -104,9 +110,9 @@ fi
 # │ Configure Preview Environment and Options │
 # └───────────────────────────────────────────┘
 
-PREVIEW_TABWIDTH=4                                                              # Set the width of tabs when syntax highlighting a file
-HTML_IS_PLAINTEXT=1                                                             # When 1, don't try to convert html to plaintext (eg. md)
-INCLUDE_DIR="${INCLUDE_DIR:-0}"                                                 # When 1, include the directory path when previewing directories
+PREVIEW_TABWIDTH=4              # Set the width of tabs when syntax highlighting a file
+HTML_IS_PLAINTEXT=1             # When 1, don't try to convert html to plaintext (eg. md)
+INCLUDE_DIR="${INCLUDE_DIR:-0}" # When 1, include the directory path when previewing directories
 
 # ┌───────────────────────────────────┐
 # │ Generic Previewers for File Nodes │
@@ -149,7 +155,7 @@ preview_socket() {
   losf -- "$1"
 }
 
-[ -d "$FILE_PATH" ] && preview_dir    "$FILE_PATH" && exit 0
+[ -d "$FILE_PATH" ] && preview_dir "$FILE_PATH" && exit 0
 [ -S "$FILE_PATH" ] && preview_socket "$FILE_PATH" && exit 0
 
 # ┌────────────────────────────┐
@@ -163,13 +169,13 @@ preview_socket() {
 highlight_bat() {
   # shellcheck disable=SC2086
   bat -p \
-      --color "$(if [ "$color" -eq 1 ]; then echo always; else echo never; fi)" \
-      --paging never \
-      --tabs "$PREVIEW_TABWIDTH" \
-      --theme 'an-old-hope' \
-      --style plain \
-      ${options[bat]:-} \
-      "$@"
+    --color "$(if [ "$color" -eq 1 ]; then echo always; else echo never; fi)" \
+    --paging never \
+    --tabs "$PREVIEW_TABWIDTH" \
+    --theme 'an-old-hope' \
+    --style plain \
+    ${options[bat]:-} \
+    "$@"
 }
 
 if [ -n "$language" ]; then
@@ -192,19 +198,19 @@ fi && exit 0
 
 do_archive() {
   if [ "$#" -gt 1 ]; then
-    atool  --list --format "$2" -- "$1"
+    atool --list --format "$2" -- "$1"
   else
-    atool  --list -- "$1"
+    atool --list -- "$1"
   fi && return 0
   bsdtar --list --file "$1"
 }
 
-do_rar() { unrar lt -p- -- "$1"; }                                              # Avoid password prompt by providing empty password
-do_7z() { 7z l -p -- "$1"; }                                                    # Avoid password prompt by providing empty password
+do_rar() { unrar lt -p- -- "$1"; } # Avoid password prompt by providing empty password
+do_7z() { 7z l -p -- "$1"; }       # Avoid password prompt by providing empty password
 
 do_pdf() {
   pdftotext -l 10 -nopgbrk -q -- "$1" - | fmt -w "$cols" && return
-  mutool draw -F txt -i -- "$1" 1-10    | fmt -w "$cols" && return
+  mutool draw -F txt -i -- "$1" 1-10 | fmt -w "$cols" && return
   exiftool "$1"
 }
 
@@ -213,12 +219,12 @@ do_torrent() {
 }
 
 do_opendoc() {
-  odt2txt "$1" && return                                                        # Preview as text conversion
-  pandoc -s -t markdown -- "$1" && return                                       # Preview as markdown conversion
+  odt2txt "$1" && return                  # Preview as text conversion
+  pandoc -s -t markdown -- "$1" && return # Preview as markdown conversion
 }
 
 do_xlsx() {
-  xlsx2csv -- "$1" && return                                                    # Preview as csv conversion using [[https://github.com/dilshod/xlsx2csv][xlsx2csv]].
+  xlsx2csv -- "$1" && return # Preview as csv conversion using [[https://github.com/dilshod/xlsx2csv][xlsx2csv]].
 }
 
 do_json() {
@@ -240,9 +246,9 @@ do_html() {
   if [ "$HTML_IS_PLAINTEXT" -eq 1 ]; then
     do_text "$1"
   else
-    w3m -dump "$1"     && return
+    w3m -dump "$1" && return
     lynx -dump -- "$1" && return
-    elinks -dump "$1"  && return
+    elinks -dump "$1" && return
     pandoc -s -f html -t markdown -- "$1" |
       if command -v bat >/dev/null 2>&1; then
         highlight_bat -l md - "$@"
@@ -256,7 +262,7 @@ do_DSDIFF() {
   # WARN Direct Stream Digital/Transfer (DSDIFF) and wavpack aren't detected
   # by file(1).
   mediainfo "$1" && return
-  exiftool  "$1"
+  exiftool "$1"
 }
 
 [ -n "${KITTY:-}" ] && kitty +kitten icat --clear --transfer-mode file --silent
@@ -382,34 +388,35 @@ do_riff() {
 # └────────────────────────┘
 
 FILE_EXTENSION="${FILE_PATH##*.}"
-FILE_EXTENSION=$(tr '[:upper:]' '[:lower:]' <<< "$FILE_EXTENSION")
+FILE_EXTENSION=$(tr '[:upper:]' '[:lower:]' <<<"$FILE_EXTENSION")
 
 case "$FILE_EXTENSION" in
-  a|ace|alz|arc|arj|bz|bz2|cab|cpio|deb|gz|jar|lha|lz|lzh|lzma|lzo|\
-    rpm|rz|t7z|tar|tbz|tbz2|tgz|tlz|txz|tZ|tzo|war|xpi|xz|Z|zip|zst)
-    do_archive "$FILE_PATH" ;;
-  rar|cbr)    do_rar     "$FILE_PATH";    ;;
-  cb7|c7z|7z) do_7z      "$FILE_PATH";    ;;
+  a | ace | alz | arc | arj | bz | bz2 | cab | cpio | deb | gz | jar | lha | lz | lzh | lzma | lzo | \
+    rpm | rz | t7z | tar | tbz | tbz2 | tgz | tlz | txz | tZ | tzo | war | xpi | xz | Z | zip | zst)
+    do_archive "$FILE_PATH"
+    ;;
+  rar | cbr) do_rar "$FILE_PATH" ;;
+  cb7 | c7z | 7z) do_7z "$FILE_PATH" ;;
   # Many archive programs don't seem to recognise comic book extensions.
-  cbz)        do_archive "$FILE_PATH" zip ;;
-  cbt|gem)    do_archive "$FILE_PATH" tar ;;
-  cba)        do_archive "$FILE_PATH" ace ;;
+  cbz) do_archive "$FILE_PATH" zip ;;
+  cbt | gem) do_archive "$FILE_PATH" tar ;;
+  cba) do_archive "$FILE_PATH" ace ;;
 
-  pdf)             do_pdf     "$FILE_PATH" ;;
-  torrent)         do_torrent "$FILE_PATH" ;;
-  odt|ods|odp|sxw) do_opendoc "$FILE_PATH" ;;
-  xlsx)            do_xlsx    "$FILE_PATH" ;;
-  epub)            do_epub    "$FILE_PATH" ;;
-  htm|html|xhtml)  do_html    "$FILE_PATH" ;;
-  json|ipynb*)     do_json    "$FILE_PATH" ;;
-  dff|dsf|wv|wvc)  do_DSDIFF  "$FILE_PATH" ;;
-  sqlite|sqlite3)  do_sqlite3 "$FILE_PATH" ;;
-  pyc)             do_python_bytecode "$FILE_PATH" ;;
+  pdf) do_pdf "$FILE_PATH" ;;
+  torrent) do_torrent "$FILE_PATH" ;;
+  odt | ods | odp | sxw) do_opendoc "$FILE_PATH" ;;
+  xlsx) do_xlsx "$FILE_PATH" ;;
+  epub) do_epub "$FILE_PATH" ;;
+  htm | html | xhtml) do_html "$FILE_PATH" ;;
+  json | ipynb*) do_json "$FILE_PATH" ;;
+  dff | dsf | wv | wvc) do_DSDIFF "$FILE_PATH" ;;
+  sqlite | sqlite3) do_sqlite3 "$FILE_PATH" ;;
+  pyc) do_python_bytecode "$FILE_PATH" ;;
   # elc)             do_emacs_bytecode "$FILE_PATH" ;;
-  class)           do_java_class "$FILE_PATH" ;;
-  mp3)             do_video "$FILE_PATH" ;;
-  idx)             do_riff "$FILE_PATH" ;;
-  iso)             do_iso "$FILE_PATH" ;;
+  class) do_java_class "$FILE_PATH" ;;
+  mp3) do_video "$FILE_PATH" ;;
+  idx) do_riff "$FILE_PATH" ;;
+  iso) do_iso "$FILE_PATH" ;;
 
   md) highlight_bat -l markdown -- "$FILE_PATH" ;;
   csv) highlight_bat -l csv -- "$FILE_PATH" ;;
@@ -431,11 +438,11 @@ case "$MIMETYPE" in
   *sqlite3) do_sqlite3 "$FILE_PATH" ;;
 
   # Generic classifications
-  video/*|audio/*) do_video   "$FILE_PATH" ;;
-  image/*)         do_img     "$FILE_PATH" ;;
-  *executable)     do_exe     "$FILE_PATH" ;;
-  text/*|*/xml)    do_text    "$FILE_PATH" ;;
-  message/*)       highlight_bat -l email -- "$FILE_PATH" ;;
+  video/* | audio/*) do_video "$FILE_PATH" ;;
+  image/*) do_img "$FILE_PATH" ;;
+  *executable) do_exe "$FILE_PATH" ;;
+  text/* | */xml) do_text "$FILE_PATH" ;;
+  message/*) highlight_bat -l email -- "$FILE_PATH" ;;
 
   *) false ;;
 esac && exit 0

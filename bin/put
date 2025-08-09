@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# for f in "$@"; do
+#    tftp 192.168.100.253 -m binary -c put $f
+# done
+
 if [ $# -eq 0 ]; then
   cp -r ./* /mnt/hgfs/ftptmp/
 else

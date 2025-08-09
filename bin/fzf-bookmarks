@@ -27,72 +27,67 @@ bookmarkPath="$HOME/.config/fzf-bookmarks/bookmarks"
 fileLauncherPath="$HOME/.config/fzf-bookmarks/config"
 
 # check if fzf is installed
-if   ! type "fzf" > /dev/null; then
-		echo "fzf is not installed! Please install it before using this program"
-		exit 1
+if ! type "fzf" >/dev/null; then
+  echo "fzf is not installed! Please install it before using this program"
+  exit 1
 fi
 
 # check if the bookmark file exists
 # if it does not, it will be created in the .config folder
 function checkBookmarkDirectory {
-	if [ ! -d "$HOME/.config/fzf-bookmarks" ]
-	then
-			cd "$HOME/.config"
-			mkdir "fzf-bookmarks"
-			cd "fzf-bookmarks"
-			touch "bookmarks"
-			touch "config"
-			echo "DEFAULT $EDITOR" >> config
-	fi
+  if [ ! -d "$HOME/.config/fzf-bookmarks" ]; then
+    cd "$HOME/.config"
+    mkdir "fzf-bookmarks"
+    cd "fzf-bookmarks"
+    touch "bookmarks"
+    touch "config"
+    echo "DEFAULT $EDITOR" >>config
+  fi
 }
 
 # Open a file with the selected program in the config file or $EDITOR otherwise
 function open_file {
-	# Check if the bookmark is not empty. If it is, do nothing
-	if [ ! -z $selectedBookmark ]
-	then
-		# Retrieve the file type
-		local fileType=$(awk -v var=$selectedBookmark '$1 == var {print $NF}' $bookmarkPath)
-		local fileLocation=$(awk -v var=$selectedBookmark '$1 == var {$1=$2=$NF=""; print $0}' $bookmarkPath | awk '{$1=$1; print}')
-		# Retrieve the corresponding program used to launch
-		local program=$(awk -v var=$fileType '$1 == var {print $2}' $fileLauncherPath)
-		# Launch the program in a detached state
-		# Currently does not work if $EDITOR is a terminal one
-		if [ ! -z $program ]
-		then
-			# Retrieve the value of $EDITOR to see if it is a terminal based one
-			program=$(eval echo $program)
+  # Check if the bookmark is not empty. If it is, do nothing
+  if [ ! -z $selectedBookmark ]; then
+    # Retrieve the file type
+    local fileType=$(awk -v var=$selectedBookmark '$1 == var {print $NF}' $bookmarkPath)
+    local fileLocation=$(awk -v var=$selectedBookmark '$1 == var {$1=$2=$NF=""; print $0}' $bookmarkPath | awk '{$1=$1; print}')
+    # Retrieve the corresponding program used to launch
+    local program=$(awk -v var=$fileType '$1 == var {print $2}' $fileLauncherPath)
+    # Launch the program in a detached state
+    # Currently does not work if $EDITOR is a terminal one
+    if [ ! -z $program ]; then
+      # Retrieve the value of $EDITOR to see if it is a terminal based one
+      program=$(eval echo $program)
 
-			# Check for some common terminal editors
-			if [ $program = "vim" ] || [ $program = "vi" ] || \
-			[ $program = "nano" ] || [ $program = "ed" ] || \
-			[ $program = "emacs -nw" ] || [ $program = "emacsclient -nw" ]
-			then
-				# Use bash built in for replacement. This seems to be one of the only
-				# ways which I could find to feed a variable name with spaces to eval
-				# in bash
-				eval "$program ${fileLocation// /\\ }"
-			else
-				# start program/editor in background to not block terminal 
-				eval "$program" "${fileLocation// /\\ }" "&" "disown"
-			fi
-				
-		# Deal with the case of a filetype not existing
-		else
-			program=$(awk -v var="DEFAULT" '$1 == var {print $2}' $fileLauncherPath)
-			# Again use bash builtin, see note above the first eval
-			eval "$program" "${fileLocation// /\\ }" 
-		fi
-	fi
+      # Check for some common terminal editors
+      if [ $program = "vim" ] || [ $program = "vi" ] ||
+        [ $program = "nano" ] || [ $program = "ed" ] ||
+        [ $program = "emacs -nw" ] || [ $program = "emacsclient -nw" ]; then
+        # Use bash built in for replacement. This seems to be one of the only
+        # ways which I could find to feed a variable name with spaces to eval
+        # in bash
+        eval "$program ${fileLocation// /\\ }"
+      else
+        # start program/editor in background to not block terminal
+        eval "$program" "${fileLocation// /\\ }" "&" "disown"
+      fi
+
+    # Deal with the case of a filetype not existing
+    else
+      program=$(awk -v var="DEFAULT" '$1 == var {print $2}' $fileLauncherPath)
+      # Again use bash builtin, see note above the first eval
+      eval "$program" "${fileLocation// /\\ }"
+    fi
+  fi
 }
 
 # Open a directory
 function open_dir {
-	if [ ! -z $selectedBookmark ]
-	then 
-		local folder=$(awk -v var="$selectedBookmark" '$1 == var {$1=$2="";print $0}' $bookmarkPath | awk '{$1=$1; print}')
-		cd "$folder"
-	fi
+  if [ ! -z $selectedBookmark ]; then
+    local folder=$(awk -v var="$selectedBookmark" '$1 == var {$1=$2="";print $0}' $bookmarkPath | awk '{$1=$1; print}')
+    cd "$folder"
+  fi
 }
 
 # Change directories to the selected bookmark
@@ -102,287 +97,252 @@ function open_dir {
 # 1: Show only directory bookmarks
 # 2: Show only files
 function switchToBookmark {
-	# Check if there are any bookmarks.
-	local bmarkLineNum=$(wc -l $bookmarkPath | awk '{print $1}')
-	if [ $bmarkLineNum == 0 ]
-	then
-		printf "You do not have any bookmarks set\n"
-		printf "You can add some by using one of the following:\n"
-		printf "\"fzf-bookmarks -a NAME PATH\" to save the specified PATH under the name NAME\n"
-		printf "\"fzf-bookmarks -a NAME\" to save current folder under the name NAME\n"
+  # Check if there are any bookmarks.
+  local bmarkLineNum=$(wc -l $bookmarkPath | awk '{print $1}')
+  if [ $bmarkLineNum == 0 ]; then
+    printf "You do not have any bookmarks set\n"
+    printf "You can add some by using one of the following:\n"
+    printf "\"fzf-bookmarks -a NAME PATH\" to save the specified PATH under the name NAME\n"
+    printf "\"fzf-bookmarks -a NAME\" to save current folder under the name NAME\n"
 
-	# Show all bookmarks without filtering
-	elif [ $1 -eq 0 ]
-	then
-			selectedBookmark=$(awk '{printf("%-20s %-25s %-30s\n", $1, $2, $3)}' $bookmarkPath | fzf)
-			# Check if empty
-			if [ ! -z "$selectedBookmark" ]
-			then
-				# Grab the type of selected bookmark(either DIR or FILE)
-				local type=$(echo $selectedBookmark | awk '{print $2}')
-				selectedBookmark=$(echo $selectedBookmark | awk '{print $1}') 
-				if [ $type == "DIR" ]
-				then
-					open_dir
-				elif [ $type == "FILE" ]
-				then
-					open_file
-				fi
-			fi
+  # Show all bookmarks without filtering
+  elif [ $1 -eq 0 ]; then
+    selectedBookmark=$(awk '{printf("%-20s %-25s %s30\n", $1, $2, $3)}' $bookmarkPath | fzf)
+    # Check if empty
+    if [ ! -z "$selectedBookmark" ]; then
+      # Grab the type of selected bookmark(either DIR or FILE)
+      local type=$(echo $selectedBookmark | awk '{print $2}')
+      selectedBookmark=$(echo $selectedBookmark | awk '{print $1}')
+      if [ $type == "DIR" ]; then
+        open_dir
+      elif [ $type == "FILE" ]; then
+        open_file
+      fi
+    fi
 
-	# Case of selecting only directories
-	elif [ $1 -eq 1 ]
-	then
-		selectedBookmark=$(awk ' $2 == "DIR" {printf("%-20s %s\n", $1, $3)}' $bookmarkPath | fzf)
-		# Check if empty
-		if [ ! -z "$selectedBookmark" ]
-		then
-			open_dir
-		fi
+  # Case of selecting only directories
+  elif [ $1 -eq 1 ]; then
+    selectedBookmark=$(awk ' $2 == "DIR" {printf("%-20s %s\n", $1, $3)}' $bookmarkPath | fzf)
+    # Check if empty
+    if [ ! -z "$selectedBookmark" ]; then
+      open_dir
+    fi
 
-	# Case of selecting only files
-	else [ $1 -eq 2 ]
-		selectedBookmark=$(awk ' $2 == "FILE" {printf("%-20s %s\n", $1, $3)}' $bookmarkPath | fzf)
-		# Check if empty
-		if [ ! -z "$selectedBookmark" ]
-		then
-			open_file
-		fi
-	fi
+  # Case of selecting only files
+  else
+    [ $1 -eq 2 ]
+    selectedBookmark=$(awk ' $2 == "FILE" {printf("%-20s %s\n", $1, $3)}' $bookmarkPath | fzf)
+    # Check if empty
+    if [ ! -z "$selectedBookmark" ]; then
+      open_file
+    fi
+  fi
 }
 
 # Add a new bookmark
 # If a path is not provided then the current directory is used
 function addBookmark {
-	# check if a bookmark with the name provided already exists
-	local boolUnique=$(awk -v var="$1" '$1 == var {print 1}' $bookmarkPath)
-	if [ ! -z "$boolUnique" ]
-	then
-		printf "A bookmark with that name already exists! Please enter a different one.\n"
+  # check if a bookmark with the name provided already exists
+  local boolUnique=$(awk -v var="$1" '$1 == var {print 1}' $bookmarkPath)
+  if [ ! -z "$boolUnique" ]; then
+    printf "A bookmark with that name already exists! Please enter a different one.\n"
 
-	# If the second argument passed is empty
-	elif [ -z "$2" ] 
-	then
-		if [ -z "$1" ]
-		then
-			printf "Please provide a name for the bookmark\n"
+  # If the second argument passed is empty
+  elif [ -z "$2" ]; then
+    if [ -z "$1" ]; then
+      printf "Please provide a name for the bookmark\n"
 
-		else
-			printf "$1\tDIR\t$PWD\n" >> $bookmarkPath
-			printf "Bookmark added successfully!\n"
-		fi
-	# Case of a path being provided 
-	elif [[ -d "$2" ]]
-	then
-		if [[ $2 = /* ]]
-		then
-			printf "$1\tDIR\t$2\n"  >> $bookmarkPath
-		else
-			printf "$1\tDIR\t$PWD/$2\n"  >> $bookmarkPath
+    else
+      printf "$1\tDIR\t$PWD\n" >>$bookmarkPath
+      printf "Bookmark added successfully!\n"
+    fi
+  # Case of a path being provided
+  elif [[ -d "$2" ]]; then
+    if [[ $2 = /* ]]; then
+      printf "$1\tDIR\t$2\n" >>$bookmarkPath
+    else
+      printf "$1\tDIR\t$PWD/$2\n" >>$bookmarkPath
 
-		fi
-	# Case of adding a file
-	elif [[ -f $2 ]]
-	then
-		# Check if the file we are adding contains a dot to separate file type
-		if [[ "${2}" =~ .*\..* ]]
-		then
-			# retrieve the file extension for the file
-			# Source: https://liquidat.wordpress.com/2007/09/29/short-tip-get-file-extension-in-shell-script/
-			local extension=$( echo "$*" | awk -F . '{print $NF}')
-		else
-			# If it does not, we give it the default extension
-			local extension="DEFAULT"
-		fi
+    fi
+  # Case of adding a file
+  elif [[ -f $2 ]]; then
+    # Check if the file we are adding contains a dot to separate file type
+    if [[ "${2}" =~ .*\..* ]]; then
+      # retrieve the file extension for the file
+      # Source: https://liquidat.wordpress.com/2007/09/29/short-tip-get-file-extension-in-shell-script/
+      local extension=$(echo "$*" | awk -F . '{print $NF}')
+    else
+      # If it does not, we give it the default extension
+      local extension="DEFAULT"
+    fi
 
-		# Check if the full filepath is provided. If not, we have to prepend the full path to be able to access
-		# the bookmark from anywhere
-		if [[ $2 = /* ]]
-		then
-			printf "$1\tFILE\t$2\t$extension\n"  >> $bookmarkPath
-		else
-			printf "$1\tFILE\t$PWD/$2\t$extension\n"  >> $bookmarkPath
-		fi
+    # Check if the full filepath is provided. If not, we have to prepend the full path to be able to access
+    # the bookmark from anywhere
+    if [[ $2 = /* ]]; then
+      printf "$1\tFILE\t$2\t$extension\n" >>$bookmarkPath
+    else
+      printf "$1\tFILE\t$PWD/$2\t$extension\n" >>$bookmarkPath
+    fi
 
-	# Incomplete bookmark.
-	else
-		printf "The path provided is neither a folder or a file! It most likely does not exist!\n"
-	fi
+  # Incomplete bookmark.
+  else
+    printf "The path provided is neither a folder or a file! It most likely does not exist!\n"
+  fi
 }
 
 # Erase the entire bookmark file and create a fresh one
 function eraseAllBookmarks {
-	rm $bookmarkPath
-	touch $bookmarkPath
+  rm $bookmarkPath
+  touch $bookmarkPath
 }
 
 # Display all aliases to the user and let them select one
 function selectAlias {
-	local selectedAlias=$(awk '/^alias (.*)=/ {print $0}' "$HOME/.bashrc" | fzf)
+  local selectedAlias=$(awk '/^alias (.*)=/ {print $0}' "$HOME/.bashrc" | fzf)
 
-	# Split the string by using = as a delimiter
-	# Remove the quotes surrounding it
-	# print and set new variable
-	selectedAlias=$(echo "$selectedAlias" | awk '{split($0, a, "="); gsub("\047", "", a[2]); print a[2]}')
-	eval "$selectedAlias"
+  # Split the string by using = as a delimiter
+  # Remove the quotes surrounding it
+  # print and set new variable
+  selectedAlias=$(echo "$selectedAlias" | awk '{split($0, a, "="); gsub("\047", "", a[2]); print a[2]}')
+  eval "$selectedAlias"
 }
 
 function selectManPage {
-	# hold the name of selected page 
-	local selectedPageName=""
-	# Hold the section of the page since some have several available
-	local selectedPageSection=""
+  # hold the name of selected page
+  local selectedPageName=""
+  # Hold the section of the page since some have several available
+  local selectedPageSection=""
 
-	# Print all manpage sections
-	if [ -z $1 ]
-	then
-		# variable to hold the selected manpage
-		selectedPageName=$(man -k . | awk '{print $1, $2}' | fzf)
-		if [ ! -z "$selectedPageName" ]
-		then 
-			selectedPageSection=$(echo $selectedPageName | awk '{print $2}')
-			selectedPageSection=$(echo "$selectedPageSection" | sed 's/[)(]//g')
-			selectedPageName=$(echo "$selectedPageName" | awk '{print $1}')
-			eval man "$selectedPageSection" "$selectedPageName"
-		fi
-			
-	else
-		printf "This command does not accept any arguments\n"
-	fi
+  # Print all manpage sections
+  if [ -z $1 ]; then
+    # variable to hold the selected manpage
+    selectedPageName=$(man -k . | awk '{print $1, $2}' | fzf)
+    if [ ! -z "$selectedPageName" ]; then
+      selectedPageSection=$(echo $selectedPageName | awk '{print $2}')
+      selectedPageSection=$(echo "$selectedPageSection" | sed 's/[)(]//g')
+      selectedPageName=$(echo "$selectedPageName" | awk '{print $1}')
+      eval man "$selectedPageSection" "$selectedPageName"
+    fi
+
+  else
+    printf "This command does not accept any arguments\n"
+  fi
 
 }
 
 # Remove the specified bookmark from the bookmarks file
 function removeBookmark {
-	if [ ! -z "$2" ]
-	then
-		printf "Too many arguments. Either provide the name of a bookmark or do not provide any arguments to select the bookmark through fzf\n"
-	# case of no arg provided, use fzf to select
-	elif [ -z "$1" ]
-	then
-			selectedBookmark=$(awk '{print $1}' $bookmarkPath | fzf -m)
-			# Handle the case of the user pressing CTRL+C
-			# if we do not check that $selectedBookmark is not empty
-			# then the entire list of bookmarks is deleted
-			if [ ! -z "$selectedBookmark" ]
-			then
-				echo "$selectedBookmark" | while read eachLine
-				do
-					sed -i "/^${eachLine}/d" "$bookmarkPath"
-				done
-			fi
+  if [ ! -z "$2" ]; then
+    printf "Too many arguments. Either provide the name of a bookmark or do not provide any arguments to select the bookmark through fzf\n"
+  # case of no arg provided, use fzf to select
+  elif [ -z "$1" ]; then
+    selectedBookmark=$(awk '{print $1}' $bookmarkPath | fzf -m)
+    # Handle the case of the user pressing CTRL+C
+    # if we do not check that $selectedBookmark is not empty
+    # then the entire list of bookmarks is deleted
+    if [ ! -z "$selectedBookmark" ]; then
+      echo "$selectedBookmark" | while read eachLine; do
+        sed -i "/^${eachLine}/d" "$bookmarkPath"
+      done
+    fi
 
-	# case of providing a name manually
-	else 
-		local selectedBookmarkIndex=$(awk -v var="$1" '$1 == var {print NR}' $bookmarkPath)
-		if [ ! -z $selectedBookmarkIndex ]
-		then
-				# Delete the bookmark
-				sed -i "${selectedBookmarkIndex}d" "$bookmarkPath"
-		else
-				printf "Bookmark not found! It most likely does not exist\n"
-		fi
-	fi
+  # case of providing a name manually
+  else
+    local selectedBookmarkIndex=$(awk -v var="$1" '$1 == var {print NR}' $bookmarkPath)
+    if [ ! -z $selectedBookmarkIndex ]; then
+      # Delete the bookmark
+      sed -i "${selectedBookmarkIndex}d" "$bookmarkPath"
+    else
+      printf "Bookmark not found! It most likely does not exist\n"
+    fi
+  fi
 }
 
 function connectToWifiList {
-	# Retrieve the name of the network
-	# Before piping it into fzf, remove all lines with -- and the column names
-	local networkName=$(nmcli d wifi list | awk '!/--/ && !/SSID/' | fzf)
-	if [ ! -z "$networkName" ]
-	then
-		# Since nmcli uses a * to designate the network to which we are 
-		# current connected to, we have to check if it is present
-		if [[ $(echo "$networkName" | awk '{print $1}') == "*" ]]
-		then
-			networkName=$(echo "$networkName" | awk '{print $2}')
-		else
-			networkName=$(echo "$networkName" | awk '{print $1}')
-		fi
+  # Retrieve the name of the network
+  # Before piping it into fzf, remove all lines with -- and the column names
+  local networkName=$(nmcli d wifi list | awk '!/--/ && !/SSID/' | fzf)
+  if [ ! -z "$networkName" ]; then
+    # Since nmcli uses a * to designate the network to which we are
+    # current connected to, we have to check if it is present
+    if [[ $(echo "$networkName" | awk '{print $1}') == "*" ]]; then
+      networkName=$(echo "$networkName" | awk '{print $2}')
+    else
+      networkName=$(echo "$networkName" | awk '{print $1}')
+    fi
 
-		# Hold the password in a local variable
-		# TODO There should be a more secure way of doing this instead of
-		# storing the password in a local var
-		local pswd=""
-		# Read the password
-		read -s -p "Wifi Password: " pswd
-		# Connect to wifi
-		nmcli d wifi connect "$networkName" password "$pswd"
-	else
-		printf "No name was selected. Not connecting to any network\n"
-	fi
+    # Hold the password in a local variable
+    # TODO There should be a more secure way of doing this instead of
+    # storing the password in a local var
+    local pswd=""
+    # Read the password
+    read -s -p "Wifi Password: " pswd
+    # Connect to wifi
+    nmcli d wifi connect "$networkName" password "$pswd"
+  else
+    printf "No name was selected. Not connecting to any network\n"
+  fi
 }
 
 # Check if the bookmark exists
 checkBookmarkDirectory
 # Parse script arguments
-if [ -z $1 ]
-then 
-	# Display all bookmarks without filters
-	switchToBookmark 0
+if [ -z $1 ]; then
+  # Display all bookmarks without filters
+  switchToBookmark 0
 
-elif [ $1 == "-d" ] || [ $1 == "--dir" ]
-then
-	# Display directory bookmarks only
-	switchToBookmark 1
+elif [ $1 == "-d" ] || [ $1 == "--dir" ]; then
+  # Display directory bookmarks only
+  switchToBookmark 1
 
-elif [ $1 == "-f" ] || [ $1 == "--file" ]
-then
-	# Display file bookmarks only
-	switchToBookmark 2
+elif [ $1 == "-f" ] || [ $1 == "--file" ]; then
+  # Display file bookmarks only
+  switchToBookmark 2
 
-elif [ $1 == "-a" ] || [ $1 == "--add" ]
-then
-	# Add a new bookmark
-	addBookmark "$2" "$3"
+elif [ $1 == "-a" ] || [ $1 == "--add" ]; then
+  # Add a new bookmark
+  addBookmark "$2" "$3"
 
-elif [ $1 == "-r" ] || [ $1 == "--remove" ]
-then
-	# Remove a bookmark
-	removeBookmark "$2" "$3"	
+elif [ $1 == "-r" ] || [ $1 == "--remove" ]; then
+  # Remove a bookmark
+  removeBookmark "$2" "$3"
 
-elif [ $1 == "--eraseall" ]
-then
-	# Erase all bookmarks and create a new blank file
-	eraseAllBookmarks
+elif [ $1 == "--eraseall" ]; then
+  # Erase all bookmarks and create a new blank file
+  eraseAllBookmarks
 
-elif [ $1 == "-al" ] || [ $1 == "--alias" ]
-then
-	# Select an alias and execute it
-	selectAlias	
+elif [ $1 == "-al" ] || [ $1 == "--alias" ]; then
+  # Select an alias and execute it
+  selectAlias
 
-elif [ $1 == "-m" ] || [ $1 == "--man" ]
-then
-	# Fuzzy search through man pages(Not working fully)
-	selectManPage $2
+elif [ $1 == "-m" ] || [ $1 == "--man" ]; then
+  # Fuzzy search through man pages(Not working fully)
+  selectManPage $2
 
-elif [ $1 == "-w" ] || [ $1 == "--wifi" ]
-then
-	# Connect to wifi	
-	connectToWifiList
+elif [ $1 == "-w" ] || [ $1 == "--wifi" ]; then
+  # Connect to wifi
+  connectToWifiList
 
 # Print usage information
-elif [ $1 == "--usage" ] 
-then
-	printf "fzf-bookmarks is a small bookmark manager for the commandline with the ability to bookmark\n"
-	printf "both directories and files. Additionally, when a bookmark is selected, it will be open either\n"
-	printf "with a dedicated program selected from the config file located in ~/.config/fzf-bookmarks/config\n"
-	printf "or in the case of a folder, navigate to it in the current terminal instance.\n"
+elif [ $1 == "--usage" ]; then
+  printf "fzf-bookmarks is a small bookmark manager for the commandline with the ability to bookmark\n"
+  printf "both directories and files. Additionally, when a bookmark is selected, it will be open either\n"
+  printf "with a dedicated program selected from the config file located in ~/.config/fzf-bookmarks/config\n"
+  printf "or in the case of a folder, navigate to it in the current terminal instance.\n"
 
-# Use -- infront of printf to make it ignore -d, -f, -a and so on. 
+# Use -- infront of printf to make it ignore -d, -f, -a and so on.
 # Otherwise, it considers them to be options
-elif [ $1 == "-h" ] || [ $1 == "--help" ]
-then
-	printf "Usage: fzf-bookmarks [options] [argument1] [argument2]\n\n"
-	printf "Options:\n"
-	printf -- "-d, --dir	Select a bookmarked directory\n"
-	printf -- "-f, --file	Select a bookmarked file\n"
-	printf -- "-a, --add	Add a file or directory to bookmarks\n"
-	printf -- "-r, --remove	Delete a bookmark\n"
-	printf -- "--eraseall	Erase the entire bookmark file and replace it with a new one\n"
-	printf -- "-al, --alias	Select an alias from your .bashrc file\n"
-	printf -- "-m, --man	Select a manpage to open\n"
-	printf -- "-w, --wifi	Connect to an available wifi network"
-	printf -- "--usage		Show a short usage message\n"
-	printf -- "-h, --help	Display help menu and options\n"
+elif [ $1 == "-h" ] || [ $1 == "--help" ]; then
+  printf "Usage: fzf-bookmarks [options] [argument1] [argument2]\n\n"
+  printf "Options:\n"
+  printf -- "-d, --dir	Select a bookmarked directory\n"
+  printf -- "-f, --file	Select a bookmarked file\n"
+  printf -- "-a, --add	Add a file or directory to bookmarks\n"
+  printf -- "-r, --remove	Delete a bookmark\n"
+  printf -- "--eraseall	Erase the entire bookmark file and replace it with a new one\n"
+  printf -- "-al, --alias	Select an alias from your .bashrc file\n"
+  printf -- "-m, --man	Select a manpage to open\n"
+  printf -- "-w, --wifi	Connect to an available wifi network"
+  printf -- "--usage		Show a short usage message\n"
+  printf -- "-h, --help	Display help menu and options\n"
 fi

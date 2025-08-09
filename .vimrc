@@ -9,8 +9,7 @@ vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
 vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>"
 
 " autocmd TermOpen term://* startinsert
-tnoremap <Esc> <C-\><C-n><C-w><c-w>
-" noremap <Esc>  <C-w><c-w>
+tnoremap <leader><Esc> <C-\><C-n><C-w><c-w>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -596,6 +595,8 @@ xnoremap <leader>fa y:Ag! <C-R>"<CR>
 xnoremap <leader>fA y:Ag! <C-R>"<CR>
 xnoremap <leader>fr y:Rg! <C-R>"<CR>
 xnoremap <leader>fR y:Rg! <C-R>"<CR>
+" nnoremap <silent> <C-Space> yiw:Rg <C-r>"<CR>
+" vnoremap <silent> <C-Space> y:Rg <C-r>"<CR>
 
 
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
@@ -629,6 +630,7 @@ nnoremap <leader>f; :Commands<CR>   | " Commands
 nnoremap <leader>f' :FZFBookmarks<CR>
 nnoremap <leader>f` :FZFBookmarks<CR>
 
+" alias fzfy='ag -g "" -f ~/.local/share/yank_history | fzf -m --bind "enter:execute(vim {})" --bind "ctrl-e:execute(vim {})" --bind "ctrl-a:select-all" --preview "bat --style=numbers --color=always {} " '
 function! s:fzf_yank_files()
   let cwd = $HOME . "/.vim/registers/"
   let command = 'ag -g "" -f ' . cwd . ' --depth 0'
@@ -642,7 +644,7 @@ endfunction
 command! FZFYankHistory call s:fzf_yank_files()
 nnoremap <leader>fy :FZFYankHistory<CR>  | " FZFYankHistory
 
-let g:fzf_history_dir = '~/.local/share/fuf-history'  " CTRL-N: next-history CTRL-P:previous-history  instead of 'down' and 'up'
+let g:fzf_history_dir = '~/.local/share/fzf-history'  " CTRL-N: next-history CTRL-P:previous-history  instead of 'down' and 'up'
 
 
 let g:vimreg_window_size_view = 15
@@ -896,7 +898,8 @@ Plug 'morhetz/gruvbox'                   " colorscheme
 
 Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
-Plug 'lambdalisue/suda.vim'                                             " sudo
+Plug 'lambdalisue/suda.vim'              " sudo
+Plug 'inkarkat/vim-ReplaceWithRegister'  " [count]["x]gr{motion} 普通模式griw; [count]["x]grr 行替换grr; {Visual}["x]gr 可视模式 viw then gr
 call plug#end()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2103,9 +2106,7 @@ noremap <leader>f8 :TP! runa
 noremap <leader>f9 :TP! snippet
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
-vmap <leader>f7 :TP! run<cr>
-vmap <leader>f8 :TP! runa
-vmap <leader>f9 :TP! snippet
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2420,3 +2421,15 @@ Shortcut show shortcut menu and run chosen shortcut
 let g:ranger_replace_netrw = 1
 let g:ranger_map_keys = 0
 map <C-p> :Ranger<CR>
+
+" :S hello world  搜索 hello 后跟 world,中间用空格(包括换行符)分隔
+" :S! hello world 搜索 hello 后跟 world,中间用任何非单词字符(空格、换行符、标点符号)分隔.
+" Search for the ... arguments separated with whitespace (if no '!'),
+" or with non-word characters (if '!' added to command).
+function! SearchMultiLine(bang, ...)
+  if a:0 > 0
+    let sep = (a:bang) ? '\_W\+' : '\_s\+'
+    let @/ = join(a:000, sep)
+  endif
+endfunction
+command! -bang -nargs=* -complete=tag S call SearchMultiLine(<bang>0, <f-args>)|normal! /<C-R>/<CR>

@@ -2,10 +2,10 @@
 
 VIM_FILENAME=snippet
 
-: > /tmp/test.$VIM_FILENAME
+: >/tmp/test.$VIM_FILENAME
 
 if [ -z "$1" ]; then
-  f=$(find  ~/.vim/snippet -type f | fzf)
+  f=$(find ~/.vim/snippet -type f | fzf)
   [ -n "$f" ] && bat $f
   exit
 fi
@@ -16,24 +16,28 @@ if [ -z "$VIM_FILETYPE" ]; then
   VIM_FILETYPE="sh"
 fi
 
-echo "#### $@" >> /tmp/test.$VIM_FILENAME
+shift
+echo "#### $@" >>/tmp/test.$VIM_FILENAME
 while IFS= read -r line; do
-  echo "$line" >> /tmp/test.$VIM_FILENAME
+  echo "$line" >>/tmp/test.$VIM_FILENAME
 done
-echo "" >> /tmp/test.$VIM_FILENAME
+echo "" >>/tmp/test.$VIM_FILENAME
 
-[ -d  ~/.vim/snippet ] || mkdir -p  ~/.vim/snippet
+[ -d ~/.vim/snippet ] || mkdir -p ~/.vim/snippet
 for ft in python sh bash pl perl lua vim ini js javascript; do
-  [ -d  ~/.vim/snippet/$ft/ ] || mkdir -p  ~/.vim/snippet/$ft/
+  [ -d ~/.vim/snippet/$ft/ ] || mkdir -p ~/.vim/snippet/$ft/
 done
 
-case $VIM_FILETYPE in
-    python ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    sh | bash ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    pl | perl ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    lua ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    vim ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    ini ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
-    js | javascript ) cat /tmp/test.$VIM_FILENAME >> ~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+echo " #### $VIM_FILENAME $VIM_FILETYPE ####"
+case "$VIM_FILETYPE" in
+  python) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  sh | bash) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  pl | perl) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  lua) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  vim) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  ini) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  js | javascript) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/$VIM_FILETYPE/$snippet_tpl ;;
+  *) cat /tmp/test.$VIM_FILENAME >>~/.vim/snippet/txt/$snippet_tpl ;;
 esac
 bat /tmp/test.$VIM_FILENAME
+echo $VIM_FILENAME $VIM_FILETYPE
