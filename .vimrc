@@ -118,8 +118,9 @@ tnoremap <leader><F9> <C-\><C-n>:FloatermPrev<CR>
 nnoremap <F10> :FloatermToggle<CR>
 tnoremap <F10> <C-\><C-n>:FloatermToggle<CR>
 
-nnoremap <leader><F10> :call TerminalToggle()<CR><CR>
-tnoremap <leader><F10> :<c-\><c-n>:call TerminalToggle()<CR><CR>
+nnoremap <leader><F10> :FloatermNew<CR><CR>
+tnoremap <leader><F10> :<c-\><c-n>:FloatermNew<CR><CR>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " <Leader>F1-F12 插件窗口 快捷键 F5编译/执行 <Leader>F5执行
@@ -619,7 +620,7 @@ nnoremap <leader>fh :History!<CR>   | " Open buffers history
 nnoremap <leader>H :execute ":help " . expand("<cword>")<cr>
 nnoremap <leader>f: :History:<CR>   | " Command history
 nnoremap <leader>f/ :History/<CR>   | " Search history
-nnoremap <leader>f? :Helptags<CR>   | " Help tags
+" nnoremap <leader>f? :Helptags<CR>    Help tags
 nnoremap <leader>fs :Snippets<CR>   | " Snippets (UltiSnips)
 nnoremap <leader>fS :call fzf#sonictemplate#run()<CR>   | " sonictemplate
 nnoremap <leader>fc :Commits!<CR>   | " Git commits (requires fugitive.vim)
@@ -856,7 +857,7 @@ Plug 'junegunn/vim-slash'       " provides a set of mappings for enhancing in-bu
 Plug 'junegunn/gv.vim'          " A git commit browser. # :GV; :GV!; :GV?; :GBrowse; [[; ]]; o|<cr>/O
 Plug 'junegunn/goyo.vim'        " :Goyo; :Goyo [dimension]; :Goyo! # Distraction-free writing in Vim.
 Plug 'sunaku/vim-shortcut'      " Shortcut!; Shortcut; :Shortcuts
-
+Plug 'junegunn/vader.vim'
 Plug 'phongnh/fzf-settings.vim' " Quickfix/Registers/Messages/BOutline
 " z= spelling suggestions via fzf https://github.com/junegunn/fzf/issues/2284
 Plug 'tknightz/projectile.vim'        " :AddProject; :ListProject; :RemoveProject
@@ -899,7 +900,6 @@ Plug 'morhetz/gruvbox'                   " colorscheme
 Plug 'will133/vim-dirdiff'               " :DirDiff <dir1> <dir2>
 Plug 'szw/vim-maximizer'                 " :MaximizerToggle
 Plug 'lambdalisue/suda.vim'              " sudo
-Plug 'inkarkat/vim-ReplaceWithRegister'  " [count]["x]gr{motion} 普通模式griw; [count]["x]grr 行替换grr; {Visual}["x]gr 可视模式 viw then gr
 call plug#end()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1755,11 +1755,8 @@ vnoremap <Enter> <Plug>(EasyAlign)  " Visual 模式下快捷键
 " azabiong/vim-highlighter
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let HiSet   = 'f<CR>'
-let HiErase = 'f<BS>'
-let HiClear = '<leader>f<BS>'
-let HiFind  = 'f<Tab>'
-nnoremap f<leader>         :Hi><CR>
-nnoremap <leader>f<leader> :Hi<<CR>
+let HiErase = '<leader>f<Tab>'
+let HiClear = '<leader>f<Tab>'
 
 " :Hi/Find  [options]  expression  [directories_or_files]
 " :Hi/Find  red|blue
@@ -2106,7 +2103,9 @@ noremap <leader>f8 :TP! runa
 noremap <leader>f9 :TP! snippet
 noremap <leader>fd :Actions<cr>
 noremap <leader>fz :Shortcuts<cr>
-
+vmap <leader>f7 :TP! run<cr>
+vmap <leader>f8 :TP! runa
+vmap <leader>f9 :TP! snippet
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " userdefined
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2433,3 +2432,49 @@ function! SearchMultiLine(bang, ...)
   endif
 endfunction
 command! -bang -nargs=* -complete=tag S call SearchMultiLine(<bang>0, <f-args>)|normal! /<C-R>/<CR>
+nnoremap <leader>f? :S <space>
+
+function! s:ExecuteInShell(command)
+  let command = join(map(split(a:command), 'expand(v:val)'))
+  let winnr = bufwinnr('^' . command . '$')
+  silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape(command) : winnr . 'wincmd w'
+  setlocal buftype=nowrite bufhidden=wipe nobuflisted noswapfile nowrap number
+  echo 'Execute ' . command . '...'
+  silent! execute 'silent %!'. command
+  silent! execute 'resize '
+  silent! redraw
+  silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+  silent! execute 'nnoremap <silent> <buffer> <LocalLeader>r :call <SID>ExecuteInShell(''' . command . ''')<CR>'
+  echo 'Shell command ' . command . ' executed.'
+endfunction
+command! -complete=shellcmd -nargs=+ Shell call s:ExecuteInShell(<q-args>)
+nnoremap <leader>! :Shell<space>
+nnoremap <leader>f! :AsyncRun -mode=term -pos=right -cols=120<space>
+nnoremap <leader>f` :H <space>
+" command! -complete=file -nargs=* Git call s:RunShellCommand('git '.<q-args>) # :Git add %                (The "%" expands to the current filename)
+" command! -complete=file -nargs=* Svn call s:RunShellCommand('svn '.<q-args>) # :Svn diff -c 1234
+" command! -complete=file -nargs=* Bzr call s:RunShellCommand('bzr '.<q-args>) # :Bzr log -l 10
+" command! -complete=file -nargs=* Hg  call s:RunShellCommand('hg '.<q-args>)  # :Hg annotate %
+" :tabe|read !git blame #
+" :set splitright | vnew | r!somecommand
+" :set splitbelow | new  | r!somecommand
+
+function! OutputSplitWindow(...)
+  " this function output the result of the Ex command into a split scratch buffer
+  let cmd = join(a:000, ' ')
+  let temp_reg = @"
+  redir @"
+  silent! execute cmd
+  redir END
+  let output = copy(@")
+  let @" = temp_reg
+  if empty(output)
+    echoerr "no output"
+  else
+    new
+    setlocal buftype=nofile bufhidden=wipe noswapfile nobuflisted
+    put! =output
+  endif
+endfunction
+command! -nargs=+ -complete=command Ex call OutputSplitWindow(<f-args>)
+nnoremap <leader>` :Ex <space>

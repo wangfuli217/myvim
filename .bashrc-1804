@@ -228,17 +228,17 @@ mkqsdk() {
 }
 
 # mkuser    # reduce fzf interactive @sdk
-mkuser() { 
+mkuser() {
   local oldpwd=$(pwd)
   cduser
   local dir
-  
+
   [ "$#" -ge 1 ] && [ -n "$1" ] && {
       dir="$1"
       shift
   }
-  [ -n "$dir" ] || dir=$(find . -maxdepth 1 -type d | fzf -0 -1 +m)
-  [ -n "$dir" ] && (
+  [ -d "$dir" ] || dir=$(find . -maxdepth 1 -type d | fzf -0 -1 +m)
+  [ -d "$dir" ] && (
     cd "$dir" || return
     make "$@"
     echo "=============== put command or library to /ftptmp ==============="
@@ -246,6 +246,11 @@ mkuser() {
   )
   basename "$dir"
   cd "$oldpwd" || return
+}
+
+# put linked library or execute binary file
+put_bin(){
+  put $(find -type f | xargs file 2>&1 | grep linked | awk -F ':' '{print $1}')
 }
 
 # mksdk systemconf # reduce fzf interactive @sdk
@@ -256,9 +261,7 @@ mksdk() {
       dir="$1"
       shift
   } || {
-    find -type d -maxdepth 1 | awk -F '/' '{print $2}'
-    cd "$oldpwd"
-    return
+    dir=$(find . -maxdepth 1 -type d | fzf -0 -1 +m)
   }
   eval "cd $dir; make $@"
   echo "=============== put command or library to /ftptmp ==============="
@@ -435,7 +438,6 @@ put_img(){ # put newest img or cpio.lzma to /ftptmp
   cd ${oldpwd}
 }
 
-alias put_bin='put_pkg'
 put_pkg() { # put pkg include executable file
   local oldpwd=$(pwd)
   [ -d build_dir ] || { svnqsdk; }
@@ -924,34 +926,35 @@ repeat_sleep() { timeout=$1; shift; while :; do "$@" && return; sleep $timeout; 
 alias '?'='yuncore_help'
 yuncore_help(){   cat - <<'yuncore_help'
 1. jump to project directories
-cdp:        [openwrt] jump to fzf selected package   module, otherwise with name for specifying openwrt package   module;
-cdb:        [openwrt] jump to fzf selected build_dir module, otherwise with name for specifying openwrt build_dir module;
-cdrootfs:   [openwrt] jump to openwrt rootfs directory
-cdqsdk:     [openwrt] jump to openwrt root  directory
-cdpkg:      [openwrt] jump to openwrt package  directory
-cdromfs:    [sdk]     jump to padavan romfs  directory
-cduser:     [sdk]     jump to padavan user  directory
-cdroot:     [openwrt|sdk] jump to padavan/openwrt root directory
-cdproject:  [openwrt|sdk] jump to current project directory
-_cdproduct: [openwrt|sdk] jump to current product directory
+cdp:        [openwrt] jump to fzf selected package   module, otherwise with name for specifying openwrt package   module:1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt
+cdb:        [openwrt] jump to fzf selected build_dir module, otherwise with name for specifying openwrt build_dir module:1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt
+cdrootfs:   [openwrt] jump to openwrt rootfs  directory; without argument by .svn.
+cdqsdk:     [openwrt] jump to openwrt root    directory; without argument by .svn.
+cdpkg:      [openwrt] jump to openwrt package directory; without argument by .svn.
+cdromfs:    [sdk]     jump to padavan romfs   directory; without argument by .svn.
+cduser:     [sdk]     jump to padavan user    directory; without argument by .svn.
+cdroot:     [openwrt|sdk] jump to padavan/openwrt root directory; without argument.
+cdproject:  [openwrt|sdk] jump to current project      directory selected by fzf prompt. 3.fzf prompt.
+_cdproduct: [openwrt|sdk] jump to current product      directory selected by fzf prompt. 3.fzf prompt.
 2. put package/product binary to /ftptmp
-put_pkg:    [openwrt] put linked object to /ftptmp for debug
-put_opkg:   [openwrt] put openwrt ipk   to /ftptmp for debug
-put_KF:     [sdk]         put last KF_Image to /ftptmp for upgrade
-put_ubin:   [openwrt|sdk] put last *.ubin to /ftptmp   for upgrade
-put_rbin:   [openwrt|sdk] put last *.rbin to /ftptmp   for upgrade
-put_img:    [openwrt|sdk] put squashfs rootfs to /ftptmp for debug
+put_pkg:    [openwrt] put linked object to /ftptmp for debug; 1.fzf-complete; 2.cheatsheet-complete.
+put_opkg:   [openwrt] put openwrt ipk   to /ftptmp for debug; 3.fzf prompt.
+put_KF:     [sdk]         put last KF_Image to /ftptmp for upgrade; without argument by filename and birth time.
+put_ubin:   [openwrt|sdk] put last *.ubin to /ftptmp   for upgrade; without argument by filename and birth time.
+put_rbin:   [openwrt|sdk] put last *.rbin to /ftptmp   for upgrade; without argument by filename and birth time.
+put_img:    [openwrt|sdk] put squashfs rootfs to /ftptmp for debug; without argument by filename.
+put_bin:    [openwrt|sdk] put linked library and execute filename in recursive directory. by linked flag。
 3. build(make) source to binary
-mkuser:     [sdk] fuzzy   jump to padavan user/package directory; argument as env variable; compile and put_pkg it
-mksdk:      [sdk] package jump to padavan user/package directory; argument as env variable; compile and put_pkg it
-mkpkg:      [openwrt] fzf fuzzy find package, argument as command otherwise env variable; after call put_pkg for debug
-mkmod:      [openwrt] fzf fuzzy find module,  argument as command otherwise env variable;
-makekm:     [openwrt] fzf fuzzy find module,  argument as command otherwise env variable;
-mkqsdk:     [openwrt] jump to openwrt root directory; then eval $@(mkqsdk arguments)
-mklaste:    [openwrt] fzf fuzzy with command, argument as package;  otherwise env variable; after call put_pkg for debug
-mklastq:    [openwrt] 1st: package                               ; after call put_pkg for debug
+mkuser:     [sdk] fuzzy   jump to padavan user/package directory; argument as env variable; compile and put_pkg it:    3.fzf prompt or directly package by 1.fzf-complete
+mksdk:      [sdk] package jump to padavan user/package directory; argument as env variable; compile and put_pkg it:    3.fzf prompt or directly package by 1.fzf-complete
+mkpkg:      [openwrt] fzf fuzzy find package, argument as command otherwise env variable; after call put_pkg for debug 3.fzf prompt
+mkmod:      [openwrt] fzf fuzzy find module,  argument as command otherwise env variable;                              3.fzf prompt
+makekm:     [openwrt] fzf fuzzy find module,  argument as command otherwise env variable;                              3.fzf prompt
+mkqsdk:     [openwrt] jump to openwrt root directory; then eval $@(mkqsdk arguments),  need compile command
+mklaste:    [openwrt] fzf fuzzy with command, argument as package;  otherwise env variable; after call put_pkg for debug 1.fzf-complete; 2.cheatsheet-complete;
+mklastq:    [openwrt] 1st: package                               ; after call put_pkg for debug                          1.fzf-complete; 2.cheatsheet-complete;
 mklast:     [openwrt] 1st: package 2st: command (default as clean,compile), otherwise env variable; ; -x: call mklaste fzf fuzzy with command
-mklastv:    [openwrt] 1st: package 2st: command (default as clean,compile), otherwise env variable; ; after call put_pkg
+mklastv:    [openwrt] 1st: package 2st: command (default as clean,compile), otherwise env variable; ; after call put_pkg 3.fzf prompt or directly productname
 mkall:      [openwrt|sdk] fzf fuzzy find product; compile product; and put last *.ubin to /ftptmp for upgrade
 mkall0:     [openwrt|sdk] 'mkall zh 0'
 makeromfs:  [sdk]          make romfs option in padavan module
@@ -989,37 +992,50 @@ filef/gitf/svn_diff/git_diff/V      edit filename; git commit(delta); git file(d
 cdm: manage(edit,append,jump)       ~/.fzf-marks and  ~/.config/fzf-bookmarks/bookmarks and ~/.cdm by fzf
 tmuxpaste; tmuxalldo/tmuxsecdo/tmuxwindo; tmuxnvdo/tmuxnhdo/tmuxn4do and repl enhanced tmux by script
 ctrl-p or \\<tab>                   complete by tv(file or directory) and fzf(glob); CTRL-t for complete
-mkb(goln) mkg(goto)                 complete enhanced by fzf to jumping
+mkb(goln) mkg(goto)                 complete enhanced by fzf to jumping -- vs -- mkd(append) mkc(clean) mkj(jump) by bash directory stack
 fzf-bookmarks -a   name [file/dir]  ctrl-g         jump to bookmark enhanced by fzf
 mark              <mark>            ctrl-x;ctrl-g  jump to bookmark enhanced by fzf
-#### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir
-cat     --> bat
+https://github.com/hamvocke/lnks    https://github.com/johngrib/fav-dir  bookmark(to add)
+---- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete ----
+#### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs
+cat     --> bat tac highlight
 ls      --> exa eza lsd
 find    --> fd
 grep    --> rg, frg frgg frggg fgr grf rgg rgx
 diff    --> delta colordiff difftastic
 du      --> dust dudc ncdu gdu godu
 df      --> duf
-tree    --> broot
-cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), zoxide,
+tree    --> broot erdtree
+cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], zoxide,
 history --> fzf tv mcfly atuin
-tldr    --> cheat cht.sh
-man     --> woman nam pet https://www.mankier.com/
+tldr    --> cheat(fzcheat) cht.sh(chtfzf.sh / chtfzf) 3.rcheat: echo ${FZF_CHEATSHEETS_DIR}/cheatsheets/* | sed 's/ /\n/g' | fzf
+man     --> woman nam pet 1.cht.sh(cheatsheet)|rcheat 2.https://www.mankier.com/ (manual) 3. explain 'ls -l' (cmd option)
 wgetcurl--> curlie
-jq      --> gron, jsonfilter
+jq      --> gron(grep), jsonfilter(openwrt)
 ping    --> gping fping mtr tcping
 dig     --> dog doggo
-ranger  --> fzf vifm
+ranger  --> fzf vifm vipe vidir
 hexdump --> hexyl xxd od vim
 git     --> gitui lazygit tig
 tcpdump --> bandwhich sar -n DEV; sar -n EDEV
 inotifywait --> reflex entr watchexec await
-top     --> btop, bottom, glances, gtop, zenith
+top     --> btop, bottom, glances, gtop, zenith, dool
+glow    --> presenterm mdcat
 tabview https://github.com/shshemi/tabiew --> https://tableconvert.com/
 hyperfine  https://www.linuxlinks.com/ https://alternativeto.net/
 wfl_help
 }
 
+mkd() {
+  builtin pushd $(pwd) &> /dev/null; 
+}
+mkc() { 
+  while builtin popd  &> /dev/null; do :; done
+}
+mkj() {
+  local dir=$(builtin dirs -p | fzf)
+  [ -d "$dir" ] && cd "$dir"
+}
 
 # eval "$(starship init bash)" # 跨shell的可定制的提示符
 
