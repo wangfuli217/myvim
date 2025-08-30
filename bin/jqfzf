@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# https://gist.github.com/grdscrc/2d0b0549f48950e12d0386bb0fbd8b4f
+# list paths from a json input, fuzzy search a node, get its content ; useful with large payloads 
+# Tested with jq 1.6 & fzf 0.42.0
+# Inspired by https://github.com/reegnz/jq-zsh-plugin
+# Call with `jqfzf <big_file_with_many_paths>.json | bat ` or `<command producing a valid json> | jqfzf | bat`
+# End command with `... | pbcopy` or `... > output.json` to save selection
+
+input=$1
+
+TMP_DIR=$(mktemp -d /tmp/jazz_XXX)
+chmod 700 "$TMP_DIR"
+if [[ -z $1 ]] || [[ $1 == "-" ]]; then
+                input="$TMP_DIR/input"
+                cat /dev/stdin > "$TMP_DIR/input"
+fi
+
+trap 'rm -rf "$TMP_DIR"' EXIT
+echo "[]" > "$TMP_DIR/root"
+echo >&2 -n "Generating iterable paths..."
+jq -c "paths(iterables)" "$input" > "$TMP_DIR"/iterables
+echo >&2 -ne "\r\033[K" # Erase STDERR line
+echo >&2 -n "Generating scalar paths..."
+jq -c "paths(scalars)" "$input" > "$TMP_DIR"/scalars
+echo >&2 -ne "\r\033[K"
+
+# Inspired by this snippet from @dakusui for jq-front https://github.com/jqlang/jq/issues/1949#issuecomment-569278958
+PATH_CONVERTER='if length == 0 then "."
+else
+        reduce .[] as $segment (
+          "";
+          . + ($segment |if type == "string" then "." + . else "[\(.)]" end)
+        )
+end'
+PATH_CMD="printf %s {} | jq -cr '$PATH_CONVERTER'"
+
+PREVIEW_CMD="cat {+f}" # print content of selected line to escape quotes
+PREVIEW_CMD="$PREVIEW_CMD | awk '{print \"getpath(\"\$1\")\"}'" # interpolate quoted path in `getpath()`
+PREVIEW_CMD="$PREVIEW_CMD | xargs -0 -I path jq --color-output path $input" # -0 to escape quotes
+
+cat "$TMP_DIR"/{root,iterables,scalars} | fzf \
+                --height='50%' \
+                --preview-window='right:50%' \
+                --preview "$PATH_CMD ; $PREVIEW_CMD" \
+                --tiebreak=length \
+                --preview-label="Enter to output node, Ctrl-l to output path, Ctrl-c to exit" \
+                --bind "enter:become($PREVIEW_CMD)" \
+                --bind "ctrl-l:become($PATH_CMD)"
+
+rm -rf "$TMP_DIR"

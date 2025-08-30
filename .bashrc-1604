@@ -743,6 +743,12 @@ mklastv() {
   cd $oldpwd
 }
 
+mklastp(){
+  mklastv "$@"
+  echo "=============== put $@ to /ftptmp ==============="
+  put_pkg "$@"
+}
+
 mklastq() {
   local oldpwd=$(pwd)
   [ -d build_dir ] || cdqsdk
@@ -986,6 +992,7 @@ makekm:     [openwrt] fzf fuzzy find module,  argument as command otherwise env 
 mkqsdk:     [openwrt] jump to openwrt root directory; then eval $@(mkqsdk arguments),  need compile command
 mklaste:    [openwrt] fzf fuzzy with command, argument as package;  otherwise env variable; after call put_pkg for debug 1.fzf-complete; 2.cheatsheet-complete;
 mklastq:    [openwrt] 1st: package                               ; after call put_pkg for debug                          1.fzf-complete; 2.cheatsheet-complete;
+mklastp:    [openwrt] 1st: package                               ; auto  call put_pkg for debug                          1.fzf-complete; 2.cheatsheet-complete;
 mklast:     [openwrt] 1st: package 2st: command (default as clean,compile), otherwise env variable; ; -x: call mklaste fzf fuzzy with command
 mklastv:    [openwrt] 1st: package 2st: command (default as clean,compile), otherwise env variable; ; after call put_pkg 3.fzf prompt or directly productname
 mkall:      [openwrt|sdk] fzf fuzzy find product; compile product; and put last *.ubin to /ftptmp for upgrade
@@ -1005,7 +1012,7 @@ alias '??'='wfl_help'
 wfl_help(){   cat - <<'wfl_help'
 repeat_ok/repeat_err/repeat_sleep   repeat eval "$@" command
 gitc                                initialize git directory
-sourcebash: source ~/.bashrc        update bash
+sourcebash: source ~/.bashrc        update bash                                 enhanced by ctrl-b+b
 sourcetmux: source ~/.tmux.conf     update tmux
 psmem10: sort mem top 10            top
 pscpu10: sort cpu top 10            top
@@ -1016,7 +1023,8 @@ makekm: make linux kernel module;                                               
 fda/fdr/fdf/fdf0/fdf1/fdf2:cdf fd   jump to parent or child directory; jump to directory enhanced by fzf
 frg/frgg/frggg/fgr/(rgg | rgx):     search word 1st by rg; next by fzf
 ctrl-r/ctrl-x;ctrl-r/ctrl-x;ctrl-p  command from history; command from network or note by fzf
-look(dict) woman|nam|cht.sh|cheat   command snippet
+ctlr-t/ctrl-x;ctrl-g/ctrl-x;ctrl-t/ctrl-g: dir from current; fzf-marks; cdm; fzf-bookmarks
+look(dict) woman|nam|cht.sh|cheat   command snippet @ctrl-d @ctrl-m and frg @ctrl-f viminfo @ctrl-v
 ugit|git-fzf-add|git-fzf-switch|git-fzf-commit: Undo git commands with ease. fzf add,switch,commit [gitui] for git preview
 sysz | fuzzy-sys:                   view/edit status/config; start/stop/restart/edit process
 pm;                                 Package manager wrapper (supports: pacman, paru, yay, apt, dnf, zypper, apk, brew, scoop)
@@ -1029,22 +1037,22 @@ mkb(goln) mkg(goto)                 complete enhanced by fzf to jumping -- vs --
 fzf-bookmarks -a   name [file/dir]  ctrl-g         jump to bookmark enhanced by fzf
 mark              <mark>            ctrl-x;ctrl-g  jump to bookmark enhanced by fzf
 https://github.com/hamvocke/lnks    https://github.com/johngrib/fav-dir  bookmark(to add)
----- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete ----
+---- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete(by fzf for channel) ----
 #### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs
 cat     --> bat tac highlight
 ls      --> exa eza lsd
-find    --> fd
+find    --> fd; find . -type f, fd --type f,rg --column --line-number --no-heading --color=always --smart-case for fzf
 grep    --> rg, frg frgg frggg fgr grf rgg rgx
 diff    --> delta colordiff difftastic
 du      --> dust dudc ncdu gdu godu
 df      --> duf
 tree    --> broot erdtree
-cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], zoxide,
+cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], zoxide, fasd
 history --> fzf tv mcfly atuin
 tldr    --> cheat(fzcheat) cht.sh(chtfzf.sh / chtfzf) 3.rcheat: echo ${FZF_CHEATSHEETS_DIR}/cheatsheets/* | sed 's/ /\n/g' | fzf
 man     --> woman nam pet 1.cht.sh(cheatsheet)|rcheat 2.https://www.mankier.com/ (manual) 3. explain 'ls -l' (cmd option)
 wgetcurl--> curlie
-jq      --> gron(grep), jsonfilter(openwrt)
+jq      --> gron(grep), jsonfilter(openwrt), jqifzf, jqfzf
 ping    --> gping fping mtr tcping
 dig     --> dog doggo
 ranger  --> fzf vifm vipe vidir
@@ -1057,6 +1065,47 @@ glow    --> presenterm mdcat
 tabview https://github.com/shshemi/tabiew --> https://tableconvert.com/
 hyperfine  https://www.linuxlinks.com/ https://alternativeto.net/
 wfl_help
+}
+
+alias '?vi'='wfl_vim_help'
+wfl_vim_help(){   cat - <<'wfl_vim_help'
+--- vim命令行 -- \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键
+<C-R> <C-W>  : pull word under the cursor into a command line or search # Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep
+<C-R> <C-A>  : pull whole word including punctuation                    # Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep
+<C-R> <C-L>  : pull the whole line under the cursor             行发送  # H(发送给term-help) AsyncRun(异步后台) Shell(同步前台) Ex(ex命令) FloatermSend(发送给term) --name=ft1
+<C-R> <C-F>  : pull the file name under the cursor  %:p:h文件所在文件夹 # FZF Files FZFFiles; f1:FZFFiles! ~/.vim/snippet; f2:FZFFiles! ~/.vim/registers
+<C-R> -      : pull small register                            范围发送  # :'<,'>FloatermSend  :'<,'>AsyncRun  :'<,'>TP! run runa snippet :'<,'>!cat -n
+<C-R> [a-z]  : pull named registers                                     # 寄存器内容
+<C-R> %      : pull file name (also #)                                  # \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键
+--- vim 插入补全 -- \fs snippet补全; \fS vim-sonictemplate; f1:访问snippet f9:生成snippet f2:与rv共享文件 cat file | rv <a-z>; or rv <a-z> + <C-D>
+<C-X><C-K>   : 单词补全
+<C-X><C-F>   : 文件名补全
+<C-X><C-L>   : 文件行补全
+<C-X><C-V>   : Vim 命令
+<C-X><C-I>   : 当前文件和包含文件中的关键字
+<C-X><C-]>   : 标签
+--- vim mark跳转 -- \fm
+gi       : Move to the last insertion you did and switch to INSERT mode. # 最后修改
+'.       : jump to               last modification line (SUPER)          # 最后修改
+`.       : jump to exact spot in last modification line                  # 最后修改
+''       : jump back (to line     in current buffer where jumped from)   # 最后跳转
+``       : jump back (to position in current buffer where jumped from)   # 最后跳转
+`"       : jump to position where last exited current buffer             # 最后编辑文件
+`0       : jump to position in    last file edited (when exited Vim)     # 最后编辑文件
+]'       : jump to next line with a lowercase mark                       # 下一个mark
+['       : jump to previous line with a lowercase mark                   # 上一个mark
+--- number -- zed 使用fzf快速访问 z:shortcut; e: asynctask d: userdefined
+f0(tslime) f1:(访问snippet) f2:(与rv共享文件) f3:邻居文件 f4:工程文件 f5:文件编译 f6:文件运行  f7:选择运行 f8:供参运行 f9:(生成snippet)
+F1(帮助)   F2:number        F3:list           F4:relativenumber       F5:文件编译 \F5:文件运行 F6:净化代码 \F6:依据类型净化代码 F7:静态代码检测 F8:max/min window
+F10: FloatermToggle F9:FloatermNext \F9:FloatermPrev  F11:工程级别tags \F11:sh文件tags F12和\F12: 功能级别cscope
+--- vim dir --
+<leader>f> # 跳转进入
+<leader>cd # 进入当前文件所在目录
+<leader>cc # 回到上个目录
+--- misc -- vim哲学: [主]谓[宾] ["a]y[aw] [主语存在默认主语];[谓语是必须的;]宾语也存在默认宾语
+1. 100i# 插入100个连续的#号
+2. sed -i '/pattern/s/old/new/g' --> g/pattern/s/old/new/g --> g/FfL /normal gcc(注释)|d(删除)
+wfl_vim_help
 }
 
 mkd() {
@@ -1597,7 +1646,7 @@ filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | fzf ; }    # Qui
 
 # grep rg with line number
 # grep rg with line number
-alias rgg="rg --column --line-number --no-heading --crlf --color=always "
+alias rgg="rg --no-heading --crlf --color=always "
 rgx ()  {
   [ -n "$SSH_CLIENT" ] && {
       open=less

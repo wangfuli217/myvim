@@ -587,36 +587,36 @@ let g:fzf_history_dir = '~/.local/share/fzf-history'
 " :Ag [PATTERN]  Ag! open fzf in fullscreen
 " :Rg [PATTERN]  Rg! open fzf in fullscreen
 " Ag / Rg / Lines / BLines / Tags / BTags ==> fill the quickfix list when multiple entries are selected
-nnoremap <leader>fa :Ag! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
-nnoremap <leader>fA :Ag! <C-R><C-A><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) WORD
-nnoremap <leader>fr :Rg! <C-R><C-W><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) word
-nnoremap <leader>fR :Rg! <C-R><C-A><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) WORD
+nnoremap <leader>fa :FZFAg! <C-R><C-W><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fA :FZFAg! <C-R><C-A><CR>  | " :Ag [PATTERN] ag search result (ctrl-A to select all, ctrl-D to deselect all) WORD
+nnoremap <leader>fr :FZFRg! <C-R><C-W><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) word
+nnoremap <leader>fR :FZFRg! <C-R><C-A><CR>  | " :Rg [PATTERN] rg search result (ctrl-A to select all, ctrl-D to deselect all) WORD
 " or xnoremap <Leader>* "sy:Rg! <C-r>s
-xnoremap <leader>fa y:Ag! <C-R>"<CR>
-xnoremap <leader>fA y:Ag! <C-R>"<CR>
-xnoremap <leader>fr y:Rg! <C-R>"<CR>
-xnoremap <leader>fR y:Rg! <C-R>"<CR>
+xnoremap <leader>fa y:FZFAg! <C-R>"<CR>
+xnoremap <leader>fA y:FZFAg! <C-R>"<CR>
+xnoremap <leader>fr y:FZFRg! <C-R>"<CR>
+xnoremap <leader>fR y:FZFRg! <C-R>"<CR>
 " nnoremap <silent> <C-Space> yiw:Rg <C-r>"<CR>
 " vnoremap <silent> <C-Space> y:Rg <C-r>"<CR>
 
 
 " :FZF [fzf_options string] [path string] 1.:FZF ~ 2.:FZF --reverse --info=inline /tmp 3.:FZF!
-nnoremap <leader>ff :execute 'Files! ' expand('%:h')<CR>       | " Files (runs $FZF_DEFAULT_COMMAND if defined)
+nnoremap <leader>ff :execute 'FZFFiles! ' expand('%:h')<CR>       | " Files (runs $FZF_DEFAULT_COMMAND if defined)
 nnoremap <leader>fg :FZFFzm<CR>    | " fzf-marks
 nnoremap <leader>fG :GFiles?!<CR>   | " Git files (git status)
 nnoremap <leader>fb :Buffers!<CR>   | " Open buffers
 nnoremap <leader>fB :execute 'GFiles! ' expand('%:h')<CR>    | " Git files (git ls-files)
-nnoremap <leader>fl :BLines!<CR>    | " Lines in the current buffer
+nnoremap <leader>fl :FZFBLines!<CR>    | " Lines in the current buffer
 nnoremap <leader>fL :Lines!<CR>     | " Lines in loaded buffers
-nnoremap <leader>ft :execute "Tags '" . expand('<cword>')<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
-nnoremap <leader>fT :execute "BTags '" . expand('<cword>')<CR>    | " Tags in the project (ctags -R); Tags and Helptags require Perl
+nnoremap <leader>ft :execute "FZFTags '" . expand('<cword>')<CR>     | " Tags in the current buffer    ; Tags and Helptags require Perl
+nnoremap <leader>fT :execute "FZFBTags '" . expand('<cword>')<CR>    | " Tags in the project (ctags -R); Tags and Helptags require Perl
 let g:fzf_tags_command = 'ctags -R --c++-kinds=+p+l+x+c+d+e+f+g+m+n+s+t+u+vI --c-kinds=+px --fields=+niazS --extra=+r'
-nnoremap <leader>fm :Marks<CR>      | " Marks
+nnoremap <leader>fm :FZFMarks<CR>      | " Marks
 nnoremap <leader>fM :Maps<CR>       | " Normal mode mappings
 nnoremap <leader>fj :Jumps<CR>      | " Jumps
 nnoremap <leader>fw :Windows!<CR>   | " switch Windows
 nnoremap <leader>fW :MaximizerToggle<CR>   | " max Windows
-nnoremap <leader>fh :History!<CR>   | " Open buffers history
+nnoremap <leader>fh :FZFHistory!<CR>   | " Open buffers history
 nnoremap <leader>H :execute ":help " . expand("<cword>")<cr>
 nnoremap <leader>f: :History:<CR>   | " Command history
 nnoremap <leader>f/ :History/<CR>   | " Search history
@@ -660,8 +660,8 @@ nnoremap <leader>fU :MruCwd<CR>       | " MRU files like History in current dir
 nnoremap <leader>fo :BOutline<CR>     | " Outline like BTag
 nnoremap <Leader>fO :Messages<CR>     | " :echomsg output
 nnoremap <Leader>f" :Registers<CR>    | " like junegunn/vim-peekaboo
-nnoremap <Leader>fq :Quickfix<CR>     | " getqflist
-nnoremap <Leader>fQ :LocationList<CR> | " getloclist
+nnoremap <Leader>fq :FZFQuickFix<CR>     | " getqflist
+nnoremap <Leader>fQ :FZFLocList<CR> | " getloclist
 
 nnoremap <Leader>f] :FzfFunky<Cr>
 " narrow the list down with a word under cursor
@@ -2367,7 +2367,14 @@ let g:actions_list = [
     \ ["write buffer to file                                 | :write"],
     \ ["write buffer to file forcefully                      | :write!"],
     \ ["close all buffers                                    | :1,999bdelete"],
+    \ ["                                                              "],
+    \ ["search multiple line with multiple word              | :S <space>"],
+    \ ["sync run shell command in split                      | :Shell<space>"],
+    \ ["async run shell command in split                     | :AsyncRun -mode=term -pos=right -cols=120<space>"],
+    \ ["sync run shell command in term_help                  | :H <space>"],
+    \ ["sync run vimscript|ex in split                       | :Ex <space>"],
     \ ]
+
 
 
 " Entrypoint. Loads action list and feeds into FZF
