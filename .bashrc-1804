@@ -123,6 +123,10 @@ fi
 
 export GIT_SSL_NO_VERIFY=1  # 忽略git认证
 
+# make bash save commands to the history file in realtime
+shopt -s histappend
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+
 pipe(){
   exval=1
   while IFS= read -t 0.1 -r line; do
@@ -1004,35 +1008,38 @@ mkb(goln) mkg(goto)                 complete enhanced by fzf to jumping -- vs --
 fzf-bookmarks -a   name [file/dir]  ctrl-g         jump to bookmark enhanced by fzf
 mark              <mark>            ctrl-x;ctrl-g  jump to bookmark enhanced by fzf
 https://github.com/hamvocke/lnks    https://github.com/johngrib/fav-dir  bookmark(to add)
----- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete(by fzf for channel) ----
-#### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs
+---- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete(by fzf for channel) ---- pv sponge, ts, parallel
+#### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs; choose(cut) direnv sd(sed); grex; xclip fq(jq for binary formats)
+fzf     --> Flow.Launcher(win) Fluent-Search(win) tv(developing) sk(skim) peco
 cat     --> bat tac highlight
 ls      --> exa eza lsd
 find    --> fd; find . -type f, fd --type f,rg --column --line-number --no-heading --color=always --smart-case for fzf
-grep    --> rg, frg frgg frggg fgr grf rgg rgx
-diff    --> delta colordiff difftastic
+grep    --> rg, frg frgg frggg fgr grf rgg rgx ... ripgrep, ag, ack
+diff    --> delta colordiff difftastic icdiff
 du      --> dust dudc ncdu gdu godu
 df      --> duf
-tree    --> broot erdtree
-cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], zoxide, fasd
+tree    --> broot erdtree lstr(bgreenwell)
+cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], z, fasd, autojump, zoxide
 history --> fzf tv mcfly atuin
-tldr    --> cheat(fzcheat) cht.sh(chtfzf.sh / chtfzf) 3.rcheat: echo ${FZF_CHEATSHEETS_DIR}/cheatsheets/* | sed 's/ /\n/g' | fzf
+tldr    --> cheat(fzcheat) cht.sh(chtfzf.sh / chtfzf) 3.rcheat: echo ${FZF_CHEATSHEETS_DIR}/cheatsheets/* | sed 's/ /\n/g' | fzf; tealdeer
 man     --> woman nam pet 1.cht.sh(cheatsheet)|rcheat 2.https://www.mankier.com/ (manual) 3. explain 'ls -l' (cmd option)
-wgetcurl--> curlie
-jq      --> gron(grep), jsonfilter(openwrt), jqifzf, jqfzf
+wgetcurl--> httpie, curlie, xh
+jq      --> fx gron(grep), jsonfilter(openwrt), jqifzf, jqfzf csvtk(CSV/TSV格式) dsq(JSON、CSV、Excel 等格式的文件执行 SQL 查询语句) yq(yaml,json,xml) xmllint xpath gron jd htmlq
 ping    --> gping fping mtr tcping
 dig     --> dog doggo
-ranger  --> fzf vifm vipe vidir
-hexdump --> hexyl xxd od vim
-git     --> gitui lazygit tig
+ranger  --> fzf vifm vipe vidir broot nnn
+hexdump --> hexyl xxd od vim hexabyte
+git     --> gitui lazygit tig gh --> switch restore sparse-checkout worktree bisect
 tcpdump --> bandwhich sar -n DEV; sar -n EDEV
 inotifywait --> reflex entr watchexec await
 top     --> btop, bottom, glances, gtop, zenith, dool
-glow    --> presenterm mdcat
+glow    --> presenterm mdcat mdp
+bandwhich --> sar -n DEV
 tabview https://github.com/shshemi/tabiew --> https://tableconvert.com/
 hyperfine  https://www.linuxlinks.com/ https://alternativeto.net/
 wfl_help
 }
+
 
 alias '?vi'='wfl_vim_help'
 wfl_vim_help(){   cat - <<'wfl_vim_help'
@@ -1065,6 +1072,7 @@ gi       : Move to the last insertion you did and switch to INSERT mode. # 最�
 f0(tslime) f1:(访问snippet) f2:(与rv共享文件) f3:邻居文件 f4:工程文件 f5:文件编译 f6:文件运行  f7:选择运行 f8:供参运行 f9:(生成snippet)
 F1(帮助)   F2:number        F3:list           F4:relativenumber       F5:文件编译 \F5:文件运行 F6:净化代码 \F6:依据类型净化代码 F7:静态代码检测 F8:max/min window
 F10: FloatermToggle F9:FloatermNext \F9:FloatermPrev  F11:工程级别tags \F11:sh文件tags F12和\F12: 功能级别cscope
+\F1(quickfix) \F2 Taglist \F3 邻居文件列表 \F3 VimRegEdit
 --- vim dir --
 <leader>f> # 跳转进入
 <leader>cd # 进入当前文件所在目录

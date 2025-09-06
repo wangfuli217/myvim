@@ -1,0 +1,12 @@
+#!/bin/bash
+
+filename=$1
+[ -f "$filename" ] || {
+  filename=tmp.txt
+}
+
+col=$(head -n 1 $filename | grep -P "\t" -o | wc -l)
+for i in $(seq 1 $((col + 1))); do
+  echo '#####'
+  awk -v idx="$i" -F '\t' '{print $idx}' $filename
+done

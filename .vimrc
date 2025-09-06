@@ -738,7 +738,7 @@ packloadall             "加载所有插件
 silent! helptags ALL    "为所有插件加载帮助文档
 
 call plug#begin('~/.vim/plugged')
-" Plug 'skywind3000/vim-dict'           " VIM 词表收集
+Plug 'skywind3000/vim-dict'           " VIM 词表收集
 Plug 'skywind3000/asyncrun.vim'         " hook (AsyncRunPre AsyncRunStart AsyncRunStop) cmd(AsyncRun AsyncStop AsyncReset)
 Plug 'skywind3000/vim-terminal-help'    " (toggle)\wt; drop abc.txt(bash -> vim); :H {shell command}; command H to send:(vim -> bash)
 Plug 'skywind3000/asynctasks.vim'       " :AsyncTaskMacro :AsyncTaskProfile  :AsyncTask task1 -name=Batman -gender=boy :AsyncTaskList!(以点.开头的任务名在查询时会被隐藏)  :AsyncTaskList
