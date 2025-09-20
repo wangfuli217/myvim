@@ -748,6 +748,7 @@ Plug 'skywind3000/asynctasks.vim'       " :AsyncTaskMacro :AsyncTaskProfile  :As
 Plug 'skywind3000/vim-preview'         " 预览tags中的函数
 Plug 'skywind3000/vim-text-process'    " Text Filter Manager for Vim/NeoVim !!
 
+Plug 'voldikss/vim-translator'
 Plug 'voldikss/vim-floaterm'      " cmd(FloatermNew, FloatermPrev, FloatermNext, FloatermFirst, FloatermLast, FloatermUpdate, FloatermToggle FloatermKill FloatermShow FloatermHide FloatermSend)
 Plug 'jgdavey/tslime.vim'         " <Plug>SendSelectionToTmux; <Plug>NormalModeSendToTmux; <Plug>SetTmuxVars(reset the session, window, and pane info)
 
@@ -875,7 +876,7 @@ Plug 'lambdalisue/fern.vim'            " :Fern . ; :Fern {url} [-opener={opener}
 Plug 'LumaKernel/fern-mapping-fzf.vim' " ff fzf-files;fd fzf-dirs;fa fzf-both;frf fzf-root-files;frd fzf-root-dirs;fra fzf-root-both; :help fern-mapping-fzf .
 
 Plug 'azabiong/vim-highlighter'        " HiSet   = 'f<CR>'; HiErase = 'f<BS>'; HiFind  = 'f<Tab>'; HiClear = 'f<C-L>'; # Default key mappings: f Enter, f Backspace, f Ctrl+L, f Tab and t Enter
-Plug 'jiangmiao/auto-pairs'            " 括号自动补全
+" Plug 'jiangmiao/auto-pairs'            " 括号自动补全
 Plug 'RRethy/vim-illuminate'
 hi illuminatedWord cterm=underline gui=underline
 
@@ -2485,3 +2486,10 @@ function! OutputSplitWindow(...)
 endfunction
 command! -nargs=+ -complete=command Ex call OutputSplitWindow(<f-args>)
 nnoremap <leader>` :Ex <space>
+
+nmap <silent> <Leader>ts <Plug>TranslateW
+vmap <silent> <Leader>ts <Plug>TranslateWV
+let g:translator_window_max_width=0.3
+let g:translator_window_max_height=0.3
+let g:translator_default_engines=['haici','bing:']
+" let g:translator_proxy_url = 'socks5://192.168.122.123:7890'

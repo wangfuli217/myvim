@@ -1009,8 +1009,8 @@ fzf-bookmarks -a   name [file/dir]  ctrl-g         jump to bookmark enhanced by 
 mark              <mark>            ctrl-x;ctrl-g  jump to bookmark enhanced by fzf
 https://github.com/hamvocke/lnks    https://github.com/johngrib/fav-dir  bookmark(to add)
 ---- 1.fzf-complete; 2.cheatsheet-complete; 3.fzf prompt 4. tv-complete(by fzf for channel) ---- pv sponge, ts, parallel
-#### fzf tv up testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs; choose(cut) direnv sd(sed); grex; xclip fq(jq for binary formats)
-fzf     --> Flow.Launcher(win) Fluent-Search(win) tv(developing) sk(skim) peco
+#### fzf tv up(pipr) testfinder #### screen tmux Zellij; bash zsh fish; vim vidir; sshs; choose(cut) direnv sd(sed); grex; xclip fq(jq for binary formats)
+fzf     --> Flow.Launcher(win) Fluent-Search(win) tv(developing) sk(skim) peco fz(vim-fz/vim-sonictemplate/@mattn)
 cat     --> bat tac highlight
 ls      --> exa eza lsd
 find    --> fd; find . -type f, fd --type f,rg --column --line-number --no-heading --color=always --smart-case for fzf
@@ -1022,10 +1022,10 @@ tree    --> broot erdtree lstr(bgreenwell)
 cd      --> fdf fdr fda fdf0, cdf fd, fzf-marks fzf-bookmarks mark; mkb(goln) mkg(goto), fav [add | rm | list | clean | help], z, fasd, autojump, zoxide
 history --> fzf tv mcfly atuin
 tldr    --> cheat(fzcheat) cht.sh(chtfzf.sh / chtfzf) 3.rcheat: echo ${FZF_CHEATSHEETS_DIR}/cheatsheets/* | sed 's/ /\n/g' | fzf; tealdeer
-man     --> woman nam pet 1.cht.sh(cheatsheet)|rcheat 2.https://www.mankier.com/ (manual) 3. explain 'ls -l' (cmd option)
+man     --> woman nam pet 1.cht.sh(cheatsheet)|rcheat 2.https://www.mankier.com/ (manual) 3. explain 'ls -l' (cmd option) 4.tldr --> tealdeer 5. rfc->hn/se/wkp
 wgetcurl--> httpie, curlie, xh
-jq      --> fx gron(grep), jsonfilter(openwrt), jqifzf, jqfzf csvtk(CSV/TSV格式) dsq(JSON、CSV、Excel 等格式的文件执行 SQL 查询语句) yq(yaml,json,xml) xmllint xpath gron jd htmlq
-ping    --> gping fping mtr tcping
+jq      --> jp fx gron(grep), jsonfilter(openwrt), jqifzf, jqfzf csvtk(CSV/TSV格式) dsq(JSON、CSV、Excel 等格式的文件执行 SQL 查询语句) yq(yaml,json,xml) xmllint xpath gron jd htmlq
+ping    --> gping fping mtr tcping # json https://jmespath.org/
 dig     --> dog doggo
 ranger  --> fzf vifm vipe vidir broot nnn
 hexdump --> hexyl xxd od vim hexabyte
@@ -1035,54 +1035,98 @@ inotifywait --> reflex entr watchexec await
 top     --> btop, bottom, glances, gtop, zenith, dool
 glow    --> presenterm mdcat mdp
 bandwhich --> sar -n DEV
+dufs    --> miniserve; python3 -m http.server 8080; python -m SimpleHTTPServer 8080; --> socat, socat, netcat
 tabview https://github.com/shshemi/tabiew --> https://tableconvert.com/
 hyperfine  https://www.linuxlinks.com/ https://alternativeto.net/
 wfl_help
 }
 
 
-alias '?vi'='wfl_vim_help'
+alias '?v'='wfl_vim_help'
 wfl_vim_help(){   cat - <<'wfl_vim_help'
---- vim命令行 -- \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键
-<C-R> <C-W>  : pull word under the cursor into a command line or search # Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep
-<C-R> <C-A>  : pull whole word including punctuation                    # Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep
-<C-R> <C-L>  : pull the whole line under the cursor             行发送  # H(发送给term-help) AsyncRun(异步后台) Shell(同步前台) Ex(ex命令) FloatermSend(发送给term) --name=ft1
-<C-R> <C-F>  : pull the file name under the cursor  %:p:h文件所在文件夹 # FZF Files FZFFiles; f1:FZFFiles! ~/.vim/snippet; f2:FZFFiles! ~/.vim/registers
-<C-R> -      : pull small register                            范围发送  # :'<,'>FloatermSend  :'<,'>AsyncRun  :'<,'>TP! run runa snippet :'<,'>!cat -n
-<C-R> [a-z]  : pull named registers                                     # 寄存器内容
-<C-R> %      : pull file name (also #)                                  # \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键
---- vim 插入补全 -- \fs snippet补全; \fS vim-sonictemplate; f1:访问snippet f9:生成snippet f2:与rv共享文件 cat file | rv <a-z>; or rv <a-z> + <C-D>
-<C-X><C-K>   : 单词补全
-<C-X><C-F>   : 文件名补全
-<C-X><C-L>   : 文件行补全
-<C-X><C-V>   : Vim 命令
-<C-X><C-I>   : 当前文件和包含文件中的关键字
-<C-X><C-]>   : 标签
---- vim mark跳转 -- \fm
-gi       : Move to the last insertion you did and switch to INSERT mode. # 最后修改
-'.       : jump to               last modification line (SUPER)          # 最后修改
-`.       : jump to exact spot in last modification line                  # 最后修改
-''       : jump back (to line     in current buffer where jumped from)   # 最后跳转
-``       : jump back (to position in current buffer where jumped from)   # 最后跳转
-`"       : jump to position where last exited current buffer             # 最后编辑文件
-`0       : jump to position in    last file edited (when exited Vim)     # 最后编辑文件
-]'       : jump to next line with a lowercase mark                       # 下一个mark
-['       : jump to previous line with a lowercase mark                   # 上一个mark
---- number -- zed 使用fzf快速访问 z:shortcut; e: asynctask d: userdefined
-f0(tslime) f1:(访问snippet) f2:(与rv共享文件) f3:邻居文件 f4:工程文件 f5:文件编译 f6:文件运行  f7:选择运行 f8:供参运行 f9:(生成snippet)
-F1(帮助)   F2:number        F3:list           F4:relativenumber       F5:文件编译 \F5:文件运行 F6:净化代码 \F6:依据类型净化代码 F7:静态代码检测 F8:max/min window
-F10: FloatermToggle F9:FloatermNext \F9:FloatermPrev  F11:工程级别tags \F11:sh文件tags F12和\F12: 功能级别cscope
-\F1(quickfix) \F2 Taglist \F3 邻居文件列表 \F3 VimRegEdit
---- vim dir --
-<leader>f> # 跳转进入
-<leader>cd # 进入当前文件所在目录
-<leader>cc # 回到上个目录
---- misc -- vim哲学: [主]谓[宾] ["a]y[aw] [主语存在默认主语];[谓语是必须的;]宾语也存在默认宾语
-1. 100i# 插入100个连续的#号
-2. sed -i '/pattern/s/old/new/g' --> g/pattern/s/old/new/g --> g/FfL /normal gcc(注释)|d(删除)
+🔋 --- vim命令行 -- 🛠️ \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键 ("ayy@a : 把当前行作为一个Vim命令来执行) -search-> :set ignorecase                   🔋 :h i_CTRL-R
+<C-R> <C-W>  : pull word under the cursor into a command line or search # 🔄 Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep /<C-R><C-W> ?<C-R><C-W>
+<C-R> <C-A>  : pull whole word including punctuation                    # 🔄 Ag Rg Lines BLines Tags BTags vimgrep vimgrepadd grep grepadd lvimgrep lgrep /<C-R><C-A> ?<C-R><C-A>
+<C-R> <C-L>  : pull the whole line under the cursor             行发送  # 🛠️ 🔴 H(发送给term-help) AsyncRun(异步后台) Shell(同步前台) Ex(ex命令) FloatermSend(发送给term) --name=ft1
+<C-R> <C-F>  : pull the file name under the cursor  %:p:h文件所在文件夹 # 🛠️ 🌸 FZF Files FZFFiles; f1:FZFFiles! ~/.vim/snippet; f2:FZFFiles! ~/.vim/registers # <C-R> <C-P>
+<C-R> -      : pull small register                            范围发送  # 🛠️ 🔴 :'<,'>FloatermSend  :'<,'>AsyncRun  :'<,'>TP! run runa snippet :'<,'>!cat -n
+<C-R> [a-z]  : pull named registers                                     # 🛠️ 寄存器内容
+<C-R> %      : pull file name (also #)                                  # 🛠️ 🔴 \f!:AsyncRun  \!:Shell  \f`: H  \`: Ex 快捷键
+🔋 --- vim 插入补全 -- 🛠️  \fs snippet补全; \fS vim-sonictemplate; f1:访问snippet f9:生成snippet f2:与rv共享文件 cat file | rv <a-z>; or rv <a-z> + <C-D> 🔋 :h i_CTRL-R
+<C-N>        : 普通关键字        :h 'complete'                | complete=.,w,b,u,t,i;  :set complete-=i; :set complete+=k
+<C-X><C-N>   : 当前缓冲区关键字  :h compl-current             | <C-N> : 使用来自补全列表的下一个匹配项(next 匹配项)
+<C-X><C-I>   : 当前文件和包含文件中的关键字 :h compl-keyword  | <C-P> : 使用来自补全列表的上一个匹配项(previous 匹配项)
+<C-X><C-]>   : 标签     :h compl-dictionary :h compl-tag      | <Down>: 选择来自补全列表的下一个匹配项
+<C-X><C-K>   : 单词补全: set ignorecase 和 set infercase      | <Up>  : 选择来自补全列表的上一个匹配项
+<C-X><C-L>   : 文件行补全:当前编辑会话内所有缓冲区的内容      | <C-Y> : 确认使用当前选中的匹配项(yes)
+<C-X><C-F>   : 文件名补全                                     | <C-E> : 还原最早输入的文本(从自动补全中exit)
+<C-X><C-O>   : 全能(Omni)补全   :h compl-omni                 | <C-H> : (与 <BS>) 从当前匹配项中删除一个字符
+<C-X><C-V>   : Vim 命令                                       | <C-L> : 从当前匹配项中增加一个字符
+🔋 --- vim mark跳转 -- \fm   小写位置标记只在每个缓冲区局部可见,大写位置标记则全局可见: :delmarks a-z; :marks -search-> :set complete; :delmarks! " delete all lowercase marks
+`<       : 上次高亮选区的起始位置 # 基于mark的复制 "ay`a   "ad`a  "ac`a  # yiw viwp 或 viw"0p 或 ciw Ctrl-R 0 Esc (.) repeat @replace word with last-yanked text
+`>       : 上次高亮选区的结束位置 # 基于mark的复制 "ay`a   "ad`a  "ac`a  # yiw viwp 或 viw"0p 或 ciw Ctrl-R 0 Esc (.) repeat @replace word with last-yanked text
+gi       : Move to the last insertion you did and switch to INSERT mode. # 最后修改 1. g, : 跳转至修改历史中较晚修改的位置  2. g; : 跳转至修改历史中较早修改的位置 
+'.       : jump to               last modification line (SUPER)          # 最后修改         # <C-w> w 切换窗口
+`.       : jump to exact spot in last modification line                  # 最后修改         # <C-w> x 用下一个交换当前
+''       : jump back (to line     in current buffer where jumped from)   # 最后跳转         # <C-w> h 转到左/右窗口
+``       : jump back (to position in current buffer where jumped from)   # 最后跳转         #
+`"       : jump to position where last exited current buffer             # 最后编辑文件     # /foo\c  向后搜索(不区分大小写) \v very magic   \m magic
+`0       : jump to position in    last file edited (when exited Vim)     # 最后编辑文件     # /foo\C  向后搜索(  区分大小写) \V very nomagic \M nomagic
+]'       : jump to next line with a lowercase mark     (previous mark)   # 下一个mark       # do / :diffget 获取(get)差异
+['       : jump to previous line with a lowercase mark   (next mark)     # 上一个mark       # dp / :diffput 放差价
+`[ or `] : jump to beginning/end of previously changed or yanked text    # [( [{ [<  : Previous ( or { or <  🔄  ])  Next
+🌸 --- number -- zed 使用fzf快速访问 z:shortcut; e: asynctask d: userdefined # fzf 快捷键
+🛠️ f0(tslime) f1:(访问snippet) f2:(与rv共享文件) f3:邻居文件 f4:工程文件 f5:文件编译              f6:文件运行                      f7:选择运行     f8:供参运行      f9:(生成snippet)
+🛠️ F1(帮助)   F2:number        F3:list           F4:relativenumber       F5:文件编译 \F5:文件运行 F6:净化代码 \F6:依据类型净化代码 F7:静态代码检测 F8:max/min window
+🛠️ F10: FloatermToggle F9:FloatermNext \F9:FloatermPrev  F11:工程级别tags \F11:sh文件tags  F12和\F12: 功能级别cscope
+🛠️ \F1(quickfix) \F2 Taglist  \F3 邻居文件列表   \F3 VimRegEdit
+--- vim dir -- 🛠️ 1. <leader>f> # 跳转进入 2. <leader>cd # 进入当前文件所在目录 3. <leader>cc # 回到上个目录
+--- misc    -- 🌈 vim哲学    🌈: [主]谓[宾] ["a]y[aw] [主语存在默认主语];[谓语是必须的;] 宾语也存在默认宾语
+1. 100i# 插入100个连续的#号 1.1 5o<Esc> 插入5个空行; 1.2 5O<Esc> 1.3 o<Esc>4.                   🌈: 1. guu:行小写; 2. gUU:行大写 3. g~~:行翻转 4. gUw:字小写
+2. sed -i '/pattern/s/old/new/g' --> g/pattern/s/old/new/g --> g/FfL /normal gcc(注释)|d(删除)  🌈: 5. g~w:字翻转  6. vU:大写字母; vu:小写字符 V~:大小写字符
+3. :vimgrep /pattern/ **/*.py      " 仅搜索python文件 3.1 \f? 多行搜索             4.2 :s#/path/to/old#/path/to/new#g  " using # as delimiter
+4. :[range]global/{pattern}/[cmd]对指定范围内匹配{pattern}的所有行执行Ex 命令{cmd} 4.1 :s|/usr/bin|/usr/local/bin|g    " using | as delimiter  --> d/y/c </>/= g~/gu/gU/!
+:[range]delete [x] : 删除指定范围内的行[到寄存器x中] | :[range]copy   {address} : 把指定范围内的行拷贝到 {address} 指定的行之下 | :g/foo/t$  : 将包含 foo 的行复制到 EOF
+:[range]yank   [x] : 复制指定范围的行[到寄存器x中]   | :[range]move   {address} : 把指定范围内的行移动到 {address} 指定的行之下 |:g/foo/m$   : 将包含 foo 的行移动到 EOF
+:[line]put     [x] : 在指定行后粘贴寄存器x中的内容   | :[range]normal {commands}对指定范围内的每一行执行普通模式命令 {commands} | :%norm jdd : 隔行删除
+4.1 (:5,10m 20) move lines 5-10 to after line 20;    | (:1,5co 10) copy lines 1-5 to after line 10          | (:5,10t'b) copy lines 5-10 to mark 'b'
+(:pu   ): paste register contents below current line | (:pu!  ): paste register contents above current line | (:5a     )     append after  line 5
+(:pu a ): paste register 'a' below current line      | (:pu! a): paste register 'a' above current line      | (:5i     )     insert before line 5
+(:1,3y a): yank lines 1-3 to register 'a'            | (:5,10normal A;) append semicolon to lines 5-10      | (:%normal I//) comment all lines with //
+5. <C-\><C-n> 和 <C-\><C-G> 回到normal模式           | <C-\><C-G> 临时 回到normal模式                       | ( Ctrl+r !date)  insert output of date command
 wfl_vim_help
 }
 
+alias '?t'='wfl_tmux_help'
+wfl_tmux_help(){   cat - <<'wfl_tmux_help'
+#### 1. 可自定义快捷键 # F10:window 10 F1~F9:window 11~19                             # 更快更好更高效 f:key-bindings                     @增强记忆自定义快捷键
+# t:last-pane o|"/%   |  0:last-window p|n  | L:last-session (|)                      | 最近跳回                                          @更快的跳转
+# g:switch pane       |  c-g:switch window  | G:switch session                        | fzf选择跳转                                       @更好的跳转
+# x:kill-pane         |  c-x(&):kill window | X:kill session                          | 杀死对象                                          @更好的杀死
+# e:session cmd       |  c-e:window cmd     | E:all session cmd                       | 并发执行命令/脚本                                 @更好的并发
+# c-z: suspend-client |  z: resize-pane -Z  | t: tmux last-pane; tmux resize-pane -Z  | 退出client/pane                                   @更好的切换
+# b: all session source /home/wangfuli/.bashrc      vs r: source-file ~/.tmux.conf    | 加载.bashrc和.tmux.conf配置                       @更好的调试 .tmux.conf
+#### 2. 可融合fzf交互提示 f(fzf) w(choose-tree) : choose-buffer choose-client         # 模糊记忆模糊搜索
+# f:  tmux fzf launch key                                                             | 处理ses/win/pane/clipboard等对象                  @更好的对象
+# find ~/.tmuxp/* -type f | fzf | xargs tmuxp load -y # tmuxp可帮助您管理tmux工作区   | 配置定义工作区                                    @更好的环境
+#### 3. tmux脚本和函数 #### xpane(https://github.com/greymd/tmux-xpanes) 和 tmuxp:https://github.com/tmux-python/tmuxp                    @更好的并发执行命令
+# tmuxalldo/tmuxsesdo/tmuxwindo 在多窗口并发执行特定命令;                             | 并发执行命令/脚本                                 @更好的构建环境
+# tmuxnhdo/tmuxnvdo/tmux4ndo    在新session中创建2 horizontal/vertical和4分窗口; repl根据文件名创建 vim tslime(repl)环境 | 快速定义工作区 @更好的调试bash/python/perl/javascript
+# tmuxpaste                     当前paste中内容重定向到vim                            | 使用vim编辑pane的历史记录                         @更好的buffer管理
+# tmuxnotice                    产品编译之后通知编译完成                              | 使用tmuxalldo通知终端用户                         @更好的完成通知
+#### 4. 融合vim tslime调试脚本                                                        | tslime # 更好的调试bash/python/perl/javascript    @与vim集成调试
+#### 5. https://tmuxp.git-pull.com/about_tmux.html <<tao-of-tmux.pdf>>                | tmuxp  # 自定义的构建环境                         @与bash集成开发环境
+# tmux+fzf                                                 (通过fzf提示避免快捷键记忆)|
+# tmux+vim                                                 (交互式方式进行脚本调试)
+# tmux+save|restore                                        (将工作环境进行保存和恢复)
+# tmux跳转(panes:T/z(或者/)(<-|->和{}) windows:0(n/p) sessions:L()) (快速切换pane/window/session)
+# 当前session并发:   e 所有session并发:     E  当前windows并发:    ctrl-e  (并发在session中执行命令)
+# 所有pane之间跳转:  g 所有session之间跳转: G  所有session之间跳转:ctrl-g  (tmux跳转用于历史跳转,此处使用fzf选择跳转)
+# 关闭当前pane:      x 关闭当前session:     X  关闭当前windows     ctrl-x  (x默认是pane关闭命令,其他为扩展)
+# 跳转pane并最大化:  t 用pane平分windows: z或/ 左右跳转window中pane 向左 <- | -> 向右
+# 复制当前clipboard到/tmp某个文件: y
+wfl_tmux_help
+}
 
 mkd() {
   builtin pushd $(pwd) &> /dev/null; 
@@ -2333,6 +2377,10 @@ gitproxy(){
   git config --global https.proxy "socks5://$1:7890"
 
   git config -l | sed -n '/proxy/p'
+
+  export "ALL_PROXY=socks5://$1:7890"
+  export "http_proxy=socks5://$1:7890"
+  export "https_proxy=socks5://$1:7890"
 }
 
 gitproxyip(){
@@ -2353,4 +2401,13 @@ getdeviceip () {
   };
   echo $ipaddr
 }
-
+# getdevicesrv 22; getdevicesrv 23 --> nmap -A  192.168.122.0/24
+getdevicesrv () {
+  [ -z "$1" ] && { echo "give service port say ip in local network"; return 0; }
+  if [ -n "$2" ]; then
+    nmap -p $1 --open -sV $2/24 | grep -v 'SERVICE' | grep -v 'Host is up' | sed -n '/^$/!p'
+  else
+      nmap -p $1 --open -sV 192.168.122.0/24 | grep -v 'SERVICE' | grep -v 'Host is up' | sed -n '/^$/!p'
+      nmap -p $1 --open -sV 192.168.123.0/24 | grep -v 'SERVICE' | grep -v 'Host is up' | sed -n '/^$/!p'
+  fi
+}
