@@ -1702,7 +1702,7 @@ filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | fzf ; }    # Qui
 
 # grep rg with line number
 # grep rg with line number
-alias rgg="rg --no-heading --crlf --color=always "
+alias rgg="rg --column --line-number --no-heading --crlf --color=always "
 rgx ()  {
   [ -n "$SSH_CLIENT" ] && {
       open=less

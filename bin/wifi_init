@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# wget https://w1.fi/releases/wpa_supplicant-2.9.tar.gz
+# tar -xvf wpa_supplicant-2.9.tar.gz
+# cd wpa_supplicant-2.9/wpa_supplicant
+# cp defconfig .config
+# make
+# sudo make install
+
+# wget http://w1.fi/releases/hostapd-2.9.tar.gz
+# tar -xvf hostapd-2.9.tar.gz
+# cd hostapd-2.9/hostapd
+# cp defconfig .config
+# make
+# sudo make install
+
+
+rmmod    mac80211_hwsim
+modprobe mac80211_hwsim radios=4
+killall wpa_supplicant
+killall wpa_cli
+killall hostapd
+killall hostapd_cli
+killall dhclient
+rfkill list all
+rfkill unblock all
+ifconfig wlan1 up
+ifconfig wlan0 up
