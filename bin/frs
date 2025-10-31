@@ -1,0 +1,122 @@
+#!/bin/bash
+
+declare preview='bat --color=always --style=header,numbers -H {2} {1}'
+
+[ -n "$SSH_CLIENT" ] && {
+    open=less
+} || {
+    open=xdg-open
+}
+
+if [ "$(uname -o)" = "Cygwin" ]; then
+  open() {
+    for f in $@; do
+      cygstart "$(cygpath -w $f)"
+    done
+  }
+fi
+
+usage() {
+  cat <<HEREDOC
+   usage: frg -l -i -f filetype -s -S -w -L -v
+   optional   arguments:
+     -h       show this help message and exit
+     -e       exact-match(fzf)       (default fuzzy match)
+     -l       files-with-matches(rg) (output format)
+     -L       follow symbolic links(rg)
+     -i       ignore-case(rg)
+     -s       case-sensitive(rg)     (default)
+     -S       smart-case(rg)
+     -w       word-regexp(rg)
+     -F       fixed-strings(rg)
+     -f <opt> filetype: rg --type-list
+     -d <opt> maxdepth
+     -v       verbose RG_PREFIX
+  inst: frg -l fzf # output filename only
+  inst: frg -L fzf # search symbolic links dirctory
+  inst: frg -w fzf # search word match only
+  inst: frg -s fzf # default search match mode: -i/-s/-S/-w
+  inst: frg -v fzf # output RG_PREFIX config
+HEREDOC
+}
+
+while getopts ':hlLifd:FsSwv' x; do
+  case "$x" in
+    h)
+      usage
+      exit 0
+      ;;
+    e) exactmatch=1 ;;
+    l)
+      list_files=1
+      preview='bat --color=always --style=header,numbers {1}'
+      ;;
+    L) follow="1";;
+    i) ignorecase="1" ;;
+    f) filetype=${OPTARG} ;;
+    d) maxdepth=${OPTARG} ;;
+    F) fixedstrings="1" ;;
+    s) casesensitive="1" ;;
+    S) smartcase="1" ;;
+    w) wordregexp="1" ;;
+    v) verbose="1" ;;
+  esac
+done
+shift $((OPTIND - 1))
+unset x OPTARG OPTIND
+
+# --preview 'bat --color=always {1} --highlight-line {2}' \
+# Switch between Ripgrep launcher mode (CTRL-R) and fzf filtering mode (CTRL-F)
+frgr_filename=$(mktemp -t frgr.XXXXXXXXXX)
+frgf_filename=$(mktemp -t frgf.XXXXXXXXXX)
+cleanup() {
+  rm -f "$frgr_filename";
+  rm -f "$frgf_filename";
+}
+trap cleanup EXIT
+
+
+RG_PREFIX="rg --column --line-number --no-heading --crlf --color=always -d 1 -v '^#' | rg  ${list_files:+-l}"
+
+[[ -n $filetype ]] && RG_PREFIX="$RG_PREFIX --type=$filetype "
+[[ -n $maxdepth ]] && RG_PREFIX="$RG_PREFIX --max-depth=$maxdepth "
+[[ -n $fixedstrings ]] && RG_PREFIX="$RG_PREFIX --fixed-strings "
+[[ -n $ignorecase ]] && RG_PREFIX="$RG_PREFIX --ignore-case "
+[[ -n $casesensitive ]] && RG_PREFIX="$RG_PREFIX --case-sensitive "
+[[ -n $smartcase ]] && RG_PREFIX="$RG_PREFIX --smart-case "
+[[ -n $wordregexp ]] && RG_PREFIX="$RG_PREFIX --word-regexp "
+[[ -n $follow ]] && RG_PREFIX="$RG_PREFIX -L "
+[[ -n $verbose ]] && { echo "RG_PREFIX=$RG_PREFIX"; exit; }
+
+output=$(
+INITIAL_QUERY="${*:-}"
+: | fzf --ansi --disabled --query ${exactmatch:+-e} "$INITIAL_QUERY" \
+  --bind "start:reload($RG_PREFIX {q})+unbind(ctrl-r)" \
+  --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
+  --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > $frgr_filename; cat $frgf_filename)" \
+  --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. ripgrep> )+disable-search+reload($RG_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > $frgf_filename; cat $frgr_filename)" \
+  --color "hl:-1:underline,hl+:-1:underline:reverse" \
+  --prompt '1. ripgrep> ' \
+  --delimiter : \
+  --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf arguments: [ -l;-L/-i/-d 1/-f c/-F/-s/-S/-w;-v ] /' \
+  --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
+  --preview-window 'right,45%,+{2}+1/3,~1' \
+  --bind "ctrl-o:execute($open {1})" \
+  --bind "ctrl-e:execute(vim {1} +{2})"
+)
+
+[ -z "$output" ] && exit
+
+filename=$(echo $output | awk -F ':' '{print $1}')
+startnum=$(echo $output | awk -F ':' '{print $2}')
+
+readnum=0
+while read -r linedata; do
+  readnum=$((readnum+1))
+  if [ "$startnum" -gt "$readnum" ]; then
+    continue
+  fi
+  [ -z "$linedata" ] && break
+
+  echo ${linedata//#}
+done < $filename

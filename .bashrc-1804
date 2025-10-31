@@ -1128,6 +1128,32 @@ wfl_tmux_help(){   cat - <<'wfl_tmux_help'
 wfl_tmux_help
 }
 
+alias '?f'='wfl_fzf_help'
+wfl_fzf_help(){   cat - <<'wfl_fzf_help'
+@面向对象:      FZF_DEFAULT_COMMAND(找对象) FZF_DEFAULT_OPTS(搞对象) fzf内容输出(处理对象) 面向对象是fzf的核心
+文件名称对象    fzf-cheatsheet; frg -l; fdf; fda; fdr; fdf0
+目录名称对象    mklaste mklast mklastv mklastp mklastq mkall cdb cdp | cduser mksdk mkuser | mkmod mkpkg | put_pkg put_opkg | cdproject
+文件内容对象    frg frgg(fgr) frggg(grf) rgg, rgx | history(ctrl-r) viminfo vimdir fzf-marks fzf-bookmarks frl(line) frs(sentence)
+自定义对象      woman(nam) look pm fzcheat(cht.sh) fzf-tmux fzf.vim unicode ugit emoji
+@面向命令行:    位置参数 开关选项和参数选项, 由于fzf支持补全所有fzf更加与位置参数亲和
+位置参数        1. fzf-complete 补全位置参数 2. 缺少位置参数调用fzf(找选位置参数) 3. 默认位置参数{clean,compile}
+选项参数        mklast -x 根据选线参数补全位置参数
+fzf-cheatsheet  根据命令名称自定义命令位置参数和选项参数,进行命令替换
+@面向补全:      fzf的补全机制更好的处理了单个位置参数; bash原生的补全机制则能更好处理多个位置参数
+fzf补全         已定义:vim ../fzf**<TAB>; cd; kill; ssh; telnet; export; unset; unalias;
+fzf补全         自定义:mklaste mklast mklastv mklastp mklastq cdb cdq mkuser mksdk; tv; goln/mkb(bookmarks) goto/mkg(goto)
+bash原生补全    自定义:mklaste mklast mklastv mklastp mklastq
+@面向readline:  readline提供的bind命令能加快命令行的编辑: ctrl-x + ctrl-e 在vim中编辑当前命令行:跳到cheatsheets浏览
+行匹配替换      fzf-cheatsheet 和 ctrl-r
+在行尾追加      常见于"面向补全" READLINE_LINE+READLINE_POINT
+在光标前插入    没有发现那个命令用该模式
+
+fzf-cheatsheet: 通过文件名查看对应文件包含的行内容,替换已输入内容                    @容易扩展
+\<TAB><TAB>   : 通过已定义|自定义内容(直接定义补全对象|查询补全对象)进行补全         @方便扩展
+fzf补全       : 缺失位置参数调用fzf补全位置参数; 通过选项参数调用fzf补全默认位置参数 @可以扩展
+wfl_fzf_help
+}
+
 mkd() {
   builtin pushd $(pwd) &> /dev/null; 
 }
@@ -1187,7 +1213,8 @@ r0() {
   echo >> ${FZF_CHEATSHEETS_DIR}/cheatsheets/r${append}
 }
 
-# ctrl-d
+# rv [a-zA-Z] desc                                              # rv 1 desc 标准输出
+# cat ~/.bashrc | fzf  --no-sort --tac | rv [a-zA-Z] 'test fzf' # cat ~/.bashrc | fzf  --no-sort --tac | rv 1 'test fzf' 标准输出
 rv() {
   local alpha
   if [ -z "$1" ]; then
@@ -1196,19 +1223,41 @@ rv() {
     return
   fi
 
+  local output=
+  if ! [[ "$1" =~ ([a-zA-Z]) ]]; then
+    output="stdout"
+  fi
+  if [ "$1" = "1" ]; then
+    output="stdout"
+  fi
+  if [ "$1" = "2" ]; then
+    output="stderr"
+  fi
+  
+
   local append=$(tr '[A-Z]' '[a-z]'  <<< $1)
   for i in {A..Z}; do
-    if [ "$i" = "$1" ]; then
+    if [ "$i" = "${1:1:1}" ]; then
       : > ~/.vim/registers/r${append}
       break
     fi
   done
   shift
+  if [ "$output" = "stdout" ]; then
+    { pipe || { catfile=$(find -type f | fzf) ; cat "$catfile" | fzf  --no-sort --tac; } ; } 2>&1
+    return
+  fi
+  if [ "$output" = "stderr" ]; then
+    { pipe || { catfile=$(find -type f | fzf) ; cat "$catfile" | fzf  --no-sort --tac; } ; } 1>&2
+    return
+  fi
+
   [ -n "$1" ] &&  echo "#### $@ ####" >> ~/.vim/registers/r${append}
-  { pipe || cat - ; } >> ~/.vim/registers/r${append}
+  { pipe || { catfile=$(find -type f | fzf) ; cat "$catfile" | fzf  --no-sort --tac; } ; } >> ~/.vim/registers/r${append}
   echo >> ~/.vim/registers/r${append}
   echo >> ~/.vim/registers/r${append}
 }
+
 
 emoji-fzf() {
     # TODO (k): <2022-03-07> cache

@@ -1,4 +1,4 @@
-emojis=$(cat emoji.txt)
+emojis=$(cat `dirname $0`/emoji.txt)
 selected_emoji=$(echo "$emojis" | fzf)
 echo $selected_emoji
 # https://quickref.cn/docs/emoji.html
