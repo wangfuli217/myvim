@@ -1455,6 +1455,46 @@ fdr() {
   eval xsync
 }
 
+fsort(){
+  local qtype="t"
+  local qsort="r"
+  local qdepth="1"
+  while getopts 'tabcd:srh' x; do
+    case "$x" in
+      t) qtype="t" ;;
+      a) qtype="a" ;;
+      b) qtype="b" ;;
+      c) qtype="c" ;;
+      s) qtype="s" ;;
+      r) qsort="" ;;
+      d) qdepth=${OPTARG}; qtype=d ;;
+      h | *)
+        echo "fsort [t|a|b|c|s] r/h "
+        echo "fsort -t -r" # last modification time
+        echo "fsort -a -r" # last access time
+        echo "fsort -b -r" # last birth time
+        echo "fsort -c -r" # last status change time
+        echo "fsort -s -r" # size
+        echo "fsort -d 1 " # depth number
+        return
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  unset x OPTARG OPTIND
+
+  # echo "qtype=$qtype qsort=$qsort qdepth=$qdepth"
+  case "$qtype" in
+    t) find . -type f -printf '%T@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    a) find . -type f -printf '%A@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    b) find . -type f -printf '%B@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    c) find . -type f -printf '%C@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    s) find . -type f -printf '%s %p\n'  | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    d) find . -type f -printf '%d %p\n'  | grep "^$qdepth" | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    *) echo "fsort -h" ;;
+  esac
+}
+
 # fdf - cd into the directory of the selected file
 fdf() {
   local file
@@ -2460,3 +2500,4 @@ getdevicesrv () {
       nmap -p $1 --open -sV 192.168.123.0/24 | grep -v 'SERVICE' | grep -v 'Host is up' | sed -n '/^$/!p'
   fi
 }
+. "/home/wangfuli/.acme.sh/acme.sh.env"

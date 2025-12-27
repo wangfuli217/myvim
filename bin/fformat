@@ -1,0 +1,27 @@
+#!/bin/bash
+inputfile="$1"
+
+fformat_filename=$(mktemp -t fformat.XXXXXXXXXX)
+cat "$inputfile" | sed -e 's/\r//g' -e 's/\n//g' > $fformat_filename
+
+selected=$(echo "YAML to JSON :  yj
+YAML to YAML :  yy
+YAML to TOML :  yt
+YAML to HCL  :  yc
+TOML to JSON :  tj
+TOML to YAML :  ty
+TOML to TOML :  tt
+TOML to HCL  :  tc
+JSON to JSON :  jj
+JSON to YAML :  jy
+JSON to TOML :  jt
+JSON to HCL  :  jc
+HCL to YAML  :  cy
+HCL to TOML  :  ct
+HCL to JSON  :  cj
+HCL to HCL   :  cc" | fzf --bind "start:show-preview+hide-header" --delimiter : --preview="cat $fformat_filename | yj -i -{2}")
+
+opt=$(echo $selected | awk -F ':' '{print $2}')
+
+cat $fformat_filename | yj -i -${opt}
+rm $fformat_filename
