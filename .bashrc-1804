@@ -981,10 +981,10 @@ yuncore_help
 
 alias '??'='wfl_help'
 wfl_help(){   cat - <<'wfl_help'
-repeat_ok/repeat_err/repeat_sleep   repeat eval "$@" command
-gitc                                initialize git directory
+repeat_ok/repeat_err/repeat_sleep   repeat eval "$@" command: fformat(fzf+yj)格式化json/yaml/hcl/toml
+gitc                                initialize git directory: fsort(find+sort+fzf)根据文件特性快速定位文件
 sourcebash: source ~/.bashrc        update bash                                 enhanced by ctrl-b+b
-sourcetmux: source ~/.tmux.conf     update tmux
+sourcetmux: source ~/.tmux.conf     update tmux             : nq -c -q(task queue; advance nohup)
 psmem10: sort mem top 10            top
 pscpu10: sort cpu top 10            top
 makee/makew: trace error/warning for making padavan                             enhanced by tmuxpaste
@@ -1114,6 +1114,7 @@ wfl_tmux_help(){   cat - <<'wfl_tmux_help'
 # tmuxnhdo/tmuxnvdo/tmux4ndo    在新session中创建2 horizontal/vertical和4分窗口; repl根据文件名创建 vim tslime(repl)环境 | 快速定义工作区 @更好的调试bash/python/perl/javascript
 # tmuxpaste                     当前paste中内容重定向到vim                            | 使用vim编辑pane的历史记录                         @更好的buffer管理
 # tmuxnotice                    产品编译之后通知编译完成                              | 使用tmuxalldo通知终端用户                         @更好的完成通知
+# tmuxbat tmuxvim same sa tmuxpaste, 重定向输出到bat和vim                             | tmuxclear tmuxclears 清空当前pane或者所有pane的log@更好的buffer管理
 #### 4. 融合vim tslime调试脚本                                                        | tslime # 更好的调试bash/python/perl/javascript    @与vim集成调试
 #### 5. https://tmuxp.git-pull.com/about_tmux.html <<tao-of-tmux.pdf>>                | tmuxp  # 自定义的构建环境                         @与bash集成开发环境
 # tmux+fzf                                                 (通过fzf提示避免快捷键记忆)|
@@ -1125,6 +1126,9 @@ wfl_tmux_help(){   cat - <<'wfl_tmux_help'
 # 关闭当前pane:      x 关闭当前session:     X  关闭当前windows     ctrl-x  (x默认是pane关闭命令,其他为扩展)
 # 跳转pane并最大化:  t 用pane平分windows: z或/ 左右跳转window中pane 向左 <- | -> 向右
 # 复制当前clipboard到/tmp某个文件: y
+https://github.com/marlocarlo/psmux # Terminal multiplexer for Windows - tmux alternative for PowerShell, Windows Terminal, cmd.exe. Includes psmux, pmux, and tmux commands.
+https://github.com/itefixnet/itmux  # itmux is a lightweight, portable terminal multiplexer for Windows, bundling Tmux, Mintty, OpenSSH, and a minimal Cygwin environment into a standalone package.
+It lets you run multiple terminal sessions in one window, split panes, and securely access remote systems—all without installation or system changes.
 wfl_tmux_help
 }
 
@@ -2375,7 +2379,7 @@ function ccat() {
 
 which drop      >/dev/null 2>&1 && alias f=drop
 which floaterm  >/dev/null 2>&1 && alias f=floaterm
-alias task='asynctask -f'
+alias ?task='asynctask -f'
 
 # argc-completions
 export ARGC_COMPLETIONS_ROOT="/ftptmp/snippets/argc-completions"
