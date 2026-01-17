@@ -100,6 +100,7 @@ INITIAL_QUERY="${*:-}"
   --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf arguments: [ -l;-L/-i/-d 1/-f c/-F/-s/-S/-w;-v ] /' \
   --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
   --preview-window 'right,45%,+{2}+1/3,~1' \
-  --bind 'enter:become(less {1})' \
+  --bind 'enter:execute(less {1})' \
   --bind "ctrl-o:execute($open {1})" \
-  --bind "ctrl-e:execute(vim {1} +{2})"
+  --bind "ctrl-e:execute(vim {1} +{2})" \
+  --bind 'ctrl-g:accept'

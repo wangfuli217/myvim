@@ -19,7 +19,7 @@ export HISTCONTROL='ignoredups:erasedups'
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=100000
+HISTSIZE=10000000
 HISTFILESIZE=200000
 
 # check the window size after each command and, if necessary,
@@ -303,6 +303,12 @@ gitc(){ # init a c git project
     cp /home/wangfuli/git/gitignore/C.gitignore ./.gitignore
     git add *
 }
+
+# Generate content for .gitignore files
+gitignore() {
+  curl -fsSL "https://gitignore.io/api/$@"
+}
+
 
 # 删除文件末尾128位签名
 # dd if=KF_Image bs=1 count=6408390 of=orig
@@ -596,7 +602,6 @@ cdgit() {
   [ -n $1 ] && eval "$@"
   which zoxide 2>&1 > /dev/null && zoxide add $(pwd)
 }
-
 
 alias cdqsdk=svnqsdk
 svnqsdk(){
@@ -1214,7 +1219,32 @@ source ~/.fzf/shell/completion.bash
 
 export FZF_MARKS_JUMP='\C-x\C-g'
 [ -d /home/wangfuli/git/fzf-marks ] && source /home/wangfuli/git/fzf-marks/fzf-marks.plugin.bash
+marktmp(){
+  [ -n "$1" ] && {
+    mark "tmp-$1"
+  } || {
+    local dname=$(basename $(pwd))
+    mark "tmp-$dname"
+  }
+}
 alias fzf-bookmarks='source ~/.vim/bin/fzf-bookmarks'
+markpdt(){
+  local pdt=$1
+  [ -z "$pdt" ] && pdt="pdt"
+  local dname=$(basename $(pwd))
+  fzf-bookmarks -a  "$pdt-$dname"
+}
+alias markproduct='fzf-bookmarks'
+
+tmpd () {
+  cd "$(mktemp -d)"
+  chmod -R 0700 .
+  if [[ $# -eq 1 ]]; then
+    \mkdir -p "$1"
+    cd "$1"
+    chmod -R 0700 .
+  fi
+}
 
 FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
@@ -1505,7 +1535,7 @@ fsort(){
   local qtype="t"
   local qsort="r"
   local qdepth="1"
-  while getopts 'tabcd:srh' x; do
+  while getopts 'tabcd:srDh' x; do
     case "$x" in
       t) qtype="t" ;;
       a) qtype="a" ;;
@@ -1514,6 +1544,7 @@ fsort(){
       s) qtype="s" ;;
       r) qsort="" ;;
       d) qdepth=${OPTARG}; qtype=d ;;
+      D) qtype="D" ;;
       h | *)
         echo "fsort [t|a|b|c|s] r/h "
         echo "fsort -t -r" # last modification time
@@ -1522,6 +1553,7 @@ fsort(){
         echo "fsort -c -r" # last status change time
         echo "fsort -s -r" # size
         echo "fsort -d 1 " # depth number
+        echo "fsort -D   " # dust
         return
         ;;
     esac
@@ -1537,8 +1569,21 @@ fsort(){
     c) find . -type f -printf '%C@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
     s) find . -type f -printf '%s %p\n'  | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
     d) find . -type f -printf '%d %p\n'  | grep "^$qdepth" | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    D) find . -type d -printf '%d %p\n'  | grep "^$qdepth" | cut -d' ' -f2- | fzf --preview 'dust -d 1 {}' ;;
     *) echo "fsort -h" ;;
   esac
+}
+
+# ctrl-g jump to directory
+fgg(){
+  local rgname=$(frg $1)
+  [ -n "$rgname" ] && {
+    local fname=$(echo "$rgname" | awk -F ':' '{print $1}')
+    [ -n "$fname" ] && {
+      local dname=$(dirname "$fname")
+      [ -d "$dname" ] && cd "$dname"
+    }
+  }
 }
 
 # fdf - cd into the directory of the selected file
@@ -2458,12 +2503,12 @@ function ccat() {
 }
 
 # argc-completions
-export ARGC_COMPLETIONS_ROOT="/ftptmp/snippets/argc-completions"
-export ARGC_COMPLETIONS_PATH="$ARGC_COMPLETIONS_ROOT/completions/linux:$ARGC_COMPLETIONS_ROOT/completions"
-export PATH="$ARGC_COMPLETIONS_ROOT/bin:$PATH"
+# export ARGC_COMPLETIONS_ROOT="/ftptmp/snippets/argc-completions"
+# export ARGC_COMPLETIONS_PATH="$ARGC_COMPLETIONS_ROOT/completions/linux:$ARGC_COMPLETIONS_ROOT/completions"
+# export PATH="$ARGC_COMPLETIONS_ROOT/bin:$PATH"
 # To add completions for only the specified command, modify next line e.g. argc_scripts=( cargo git )
-argc_scripts=( $(ls -p -1 "$ARGC_COMPLETIONS_ROOT/completions/linux" "$ARGC_COMPLETIONS_ROOT/completions" | sed -n 's/\.sh$//p') )
-source <(argc --argc-completions bash "${argc_scripts[@]}")
+# argc_scripts=( $(ls -p -1 "$ARGC_COMPLETIONS_ROOT/completions/linux" "$ARGC_COMPLETIONS_ROOT/completions" | sed -n 's/\.sh$//p') )
+# source <(argc --argc-completions bash "${argc_scripts[@]}")
 
 source /home/wangfuli/.config/broot/launcher/bash/br
 

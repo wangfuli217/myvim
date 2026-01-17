@@ -302,6 +302,11 @@ gitc(){ # init a c git project
     git add *
 }
 
+# Generate content for .gitignore files
+gitignore() {
+  curl -fsSL "https://gitignore.io/api/$@"
+}
+
 # 删除文件末尾128位签名
 # dd if=KF_Image bs=1 count=6408390 of=orig
 ubin_orig(){
@@ -1179,6 +1184,48 @@ source ~/.fzf/shell/completion.bash
 
 export FZF_MARKS_JUMP='\C-x\C-g'
 [ -d /home/wangfuli/git/fzf-marks ] && source /home/wangfuli/git/fzf-marks/fzf-marks.plugin.bash
+marktmp(){
+  [ -n "$1" ] && {
+    mark "tmp-$1"
+  } || {
+    local dname=$(basename $(pwd))
+    mark "tmp-$dname"
+  }
+}
+alias fzf-bookmarks='source ~/.vim/bin/fzf-bookmarks'
+markpdt(){
+  local pdt=$1
+  [ -z "$pdt" ] && pdt="pdt"
+  local dname=$(basename $(pwd))
+  fzf-bookmarks -a  "$pdt-$dname"
+}
+alias markproduct='fzf-bookmarks'
+
+tmpd () {
+  cd "$(mktemp -d)"
+  chmod -R 0700 .
+  if [[ $# -eq 1 ]]; then
+    \mkdir -p "$1"
+    cd "$1"
+    chmod -R 0700 .
+  fi
+}
+
+# fzfr bash; fzfr bat; fzfr open
+fzfr() { fzf -m -x | sed -e "s/^/'/g" -e "s/$/'/g" | tr '\n' ' ' | xargs $@ ; } # http://www.reddit.com/r/commandline/comments/3abtup/fzfr_fzf_bash_function/
+
+fzf-launcher() {
+    # note: xdg-open has a bug with .desktop files, so we cant use it
+    selected="$(ls /usr/share/applications | fzf -e -i )"
+    nohup $(grep '^Exec' "/usr/share/applications/$selected" | tail -1 | sed 's/^Exec=//' | sed 's/%.//') >/dev/null 2>&1&
+    # disown if exit 0 successfully
+    if [[ $? = 0 ]] ; then disown; fi
+}
+fzf-dmenu() {
+    # note: xdg-open has a bug with .desktop files, so we cant use that shit
+    selected="$(ls /usr/share/applications | fzf -e)"
+    nohup `grep '^Exec' "/usr/share/applications/$selected" | tail -1 | sed 's/^Exec=//' | sed 's/%.//'` >/dev/null 2>&1&
+}
 
 FZF_CHEATSHEETS_DIR="/home/wangfuli/git/fzf-cheatsheets"
 export PATH="$PATH:${FZF_CHEATSHEETS_DIR}/bin"
@@ -1463,7 +1510,7 @@ fsort(){
   local qtype="t"
   local qsort="r"
   local qdepth="1"
-  while getopts 'tabcd:srh' x; do
+  while getopts 'tabcd:srDh' x; do
     case "$x" in
       t) qtype="t" ;;
       a) qtype="a" ;;
@@ -1472,6 +1519,7 @@ fsort(){
       s) qtype="s" ;;
       r) qsort="" ;;
       d) qdepth=${OPTARG}; qtype=d ;;
+      D) qtype="D" ;;
       h | *)
         echo "fsort [t|a|b|c|s] r/h "
         echo "fsort -t -r" # last modification time
@@ -1480,6 +1528,7 @@ fsort(){
         echo "fsort -c -r" # last status change time
         echo "fsort -s -r" # size
         echo "fsort -d 1 " # depth number
+        echo "fsort -D   " # dust
         return
         ;;
     esac
@@ -1495,8 +1544,21 @@ fsort(){
     c) find . -type f -printf '%C@ %p\n' | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
     s) find . -type f -printf '%s %p\n'  | sort -n${qsort} | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
     d) find . -type f -printf '%d %p\n'  | grep "^$qdepth" | cut -d' ' -f2- | fzf --preview 'ls -hl {}; stat {}' ;;
+    D) find . -type d -printf '%d %p\n'  | grep "^$qdepth" | cut -d' ' -f2- | fzf --preview 'dust -d 1 {}' ;;
     *) echo "fsort -h" ;;
   esac
+}
+
+# ctrl-g jump to directory
+fgg(){
+  local rgname=$(frg $1)
+  [ -n "$rgname" ] && {
+    local fname=$(echo "$rgname" | awk -F ':' '{print $1}')
+    [ -n "$fname" ] && {
+      local dname=$(dirname "$fname")
+      [ -d "$dname" ] && cd "$dname"
+    }
+  }
 }
 
 # fdf - cd into the directory of the selected file
