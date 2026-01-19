@@ -1,6 +1,6 @@
 #------------------------------------------------
 # Name    : mkb
-# Input   : path 
+# Input   : path
 # Purpose : soft symlink passed path to ~/.marks
 #           empty input raises error cose 1
 #------------------------------------------------
@@ -47,7 +47,7 @@ mkg() {
         echo "   mkg ${GREEN}STRING${RESET} > cd ${GREEN}STRING${RESET}"
         return 1
     else
-       # jump to realpath of input symlink 
+       # jump to realpath of input symlink
        cd "$(realpath "$1")"
     fi
 }
@@ -61,7 +61,7 @@ alias goln='mkb'
 _fzf_complete_marks() {
 
   _fzf_complete --multi --preview 'exa -lTL 2 --color=always {}/ | head -200' --reverse --preview-window wrap --min-height 15 -- "$@" < <(
-    find ~/.marks -type l 
+    find ~/.marks -type l
   )
 }
 
@@ -84,7 +84,7 @@ _fzf_complete_marks_wrap() {
 # Kill completion (supports empty completion trigger)
 complete -o default -o bashdefault -F _fzf_complete_marks_wrap mkg goto
 
-# this completes the mkb command when marking 
+# this completes the mkb command when marking
 _fzf_complete_marks_ls() {
   _fzf_complete --multi --reverse  -- "$@" < <(
     find ~/.marks -type d
@@ -96,3 +96,12 @@ _fzf_complete_marks_ls_post() {
 }
 
 complete -o default -o bashdefault -F _fzf_complete_marks_ls mkb
+
+_fzf_complete_goln() {
+  _fzf_complete --multi --reverse --prompt="goln> " -- "$@" < <(
+    [ -f /home/wangfuli/.fzf-marks ] && cat  /home/wangfuli/.fzf-marks | awk -F ':' '{ print $1 }'
+  )
+}
+
+[ -n "$BASH" ] && complete -F _fzf_complete_goln -o default -o bashdefault goln
+[ -n "$BASH" ] && complete -F _fzf_complete_goln -o default -o bashdefault mkb

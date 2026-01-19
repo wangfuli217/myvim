@@ -1132,7 +1132,7 @@ wfl_tmux_help(){   cat - <<'wfl_tmux_help'
 # 跳转pane并最大化:  t 用pane平分windows: z或/ 左右跳转window中pane 向左 <- | -> 向右
 # 复制当前clipboard到/tmp某个文件: y
 https://github.com/marlocarlo/psmux # Terminal multiplexer for Windows - tmux alternative for PowerShell, Windows Terminal, cmd.exe. Includes psmux, pmux, and tmux commands.
-https://github.com/itefixnet/itmux  # itmux is a lightweight, portable terminal multiplexer for Windows, bundling Tmux, Mintty, OpenSSH, and a minimal Cygwin environment into a standalone package.
+https://github.com/itefixnet/itmux  # itmux is a lightweight, portable terminal multiplexer for Windows, bundling tmux, Mintty, OpenSSH, and a minimal Cygwin environment into a standalone package.
 It lets you run multiple terminal sessions in one window, split panes, and securely access remote systems—all without installation or system changes.
 wfl_tmux_help
 }
@@ -1160,6 +1160,20 @@ bash原生补全    自定义:mklaste mklast mklastv mklastp mklastq
 fzf-cheatsheet: 通过文件名查看对应文件包含的行内容,替换已输入内容                    @容易扩展
 \<TAB><TAB>   : 通过已定义|自定义内容(直接定义补全对象|查询补全对象)进行补全         @方便扩展
 fzf补全       : 缺失位置参数调用fzf补全位置参数; 通过选项参数调用fzf补全默认位置参数 @可以扩展
+
+#### y:上传文件 c-/: 半屏预览 c-p: 全屏预览 c-e: vim编辑 c-o: 打开文件 c-n: 后台执行 #### fdf/filef
+frg : c-y: put; c-p:bat全屏预览; c-/: bat半屏预览; enter:bat选中阅读; c-n: nq后台执行(/home/wangfuli/.nq); c-e: vim; c-o:open; c-g: 被fgg用来跳转
+fgg : 扩展frg,使用c-g跳转文件所在目录
+frs : 输出搜索字所在段 继承:  c-y: put; c-p:bat全屏预览; c-/: bat半屏预览; c-n: nq后台执行(/home/wangfuli/.nq); c-e: vim; c-o:open;
+frl : 输出搜索字所在行 继承:  c-y: put; c-p:bat全屏预览; c-/: bat半屏预览; c-n: nq后台执行(/home/wangfuli/.nq); c-e: vim; c-o:open;
+对fdf frg fgg frs frl 进行fzf completion进行扩展
+#### 快速补全
+filef:     选择文件进行预览/编辑
+gitf:      选择commit对patch进行预览
+mkb/goln:  创建bookmark在~/.marks/
+mkg/goto:  选择在~/.marks下的链接文件
+fzfr:      选择工具,对文件进行编辑,预览,提交和执行
+cdfm/cdmf: 选择可以跳转的目录
 wfl_fzf_help
 }
 
@@ -1623,6 +1637,8 @@ fdf0() {
              --bind 'ctrl-d:change-prompt(Dirs> )+reload(find * -type d)' \
              --bind 'f9:change-prompt(Dirs1> )+reload(find * -maxdepth 1 -type d)' \
              --bind 'f10:change-prompt(Dirs2> )+reload(find * -maxdepth 2 -type d)' \
+             --bind 'ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )' \
+             --bind 'ctrl-y:execute(put {})' \
              --bind 'ctrl-f:change-prompt(Files> )+reload(find * -type f)')
   [ -z "$file" ] && {
     return
@@ -1822,7 +1838,13 @@ export FZF_TMUX_HEIGHT='80%'
 V() { { pipe || "$@" ; } 2> /dev/null | view - ; } # Quick way to view files in vim
 
 # find fd ag for filename, end preivew or edit it
-filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | fzf ; }   # Quick way to view files in fzf preview
+filef() { { pipe || "$@" ; } 2> /dev/null | awk '{print $NF}' | \
+fzf --bind 'enter:become( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )' \
+  --bind 'ctrl-y:execute(put {})' \
+  --bind 'ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )' \
+  --bind 'ctrl-n:become(nq sh -c ./{})' \
+  --bind 'ctrl-e:execute(vim {})'
+}
 
 # grep rg with line number
 alias rgg="rg --column --line-number --no-heading --crlf --color=always "

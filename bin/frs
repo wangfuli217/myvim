@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[ -d /home/wangfuli/.nq ] || mkdir /home/wangfuli/.nq
+export NQDIR=/home/wangfuli/.nq
+
 declare preview='bat --color=always --style=header,numbers -H {2} {1}'
 
 [ -n "$SSH_CLIENT" ] && {
@@ -18,7 +21,7 @@ fi
 
 usage() {
   cat <<HEREDOC
-   usage: frg -l -i -f filetype -s -S -w -L -v
+   usage: frs -l -i -f filetype -s -S -w -L -v
    optional   arguments:
      -h       show this help message and exit
      -e       exact-match(fzf)       (default fuzzy match)
@@ -32,11 +35,11 @@ usage() {
      -f <opt> filetype: rg --type-list
      -d <opt> maxdepth
      -v       verbose RG_PREFIX
-  inst: frg -l fzf # output filename only
-  inst: frg -L fzf # search symbolic links dirctory
-  inst: frg -w fzf # search word match only
-  inst: frg -s fzf # default search match mode: -i/-s/-S/-w
-  inst: frg -v fzf # output RG_PREFIX config
+  inst: frs -l fzf # output filename only
+  inst: frs -L fzf # search symbolic links dirctory
+  inst: frs -w fzf # search word match only
+  inst: frs -s fzf # default search match mode: -i/-s/-S/-w
+  inst: frs -v fzf # output RG_PREFIX config
 HEREDOC
 }
 
@@ -67,11 +70,11 @@ unset x OPTARG OPTIND
 
 # --preview 'bat --color=always {1} --highlight-line {2}' \
 # Switch between Ripgrep launcher mode (CTRL-R) and fzf filtering mode (CTRL-F)
-frgr_filename=$(mktemp -t frgr.XXXXXXXXXX)
-frgf_filename=$(mktemp -t frgf.XXXXXXXXXX)
+frsr_filename=$(mktemp -t frsr.XXXXXXXXXX)
+frsf_filename=$(mktemp -t frsf.XXXXXXXXXX)
 cleanup() {
-  rm -f "$frgr_filename";
-  rm -f "$frgf_filename";
+  rm -f "$frsr_filename";
+  rm -f "$frsf_filename";
 }
 trap cleanup EXIT
 
@@ -93,22 +96,38 @@ INITIAL_QUERY="${*:-}"
 : | fzf --ansi --disabled --query ${exactmatch:+-e} "$INITIAL_QUERY" \
   --bind "start:reload($RG_PREFIX {q})+unbind(ctrl-r)" \
   --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
-  --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > $frgr_filename; cat $frgf_filename)" \
-  --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. ripgrep> )+disable-search+reload($RG_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > $frgf_filename; cat $frgr_filename)" \
+  --bind "ctrl-f:unbind(change,ctrl-f)+change-prompt(2. fzf> )+enable-search+rebind(ctrl-r)+transform-query(echo {q} > $frsr_filename; cat $frsf_filename)" \
+  --bind "ctrl-r:unbind(ctrl-r)+change-prompt(1. ripgrep> )+disable-search+reload($RG_PREFIX {q} || true)+rebind(change,ctrl-f)+transform-query(echo {q} > $frsf_filename; cat $frsr_filename)" \
   --color "hl:-1:underline,hl+:-1:underline:reverse" \
   --prompt '1. ripgrep> ' \
   --delimiter : \
   --header '╱ CTRL-R (ripgrep mode) ╱ CTRL-F (fzf mode) ╱ ctrl-o:open ctrl-e:vim enter:less / -h rg|fzf arguments: [ -l;-L/-i/-d 1/-f c/-F/-s/-S/-w;-v ] /' \
   --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
   --preview-window 'right,45%,+{2}+1/3,~1' \
-  --bind "ctrl-o:execute($open {1})" \
-  --bind "ctrl-e:execute(vim {1} +{2})"
+  --bind 'ctrl-y:execute(put {1})' \
+  --bind 'ctrl-p:execute(bat -p --highlight-line {2} {1})' \
+  --bind 'ctrl-n:become(nq sh -c ./{1})' \
+  --bind 'ctrl-o:execute($open {1})' \
+  --bind 'ctrl-e:execute(vim {1} +{2})' \
+  --bind 'ctrl-g:accept'
 )
 
 [ -z "$output" ] && exit
 
 filename=$(echo $output | awk -F ':' '{print $1}')
 startnum=$(echo $output | awk -F ':' '{print $2}')
+
+sentencestart=0
+detectstart=0
+while read -r linedata; do
+  [ -z "$linedata" ] && detectstart=$sentencestart
+  sentencestart=$((sentencestart+1))
+  if [ "$sentencestart" -eq "$startnum" ]; then
+    break
+  fi
+done < $filename
+
+[ "$detectstart" != "0" ] && startnum=$((detectstart+2)) || startnum=0
 
 readnum=0
 while read -r linedata; do
@@ -117,6 +136,6 @@ while read -r linedata; do
     continue
   fi
   [ -z "$linedata" ] && break
-
-  echo ${linedata//#}
 done < $filename
+
+bat -p -r $startnum:$readnum $filename
