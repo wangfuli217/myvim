@@ -105,7 +105,7 @@ INITIAL_QUERY="${*:-}"
   --preview='bat -n --color=always --style=numbers,changes,header --highlight-line {2} {1} 2>/dev/null || bat -n --color=always {1}' \
   --preview-window 'right,45%,+{2}+1/3,~1' \
   --bind 'ctrl-y:execute(put {1})' \
-  --bind 'ctrl-p:execute(bat -p --highlight-line {2} {1})' \
+  --bind 'ctrl-p:execute(bat -p --highlight-line {2} --paging always {1})' \
   --bind 'ctrl-n:become(nq sh -c ./{1})' \
   --bind 'ctrl-o:execute($open {1})' \
   --bind 'ctrl-e:execute(vim {1} +{2})' \

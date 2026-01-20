@@ -1641,7 +1641,10 @@ fdf() {
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
   [[ -n $folllow  ]] && FD_PREFIX="$FD_PREFIX --follow  "
   [[ -n $week  ]] && FD_PREFIX="$FD_PREFIX --atime 7 "
-  file=$( { pipe || $FD_PREFIX;} | fzf +m  -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /'  )
+  file=$( { pipe || $FD_PREFIX;} | fzf +m  -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /' \
+                                      --bind 'ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )' \
+                                      --bind 'ctrl-y:execute(put {} )'
+  )
 
   [ -z "$file" ] && {
     return
@@ -2358,7 +2361,10 @@ export FZF_DEFAULT_OPTS='--no-height --no-reverse --no-mouse --multi --cycle --t
 --color hl:underline,hl+:underline
 --color hl+:yellow:regular:reverse,query:white:regular,info:gray:regular
 --color prompt:yellow:regular,pointer:yellow:bold
---marker ▏ --pointer "▌" --prompt "▌  " '
+--marker ▏ --pointer "▌" --prompt "▌  " 
+--bind "ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )"
+--bind "ctrl-y:execute(put {} )"
+'
 
 
 

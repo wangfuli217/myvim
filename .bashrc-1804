@@ -1613,7 +1613,10 @@ fdf() {
   [[ -n $maxdepth  ]] && FD_PREFIX="$FD_PREFIX -maxdepth $maxdepth "
   [[ -n $folllow  ]] && FD_PREFIX="$FD_PREFIX --follow  "
   [[ -n $week  ]] && FD_PREFIX="$FD_PREFIX --atime 7 "
-  file=$( { pipe || $FD_PREFIX;} | fzf +m -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /'  )
+  file=$( { pipe || $FD_PREFIX;} | fzf +m  -q "$1" --prompt 'Dirs+Files> ' --bind "start:show-header" --header '/ ctrl-o:open ctrl-e:vim / arguments: [-m|maxdepth depth] [-f|searchfile] [-d|searchdir] [-x|regex] [-w|oneweek days] [-L] /' \
+                                      --bind 'ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )' \
+                                      --bind 'ctrl-y:execute(put {} )'
+  )
 
   [ -z "$file" ] && {
     return
@@ -2299,7 +2302,10 @@ export FZF_DEFAULT_OPTS='--no-height --no-reverse --multi --ansi --cycle
 --bind "ctrl-o:execute(cygstart {})"
 --bind "ctrl-e:execute(vim {} < /dev/tty > /dev/tty 2>&1)"
 --bind "ctrl-\\:change-header(Type jump label)+jump,jump-cancel:change-header:Jump cancelled"
---highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌'
+--highlight-line --color gutter:-1,selected-bg:238,selected-fg:146,current-fg:189 --marker ▏ --pointer ▌ --prompt ▌
+--bind "ctrl-p:execute( if [ -d {} ]; then ls {} | bat --paging  always; elif [ -f {} ]; then bat -p --paging always {}; fi )"
+--bind "ctrl-y:execute(put {} )"
+'
 
 
 fzf_my_header='------------------------------------ (keystroke:my binding) ------------------------------------
